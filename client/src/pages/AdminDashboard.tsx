@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, FileText, Settings, Download, LogOut, Info, BarChart3, HelpCircle, Package, Mic2, Megaphone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Info, BarChart3, HelpCircle, Package, Mic2, Megaphone, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import ConstructionInquirySettings from './ConstructionInquirySettings';
 
