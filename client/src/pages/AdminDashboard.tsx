@@ -12,7 +12,7 @@ const AdminDashboard: React.FC = () => {
     localStorage.setItem('activeMenu', activeMenu);
   }, [activeMenu]);
 
-  const [notices, setNotices] = useState([
+  const [notices] = useState([
     { title: '시공 관련 안전 규정 변경 안내', category: '시공' },
     { title: '렌탈 장비 신규 입고 안내', category: '렌탈' },
     { title: '전사 워크숍 일정 안내', category: '전체' },

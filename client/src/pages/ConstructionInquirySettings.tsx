@@ -21,10 +21,6 @@ const ConstructionInquirySettings: React.FC = () => {
     isOpen: false, title: '', message: '', type: 'alert'
   });
 
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
-
   const fetchQuestions = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -35,6 +31,10 @@ const ConstructionInquirySettings: React.FC = () => {
     else setQuestions(data || []);
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
 
   const confirmSave = () => {
     setModalConfig({
