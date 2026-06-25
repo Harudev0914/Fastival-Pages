@@ -2,14 +2,16 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
     branches: [ main ]
 
-jobs:
-  build-and-lint:
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -18,26 +20,26 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install root dependencies
-        run: npm install
+      - name: Install dependencies
+        run: |
+          npm install
+          cd client && npm install
 
-      - name: Install client dependencies
-        run: cd client && npm install
-
-      - name: Install server dependencies
-        run: cd server && npm install
-
-      - name: Run Lint (ESLint)
-        run: npm run lint # Assuming you add this script to root package.json
-        continue-on-error: false
-
-      - name: Check Prettier
-        run: npx prettier --check .
+      - name: Run Lint
+        run: cd client && npm run lint
         continue-on-error: false
 
       - name: Build Client
         run: cd client && npm run build
-        continue-on-error: false
 
-      - name: Build Server (optional, depending on structure)
-        run: echo "Server build skipped for now"
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './client/dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
