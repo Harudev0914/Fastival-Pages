@@ -1,251 +1,187 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, FileText, Settings, LogOut, Info, BarChart3, HelpCircle, Package, Mic2, Megaphone, ChevronLeft, ChevronRight } from 'lucide-react';
-
-import ConstructionInquirySettings from './ConstructionInquirySettings';
+import { LayoutDashboard, FileText, Settings, Package, Mic2, Megaphone, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { useNavigate, Outlet } from 'react-router-dom';
 
 const AdminDashboard: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState(() => localStorage.getItem('activeMenu') || '대시보드');
-  const [activeNoticeTab, setActiveNoticeTab] = useState('전체');
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     localStorage.setItem('activeMenu', activeMenu);
-  }, [activeMenu]);
-
-  const [notices] = useState([
-    { title: '시공 관련 안전 규정 변경 안내', category: '시공' },
-    { title: '렌탈 장비 신규 입고 안내', category: '렌탈' },
-    { title: '전사 워크숍 일정 안내', category: '전체' },
-    { title: '시공 현장 관리 지침 준수', category: '시공' },
-  ]);
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(() => {
-    const saved = localStorage.getItem('expandedMenus');
-    return saved ? JSON.parse(saved) : {
-        '시공 문의': true,
-        '렌탈관리': false,
-        'DJ관리': false,
-        '컨텐츠관리': false
+    
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserEmail(user.email || '');
     };
+    fetchUser();
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    '시공 관리': false,
+    '뉴스 관리': false,
+    'FAQ 관리': false,
+    '공지 사항 관리': false,
+    '견적서 관리': false,
+    '렌탈 상품 관리': false,
+    '컨텐츠 관리': false,
+    '시스템 설정': false
   });
-
-  const admins = [
-    { name: '박팀장', title: '부장', dept: '기획팀', avatar: 'https://i.pravatar.cc/40?u=1' },
-    { name: '김과장', title: '과장', dept: '시공팀', avatar: 'https://i.pravatar.cc/40?u=2' }
-  ];
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
-  const filteredNotices = activeNoticeTab === '전체' 
-    ? notices 
-    : notices.filter(n => n.category === activeNoticeTab);
-
-  const paginatedNotices = filteredNotices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const totalPages = Math.ceil(filteredNotices.length / itemsPerPage);
 
   const toggleMenu = (menu: string) => {
     setExpandedMenus(prev => ({ ...prev, [menu]: !prev[menu] }));
   };
 
-  const handleMenuClick = (menu: string) => {
+  const handleMenuClick = (menu: string, path?: string) => {
     setActiveMenu(menu);
+    setIsUserMenuOpen(false);
+    if (path) navigate(path);
   };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('token');
+    window.location.href = '/admin/login';
+  };
+
+  const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : '?';
 
   return (
     <div className="dashboard-container">
       <nav className="sidebar">
-        <div className={`menu-item ${activeMenu === '대시보드' ? 'active' : ''}`} onClick={() => handleMenuClick('대시보드')}><LayoutDashboard size={16} /> <span>대시보드 홈</span></div>
+        <div className={`menu-item ${activeMenu === '대시보드' ? 'active' : ''}`} onClick={() => handleMenuClick('대시보드', '/admin/dashboard')}><LayoutDashboard size={18} /> <span>대시보드 홈</span></div>
         
-        <div className={`menu-item`} onClick={() => toggleMenu('시공 문의')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HelpCircle size={16} /> <span>시공 문의</span></div>
-            {expandedMenus['시공 문의'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        {/* 시공 관리 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('시공 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Settings size={18} /> <span>시공 관리</span></div>
+            {expandedMenus['시공 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
         </div>
-        {expandedMenus['시공 문의'] && (
+        {expandedMenus['시공 관리'] && (
             <div className="sub-menu">
-              <span className={activeMenu === '시공 문의 내역' ? 'active' : ''} onClick={() => handleMenuClick('시공 문의 내역')}>시공 문의 내역</span>
-              <span className={activeMenu === '시공 질의 설정' ? 'active' : ''} onClick={() => handleMenuClick('시공 질의 설정')}>시공 질의 설정</span>
-            </div>
-        )}
-        
-        <div className={`menu-item`} onClick={() => toggleMenu('렌탈관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={16} /> <span>렌탈 상품</span></div>
-            {expandedMenus['렌탈관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['렌탈관리'] && (
-            <div className="sub-menu">
-              <span onClick={() => handleMenuClick('카테고리')}>카테고리</span>
-              <span onClick={() => handleMenuClick('상품 관리')}>상품 관리</span>
-              <span onClick={() => handleMenuClick('브랜드 관리')}>브랜드 관리</span>
+                <span onClick={() => handleMenuClick('시공 문의 내역', '/admin/dashboard/inquiries')}>시공 문의 내역</span>
+                <span onClick={() => handleMenuClick('시공 질의 설정', '/admin/dashboard/inquiry-settings')}>시공 질의 설정</span>
             </div>
         )}
 
-        <div className={`menu-item`} onClick={() => toggleMenu('DJ관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Mic2 size={16} /> <span>DJ 아티스트</span></div>
-            {expandedMenus['DJ관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        {/* 뉴스 관리 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('뉴스 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> <span>뉴스 관리</span></div>
+            {expandedMenus['뉴스 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
         </div>
-        {expandedMenus['DJ관리'] && (
+        {expandedMenus['뉴스 관리'] && (
             <div className="sub-menu">
-              <span onClick={() => handleMenuClick('전체 목록')}>전체 목록</span>
-              <span onClick={() => handleMenuClick('승인 대기')}>승인 대기</span>
+                <span onClick={() => handleMenuClick('뉴스 목록', '/admin/dashboard/news')}>뉴스 목록</span>
+                <span onClick={() => handleMenuClick('뉴스 카테고리 관리', '/admin/dashboard/news-categories')}>뉴스 카테고리 관리</span>
             </div>
         )}
-        
-        <div className={`menu-item`} onClick={() => toggleMenu('컨텐츠관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Megaphone size={16} /> <span>사이트 컨텐츠</span></div>
-            {expandedMenus['컨텐츠관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+
+        {/* FAQ 관리 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('FAQ 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HelpCircle size={18} /> <span>FAQ 관리</span></div>
+            {expandedMenus['FAQ 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
         </div>
-        {expandedMenus['컨텐츠관리'] && (
+        {expandedMenus['FAQ 관리'] && (
             <div className="sub-menu">
-              <span onClick={() => handleMenuClick('메인 비주얼')}>메인 비주얼</span>
-              <span onClick={() => handleMenuClick('팝업 관리')}>팝업 관리</span>
-              <span onClick={() => handleMenuClick('배너 설정')}>배너 설정</span>
+                <span onClick={() => handleMenuClick('FAQ 목록', '/admin/dashboard/faq')}>FAQ 목록</span>
+                <span onClick={() => handleMenuClick('FAQ 카테고리 관리', '/admin/dashboard/faq-categories')}>FAQ 카테고리 관리</span>
             </div>
         )}
-        
-        <div className={`menu-item ${activeMenu === '게시판관리' ? 'active' : ''}`} onClick={() => handleMenuClick('게시판관리')}><FileText size={16} /> <span>게시판 관리</span></div>
-        <div className={`menu-item ${activeMenu === '환경설정' ? 'active' : ''}`} onClick={() => handleMenuClick('환경설정')}><Settings size={16} /> <span>시스템 설정</span></div>
-        <div className={`menu-item ${activeMenu === '통계 데이터' ? 'active' : ''}`} onClick={() => handleMenuClick('통계 데이터')}><BarChart3 size={16} /> <span>운영 통계</span></div>
+
+        {/* 공지 사항 관리 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('공지 사항 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Megaphone size={18} /> <span>공지 사항 관리</span></div>
+            {expandedMenus['공지 사항 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['공지 사항 관리'] && (
+            <div className="sub-menu">
+                <span onClick={() => handleMenuClick('공지 사항 목록', '/admin/dashboard/notices')}>공지 사항 목록</span>
+                <span onClick={() => handleMenuClick('공지 사항 카테고리 관리', '/admin/dashboard/notice-categories')}>공지 사항 카테고리 관리</span>
+            </div>
+        )}
+
+        {/* 견적서 관리 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('견적서 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> <span>견적서 관리</span></div>
+            {expandedMenus['견적서 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['견적서 관리'] && (
+            <div className="sub-menu">
+                <span onClick={() => handleMenuClick('시공 견적서', '/admin/dashboard/estimates/construction')}>시공 견적서</span>
+                <span onClick={() => handleMenuClick('렌탈 견적서', '/admin/dashboard/estimates/rental')}>렌탈 견적서</span>
+                <span onClick={() => handleMenuClick('DJ 견적서', '/admin/dashboard/estimates/dj')}>DJ 견적서</span>
+            </div>
+        )}
+
+        {/* 렌탈 상품 관리 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('렌탈 상품 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> <span>렌탈 상품 관리</span></div>
+            {expandedMenus['렌탈 상품 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['렌탈 상품 관리'] && (
+            <div className="sub-menu">
+              <span className={activeMenu === '카테고리 관리' ? 'active' : ''} onClick={() => handleMenuClick('카테고리 관리', '/admin/dashboard/categories')}>카테고리 관리</span>
+              <span className={activeMenu === '상품 관리' ? 'active' : ''} onClick={() => handleMenuClick('상품 관리', '/admin/dashboard/products')}>상품 관리</span>
+            </div>
+        )}
+
+        {/* 컨텐츠 관리 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('컨텐츠 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Megaphone size={18} /> <span>컨텐츠 관리</span></div>
+            {expandedMenus['컨텐츠 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['컨텐츠 관리'] && (
+            <div className="sub-menu">
+                <span onClick={() => handleMenuClick('메인 비주얼 관리', '/admin/dashboard/content/main-visual')}>메인 비주얼 관리</span>
+                <span onClick={() => handleMenuClick('팝업 관리', '/admin/dashboard/content/popups')}>팝업 관리</span>
+            </div>
+        )}
+
+        {/* 시스템 설정 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('시스템 설정')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Settings size={18} /> <span>시스템 설정</span></div>
+            {expandedMenus['시스템 설정'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['시스템 설정'] && (
+            <div className="sub-menu">
+                <span onClick={() => handleMenuClick('관리자 관리', '/admin/dashboard/system/admins')}>관리자 관리</span>
+                <span onClick={() => handleMenuClick('파비콘 관리', '/admin/dashboard/system/favicon')}>파비콘 관리</span>
+                <span onClick={() => handleMenuClick('로고 관리', '/admin/dashboard/system/logo')}>로고 관리</span>
+                <span onClick={() => handleMenuClick('SEO 관리', '/admin/dashboard/system/seo')}>SEO 관리</span>
+            </div>
+        )}
       </nav>
 
       <main className="main-content">
         <header className="header">
-          <div className="header-title">
-            {activeMenu}
+          <div className="header-title">{activeMenu}</div>
+          <div style={{ position: 'relative' }} ref={menuRef}>
+            <div onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#008b8b', color: 'white', fontWeight: 'bold' }}>
+              {userInitial}
+            </div>
+            {isUserMenuOpen && (
+              <div style={{ position: 'absolute', top: '100%', right: 0, backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', marginTop: '10px', zIndex: 10, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', minWidth: '120px' }}>
+                <div onClick={() => handleMenuClick('내 정보 관리', '/admin/dashboard/profile')} style={{ padding: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>내 정보 관리</div>
+                <div onClick={handleLogout} style={{ padding: '8px', cursor: 'pointer', fontSize: '0.9rem', color: '#ef4444' }}>로그아웃</div>
+              </div>
+            )}
           </div>
-          <div className="user-initial-icon">박</div>
         </header>
 
-        {activeMenu === '시공 질의 설정' ? (
-          <ConstructionInquirySettings />
-        ) : (
-          <div className="dashboard-layout">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="card">
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <img src={admins[0].avatar} alt="avatar" style={{ borderRadius: '50%', width: '60px', height: '60px', marginBottom: '10px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>{admins[0].name} {admins[0].title}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{admins[0].dept}</span>
-                </div>
-              </div>
-            </div>
-            <div className="card">
-              <h3>다가오는 업무</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px', fontSize: '0.85rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <th style={{ textAlign: 'left', padding: '8px 0' }}>일자</th>
-                    <th style={{ textAlign: 'left', padding: '8px 0' }}>구분</th>
-                    <th style={{ textAlign: 'left', padding: '8px 0' }}>내용</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ padding: '8px 0' }}>06/27</td>
-                    <td style={{ padding: '8px 0', color: '#008b8b', fontWeight: 600 }}>시공</td>
-                    <td style={{ padding: '8px 0' }}>현장 미팅</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '8px 0' }}>06/28</td>
-                    <td style={{ padding: '8px 0', color: '#008b8b', fontWeight: 600 }}>렌탈</td>
-                    <td style={{ padding: '8px 0' }}>장비 반납</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '8px 0' }}>06/29</td>
-                    <td style={{ padding: '8px 0', color: '#008b8b', fontWeight: 600 }}>DJ</td>
-                    <td style={{ padding: '8px 0' }}>미팅</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3>공지사항</h3>
-                <div style={{ display: 'flex', gap: '5px' }}>
-                  <button 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', opacity: currentPage === 1 ? 0.5 : 1 }}
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button 
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', opacity: (currentPage === totalPages || totalPages === 0) ? 0.5 : 1 }}
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              </div>
-              <div className="notice-tabs">
-                {['전체', '시공', '렌탈'].map(tab => (
-                  <div 
-                    key={tab} 
-                    className={`notice-tab ${activeNoticeTab === tab ? 'active' : ''}`}
-                    onClick={() => { setActiveNoticeTab(tab); setCurrentPage(1); }}
-                  >
-                    {tab}
-                  </div>
-                ))}
-              </div>
-              <ul className="notice-list">
-                {paginatedNotices.map((notice, i) => (
-                  <li key={i} className="notice-item">
-                    <span>{notice.title}</span>
-                    <small style={{color: '#94a3b8'}}>[{notice.category}]</small>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0px 0px 10px 0px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <h3 style={{ margin: 0 }}>2026. 06</h3>
-                  <button style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0px', display: 'flex', alignItems: 'center' }}>
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0px', display: 'flex', alignItems: 'center' }}>
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              </div>
-              <div className="calendar-grid">
-                {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
-                  <div key={day} className="calendar-day" style={{ color: i === 0 ? 'red' : i === 6 ? 'blue' : 'inherit' }}>
-                    <strong>{day}</strong>
-                  </div>
-                ))}
-                {Array.from({ length: 30 }).map((_, i) => {
-                  const day = i + 1;
-                  const dayOfWeek = (i) % 7; // Assuming 1st is Monday (adjust as needed)
-                  const isSelected = day === 17;
-                  return (
-                    <div 
-                      key={i} 
-                      className="calendar-day" 
-                      style={{
-                        color: dayOfWeek === 0 ? 'red' : dayOfWeek === 6 ? 'blue' : 'inherit',
-                        backgroundColor: isSelected ? '#e2e8f0' : 'white',
-                        borderRadius: isSelected ? '50px' : '0'
-                      }}
-                    >
-                      {day}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <button><Info size={16} /> 기본정보</button>
-            <button><LogOut size={16} /> 로그아웃</button>
-          </div>
+        <div className="content-area" style={{ padding: '20px' }}>
+          <Outlet />
         </div>
-        )}
       </main>
     </div>
   );
