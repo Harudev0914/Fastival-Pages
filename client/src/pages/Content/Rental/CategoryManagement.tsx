@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Loader2, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Trash2, Edit2, Loader2 } from 'lucide-react';
 import { supabase } from '../../../supabaseClient';
 
 interface Category {
@@ -14,21 +14,32 @@ const CategoryManagement: React.FC = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     setLoading(true);
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        console.error('인증되지 않은 접근입니다.');
+        setLoading(false);
+        return;
+    }
+
     const { data, error } = await supabase
       .from('rental_categories')
       .select('id, name')
       .order('id', { ascending: true });
     
-    if (error) console.error('Error fetching categories:', error);
-    else setCategories(data || []);
+    if (error) {
+        console.error('Error fetching categories:', error);
+    } else {
+        setCategories(data || []);
+    }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const addCategory = async () => {
     if (!newCategoryName) return;
@@ -59,7 +70,6 @@ const CategoryManagement: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Filter and Add Section */}
       <div className="card" style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', padding: '24px', backgroundColor: 'white', border: '1px solid rgb(226, 232, 240)', borderRadius: '16px', boxShadow: 'rgba(0, 0, 0, 0.02) 0px 4px 12px', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

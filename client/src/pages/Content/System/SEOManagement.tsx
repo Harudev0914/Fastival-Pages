@@ -1,22 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, Save } from 'lucide-react';
 import { supabase } from '../../../supabaseClient';
 
+interface SEOData {
+  id: number | null;
+  title: string;
+  description: string;
+  og_image_url: string;
+}
+
 const SEOManagement: React.FC = () => {
-  const [seo, setSeo] = useState({ id: null, title: '', description: '', og_image_url: '' });
+  const [seo, setSeo] = useState<SEOData>({ id: null, title: '', description: '', og_image_url: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchSEO();
-  }, []);
-
-  const fetchSEO = async () => {
+  const fetchSEO = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase.from('seo_settings').select('*').single();
     if (!error && data) setSeo(data);
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSEO();
+  }, [fetchSEO]);
 
   const saveSEO = async () => {
     setSaving(true);

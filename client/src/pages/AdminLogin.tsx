@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard } from 'lucide-react';
 import './AdminLogin.css';
@@ -13,15 +13,22 @@ const AdminLogin: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    console.log('Login attempt started for:', username);
+
     try {
-      const response = await axios.post('http://localhost:3000/api/login', { username, password });
-      console.log('Login success:', response.data);
-      localStorage.setItem('token', response.data.token);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: username, // Using username field for email
+        password: password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Login success:', data);
       navigate('/admin/dashboard');
     } catch (err: any) {
-      console.error('Login error details:', err.response || err);
-      setError('계정 정보가 올바르지 않습니다.');
+      console.error('Login error:', err);
+      setError(err.message || 'Login failed. Please check your credentials.');
     }
   };
 

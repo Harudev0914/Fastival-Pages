@@ -1,16 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 interface ProtectedRouteProps {
   children: React.ReactElement;
 }
 
-// 인증 여부를 확인하여 대시보드 접근을 제한하는 컴포넌트
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const token = localStorage.getItem('token');
-  
-  if (!token) {
-    return <Navigate to="/admin/error" replace />;
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <Navigate to="/admin/login" replace />;
   }
   
   return children;

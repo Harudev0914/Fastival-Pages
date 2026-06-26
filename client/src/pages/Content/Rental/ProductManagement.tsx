@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Loader2, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Trash2, Loader2, X } from 'lucide-react';
 import { supabase } from '../../../supabaseClient';
 
 interface Product {
@@ -9,6 +9,7 @@ interface Product {
   description: string;
   category_id: number;
   category_name?: string;
+  rental_categories?: { name: string };
 }
 
 interface Category {
@@ -21,19 +22,13 @@ const ProductManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Form states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', price: 0, description: '', category_id: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     
-    // 공식 인증 확인
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         console.error('인증되지 않은 접근입니다.');
@@ -54,7 +49,11 @@ const ProductManagement: React.FC = () => {
         setProducts((prodData || []).map(p => ({ ...p, category_name: p.rental_categories?.name })));
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.category_id) return;
@@ -80,7 +79,6 @@ const ProductManagement: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Filter and Add Section */}
       <div className="card" style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', padding: '24px', backgroundColor: 'white', border: '1px solid rgb(226, 232, 240)', borderRadius: '16px', boxShadow: 'rgba(0, 0, 0, 0.02) 0px 4px 12px', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -89,7 +87,7 @@ const ProductManagement: React.FC = () => {
           </div>
         </div>
         <button onClick={() => { setEditingId(null); setFormData({ name: '', price: 0, description: '', category_id: '' }); setIsModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#008b8b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
-          <Plus size={18} /> 상품 등록
+          상품 등록
         </button>
       </div>
 

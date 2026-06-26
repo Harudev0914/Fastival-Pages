@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
@@ -20,11 +20,7 @@ const InquiryList: React.FC<{ onViewDetail: (id: number) => void }> = ({ onViewD
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchInquiries();
-  }, []);
-
-  const fetchInquiries = async () => {
+  const fetchInquiries = useCallback(async () => {
     setLoading(true);
     
     // Check if user is authenticated
@@ -43,7 +39,11 @@ const InquiryList: React.FC<{ onViewDetail: (id: number) => void }> = ({ onViewD
     if (error) console.error('Error fetching inquiries:', error);
     else setInquiries(data || []);
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchInquiries();
+  }, [fetchInquiries]);
 
   const inputStyle = { padding: '10px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', minWidth: '240px', boxShadow: 'rgba(0, 0, 0, 0.05) 0px 1px 2px 0px', transition: 'border-color 0.2s, box-shadow 0.2s' };
   const selectStyle = { padding: '10px 36px 10px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: 'white', fontSize: '0.9rem', outline: 'none', cursor: 'pointer', boxShadow: 'rgba(0, 0, 0, 0.05) 0px 1px 2px 0px', transition: 'border-color 0.2s, box-shadow 0.2s', appearance: 'none' as const, backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' };
