@@ -14,6 +14,9 @@ import InquiryDetail from './pages/Inquiry/InquiryDetail';
 import ConstructionInquirySettings from './pages/ConstructionInquirySettings';
 import MainVisualList from './pages/Content/MainVisual/MainVisualList';
 import MainVisualDetail from './pages/Content/MainVisual/MainVisualDetail';
+import NoticeList from './pages/Content/Notice/NoticeList';
+import NoticeDetail from './pages/Content/Notice/NoticeDetail';
+import NoticeCategoryManagement from './pages/Content/Notice/NoticeCategoryManagement';
 import NewsList from './pages/Content/News/NewsList';
 import NewsDetail from './pages/Content/News/NewsDetail';
 import NewsCategoryManagement from './pages/Content/News/NewsCategoryManagement';
@@ -40,6 +43,9 @@ function AdminContent() {
       <Route path="news" element={<NewsList />} />
       <Route path="news/detail/:id" element={<NewsDetail />} />
       <Route path="news-categories" element={<NewsCategoryManagement />} />
+      <Route path="notices" element={<NoticeList />} />
+      <Route path="notices/detail/:id" element={<NoticeDetail />} />
+      <Route path="notice-categories" element={<NoticeCategoryManagement />} />
       <Route path="content/main-visual" element={<MainVisualList onEdit={(id) => id ? navigate(`/admin/dashboard/content/main-visual/detail/${id}`) : navigate('/admin/dashboard/content/main-visual/detail/new')} />} />
       <Route path="content/main-visual/detail/:id" element={<MainVisualDetail onBack={() => navigate('/admin/dashboard/content/main-visual')} />} />
       <Route path="system/seo" element={<SEOManagement />} />
