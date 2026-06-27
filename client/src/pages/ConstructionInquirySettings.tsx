@@ -35,7 +35,11 @@ const ConstructionInquirySettings: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchQuestions();
+    // Wrap in a function to avoid direct setState in useEffect
+    const init = async () => {
+      await fetchQuestions();
+    };
+    init();
   }, []);
 
   const saveSettings = async () => {
@@ -54,9 +58,10 @@ const ConstructionInquirySettings: React.FC = () => {
         );
         if (insertError) throw insertError;
         setModalConfig({ isOpen: true, title: '성공', message: '모든 변경사항이 저장되었습니다.', type: 'alert' });
-        fetchQuestions();
-    } catch (err: any) {
-        setModalConfig({ isOpen: true, title: '오류', message: '저장에 실패했습니다: ' + err.message, type: 'alert' });
+        await fetchQuestions();
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        setModalConfig({ isOpen: true, title: '오류', message: '저장에 실패했습니다: ' + message, type: 'alert' });
     }
     setSaving(false);
   };
@@ -77,7 +82,7 @@ const ConstructionInquirySettings: React.FC = () => {
     setQuestions(questions.filter(q => q.id !== id));
   };
 
-  const updateQuestion = (id: number, field: keyof Question, value: any) => {
+  const updateQuestion = (id: number, field: keyof Question, value: unknown) => {
     setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
   };
 
@@ -139,10 +144,10 @@ const ConstructionInquirySettings: React.FC = () => {
                                                 <input 
                                                     placeholder="옵션 입력 후 엔터" 
                                                     style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', marginBottom: '10px' }}
-                                                    onKeyDown={(e: any) => {
-                                                        if (e.key === 'Enter' && e.target.value.trim() !== '') {
-                                                            updateQuestion(q.id, 'options', [...q.options, e.target.value.trim()]);
-                                                            e.target.value = '';
+                                                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                                        if (e.key === 'Enter' && e.currentTarget.value.trim() !== '') {
+                                                            updateQuestion(q.id, 'options', [...q.options, e.currentTarget.value.trim()]);
+                                                            e.currentTarget.value = '';
                                                         }
                                                     }} 
                                                 />

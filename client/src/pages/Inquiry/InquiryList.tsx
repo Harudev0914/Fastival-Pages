@@ -21,8 +21,6 @@ const InquiryList: React.FC<{ onViewDetail: (id: number) => void }> = ({ onViewD
   const [loading, setLoading] = useState(true);
 
   const fetchInquiries = useCallback(async () => {
-    setLoading(true);
-    
     // Check if user is authenticated
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !sessionData.session) {
@@ -35,14 +33,19 @@ const InquiryList: React.FC<{ onViewDetail: (id: number) => void }> = ({ onViewD
       .from('inquiries')
       .select('id, user_id, title, status, created_at')
       .order('created_at', { ascending: false });
-    
+
     if (error) console.error('Error fetching inquiries:', error);
     else setInquiries(data || []);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchInquiries();
+    const init = async () => {
+      setLoading(true);
+      await fetchInquiries();
+      setLoading(false);
+    };
+    init();
   }, [fetchInquiries]);
 
   const inputStyle = { padding: '10px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', minWidth: '240px', boxShadow: 'rgba(0, 0, 0, 0.05) 0px 1px 2px 0px', transition: 'border-color 0.2s, box-shadow 0.2s' };

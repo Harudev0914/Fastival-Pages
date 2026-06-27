@@ -1,8 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, GripVertical, Trash2 } from 'lucide-react';
-
 // 공통 스타일
-const SELECT_STYLE = { 
+export const SELECT_STYLE = { 
   padding: '10px 32px 10px 16px', // 우측에 여백을 주어 화살표와 겹치지 않게
   borderRadius: '8px', 
   border: '1px solid #cbd5e1', 
@@ -16,5 +13,3 @@ const SELECT_STYLE = {
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'right 10px center',
 };
-
-// ... 나머지 InquiryList 컴포넌트 로직은 유지하고 스타일만 업데이트

@@ -33,11 +33,13 @@ const MainVisualDetail: React.FC<{ id?: number; onBack: () => void }> = ({ id, o
     isOpen: false, title: '', message: '', type: 'alert'
   });
 
-  const handleChange = (e: any) => {
-    const { name, value, type, checked, files } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
     if (type === 'file') {
-        setFormData(prev => ({ ...prev, [name]: files[0] }));
+        const files = (e.target as HTMLInputElement).files;
+        setFormData(prev => ({ ...prev, [name]: files ? files[0] : null }));
     } else {
+        const checked = (e.target as HTMLInputElement).checked;
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     }
   };

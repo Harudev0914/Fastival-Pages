@@ -15,12 +15,10 @@ const CategoryManagement: React.FC = () => {
   const [editingName, setEditingName] = useState('');
 
   const fetchCategories = useCallback(async () => {
-    setLoading(true);
     
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         console.error('인증되지 않은 접근입니다.');
-        setLoading(false);
         return;
     }
 
@@ -34,11 +32,15 @@ const CategoryManagement: React.FC = () => {
     } else {
         setCategories(data || []);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchCategories();
+    const init = async () => {
+      setLoading(true);
+      await fetchCategories();
+      setLoading(false);
+    };
+    init();
   }, [fetchCategories]);
 
   const addCategory = async () => {

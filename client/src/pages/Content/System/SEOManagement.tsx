@@ -15,14 +15,18 @@ const SEOManagement: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchSEO = useCallback(async () => {
-    setLoading(true);
     const { data, error } = await supabase.from('seo_settings').select('*').single();
     if (!error && data) setSeo(data);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchSEO();
+    const init = async () => {
+      setLoading(true);
+      await fetchSEO();
+      setLoading(false);
+    };
+    init();
   }, [fetchSEO]);
 
   const saveSEO = async () => {

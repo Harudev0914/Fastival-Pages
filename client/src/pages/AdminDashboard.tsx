@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, FileText, Settings, Package, Mic2, Megaphone, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Package, Megaphone, ChevronLeft, HelpCircle } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 
@@ -27,7 +27,7 @@ const AdminDashboard: React.FC = () => {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [activeMenu]);
 
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
     '시공 관리': false,

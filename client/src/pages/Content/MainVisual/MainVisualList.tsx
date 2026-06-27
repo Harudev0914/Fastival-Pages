@@ -18,7 +18,6 @@ const MainVisualList: React.FC<{ onEdit: (id?: number) => void }> = ({ onEdit })
   });
 
   const fetchVisuals = async () => {
-    setLoading(true);
     
     // Check if user is authenticated
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -39,7 +38,12 @@ const MainVisualList: React.FC<{ onEdit: (id?: number) => void }> = ({ onEdit })
   };
 
   useEffect(() => {
-    fetchVisuals();
+    const init = async () => {
+      setLoading(true);
+      await fetchVisuals();
+      setLoading(false);
+    };
+    init();
   }, []);
 
   const toggleActive = async (id: number, currentStatus: boolean) => {
@@ -108,7 +112,7 @@ const MainVisualList: React.FC<{ onEdit: (id?: number) => void }> = ({ onEdit })
               </tr>
             </thead>
             <tbody>
-              {visuals.map((v, index) => (
+              {visuals.map((v) => (
                 <tr key={v.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '16px 24px', textAlign: 'center', color: '#94a3b8' }}><GripVertical size={18} /></td>
                   <td style={{ padding: '16px 24px', color: '#334155', fontWeight: 600 }}>{v.main_text}</td>

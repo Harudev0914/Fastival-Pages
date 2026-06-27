@@ -26,9 +26,13 @@ const AdminLogin: React.FC = () => {
 
       console.log('Login success:', data);
       navigate('/admin/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
-      setError(err.message || 'Login failed. Please check your credentials.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
     }
   };
 

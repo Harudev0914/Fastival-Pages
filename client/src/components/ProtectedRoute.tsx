@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<import('@supabase/supabase-js').Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

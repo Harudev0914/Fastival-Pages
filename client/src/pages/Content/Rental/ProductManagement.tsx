@@ -25,35 +25,36 @@ const ProductManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', price: 0, description: '', category_id: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
+const fetchData = useCallback(async () => {
+  // Check if user is authenticated
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+      console.error('인증되지 않은 접근입니다.');
+      return;
+  }
 
-  const fetchData = useCallback(async () => {
+  const { data: catData } = await supabase.from('rental_categories').select('id, name');
+  const { data: prodData, error } = await supabase
+    .from('rental_products')
+    .select('*, rental_categories(name)')
+    .order('id', { ascending: true });
+
+  if (error) {
+      console.error('Error fetching data:', error);
+  } else {
+      setCategories(catData || []);
+      setProducts((prodData || []).map(p => ({ ...p, category_name: p.rental_categories?.name })));
+  }
+}, []);
+
+useEffect(() => {
+  const init = async () => {
     setLoading(true);
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        console.error('인증되지 않은 접근입니다.');
-        setLoading(false);
-        return;
-    }
-
-    const { data: catData } = await supabase.from('rental_categories').select('id, name');
-    const { data: prodData, error } = await supabase
-      .from('rental_products')
-      .select('*, rental_categories(name)')
-      .order('id', { ascending: true });
-    
-    if (error) {
-        console.error('Error fetching data:', error);
-    } else {
-        setCategories(catData || []);
-        setProducts((prodData || []).map(p => ({ ...p, category_name: p.rental_categories?.name })));
-    }
+    await fetchData();
     setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  };
+  init();
+}, [fetchData]);
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.category_id) return;
