@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Trash2, Edit2, Loader2, Plus, Save } from 'lucide-react';
 import { supabase } from '../../../supabaseClient';
 import Modal from '../../../components/Modal';
+import ToggleButton from '../../../components/UI/ToggleButton';
 
 interface Category {
   id: number;
@@ -68,12 +69,20 @@ const NewsCategoryManagement: React.FC = () => {
   };
 
   const deleteCategory = async (id: number) => {
-    const { error } = await supabase.from('news_categories').delete().eq('id', id);
-    if (error) setModalConfig({ isOpen: true, title: '오류', message: '삭제에 실패했습니다.', type: 'alert' });
-    else {
-        setModalConfig({ isOpen: false, title: '', message: '', type: 'alert' });
-        fetchCategories();
-    }
+    setModalConfig({
+        isOpen: true,
+        title: '삭제 확인',
+        message: '정말 삭제하시겠습니까?',
+        type: 'confirm',
+        onConfirm: async () => {
+            const { error } = await supabase.from('news_categories').delete().eq('id', id);
+            if (error) setModalConfig({ isOpen: true, title: '오류', message: '삭제에 실패했습니다.', type: 'alert' });
+            else {
+                setModalConfig({ isOpen: false, title: '', message: '', type: 'alert' });
+                fetchCategories();
+            }
+        }
+    });
   };
 
   const inputStyle = { padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem', outline: 'none', flex: 1, backgroundColor: '#f8fafc' };
@@ -119,16 +128,7 @@ const NewsCategoryManagement: React.FC = () => {
                         </td>
                         <td style={{ padding: '16px 24px', textAlign: 'center', color: '#64748b' }}>{new Date().toLocaleDateString()}</td>
                         <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                            <button 
-                            onClick={() => toggleActive(c.id, c.is_active)}
-                            style={{
-                                width: '40px',
-                                height: '20px',
-                                borderRadius: '10px',
-                                backgroundColor: c.is_active ? '#008b8b' : '#cbd5e1',
-                                border: 'none',
-                                cursor: 'pointer'
-                            }} />
+                            <ToggleButton isOn={c.is_active} onToggle={() => toggleActive(c.id, c.is_active)} />
                         </td>
                         <td style={{ padding: '16px 24px', textAlign: 'center' }}>
                             {editingId === c.id ? (
@@ -136,7 +136,7 @@ const NewsCategoryManagement: React.FC = () => {
                             ) : (
                                 <>
                                     <button onClick={() => { setEditingId(c.id); setEditingName(c.name); }} style={{ padding: '8px', marginRight: '8px', background: 'none', border: 'none', cursor: 'pointer' }}><Edit2 size={16} color="#475569" /></button>
-                                    <button onClick={() => setModalConfig({isOpen: true, title: '삭제 확인', message: '정말 삭제하시겠습니까?', type: 'confirm', onConfirm: () => deleteCategory(c.id)})} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={16} color="#dc2626" /></button>
+                                    <button onClick={() => deleteCategory(c.id)} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={16} color="#dc2626" /></button>
                                 </>
                             )}
                         </td>
