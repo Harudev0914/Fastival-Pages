@@ -12,7 +12,7 @@ const FONT_OPTIONS = [
   { label: '넥슨 워헤이븐', value: 'NexonWarhaven' },
 ];
 
-const MainVisualDetail: React.FC<{ id?: number; onBack: () => void }> = ({ id, onBack }) => {
+const MainVisualDetail: React.FC<{ id?: number; onBack: () => void; onSave: () => void }> = ({ id, onBack, onSave: _onSave }) => {
   const [formData, setFormData] = useState({
     bgType: 'image_url',
     bgSrc: '',
@@ -89,7 +89,7 @@ const MainVisualDetail: React.FC<{ id?: number; onBack: () => void }> = ({ id, o
     cursor: 'pointer',
     boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
     transition: 'border-color 0.2s, box-shadow 0.2s',
-    appearance: 'none',
+    appearance: 'none' as React.CSSProperties['appearance'],
     backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E")',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 12px center'

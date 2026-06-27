@@ -43,12 +43,12 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="inquiries" element={<InquiryList />} />
+          <Route path="inquiries" element={<InquiryList onViewDetail={(id) => console.log(id)} />} />
           <Route path="inquiry-settings" element={<ConstructionInquirySettings />} />
           <Route path="categories" element={<CategoryManagement />} />
           <Route path="products" element={<ProductManagement />} />
           <Route path="content/main-visual" element={<MainVisualList onEdit={() => {}} />} />
-          <Route path="content/main-visual/detail/:id" element={<MainVisualDetail id={0} onBack={() => {}} />} />
+          <Route path="content/main-visual/detail/:id" element={<MainVisualDetail id={0} onBack={() => {}} onSave={() => {}} />} />
         </Route>
 
         {/* Home Route - With Splash */}
