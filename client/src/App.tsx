@@ -48,7 +48,7 @@ function App() {
           <Route path="categories" element={<CategoryManagement />} />
           <Route path="products" element={<ProductManagement />} />
           <Route path="content/main-visual" element={<MainVisualList onEdit={() => {}} />} />
-          <Route path="content/main-visual/detail/:id" element={<MainVisualDetail id={0} onBack={() => {}} onSave={() => {}} />} />
+          <Route path="content/main-visual/detail/:id" element={<MainVisualDetail id={0} onBack={() => {}} />} />
         </Route>
 
         {/* Home Route - With Splash */}

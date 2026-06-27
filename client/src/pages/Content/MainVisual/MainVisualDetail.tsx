@@ -12,7 +12,7 @@ const FONT_OPTIONS = [
   { label: '넥슨 워헤이븐', value: 'NexonWarhaven' },
 ];
 
-const MainVisualDetail: React.FC<{ id?: number; onBack: () => void; onSave: () => void }> = ({ id, onBack, onSave: _onSave }) => {
+const MainVisualDetail: React.FC<{ id?: number; onBack: () => void }> = ({ id, onBack }) => {
   const [formData, setFormData] = useState({
     bgType: 'image_url',
     bgSrc: '',
