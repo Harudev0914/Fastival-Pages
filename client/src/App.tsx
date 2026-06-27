@@ -20,6 +20,7 @@ import FAQCategoryManagement from './pages/Content/FAQ/FAQCategoryManagement';
 import NewsList from './pages/Content/News/NewsList';
 import NewsDetail from './pages/Content/News/NewsDetail';
 import NewsCategoryManagement from './pages/Content/News/NewsCategoryManagement';
+import NoticeList from './pages/Content/Notice/NoticeList';
 import NoticeDetail from './pages/Content/Notice/NoticeDetail';
 import NoticeCategoryManagement from './pages/Content/Notice/NoticeCategoryManagement';
 
