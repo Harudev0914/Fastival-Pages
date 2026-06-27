@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
@@ -23,18 +23,32 @@ function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AdminContent() {
+  const navigate = useNavigate();
+
+  return (
+    <Routes>
+      <Route path="inquiries" element={<InquiryList onViewDetail={(id) => console.log(id)} />} />
+      <Route path="inquiry-settings" element={<ConstructionInquirySettings />} />
+      <Route path="categories" element={<CategoryManagement />} />
+      <Route path="products" element={<ProductManagement />} />
+      <Route path="content/main-visual" element={<MainVisualList onEdit={(id) => id ? navigate(`/admin/dashboard/content/main-visual/detail/${id}`) : navigate('/admin/dashboard/content/main-visual/detail/new')} />} />
+      <Route path="content/main-visual/detail/:id" element={<MainVisualDetail id={0} onBack={() => navigate('/admin/dashboard/content/main-visual')} />} />
+    </Routes>
+  );
+}
+
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 
   return (
     <Router>
       <Routes>
-        {/* Admin Routes - No Splash */}
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/error" element={<AdminError />} />
         <Route
-          path="/admin/dashboard"
+          path="/admin/dashboard/*"
           element={
             <ProtectedRoute>
               <AdminRouteWrapper>
@@ -42,16 +56,7 @@ function App() {
               </AdminRouteWrapper>
             </ProtectedRoute>
           }
-        >
-          <Route path="inquiries" element={<InquiryList onViewDetail={(id) => console.log(id)} />} />
-          <Route path="inquiry-settings" element={<ConstructionInquirySettings />} />
-          <Route path="categories" element={<CategoryManagement />} />
-          <Route path="products" element={<ProductManagement />} />
-          <Route path="content/main-visual" element={<MainVisualList onEdit={() => {}} />} />
-          <Route path="content/main-visual/detail/:id" element={<MainVisualDetail id={0} onBack={() => {}} />} />
-        </Route>
-
-        {/* Home Route - With Splash */}
+        />
         <Route path="/" element={
             <>
                 {showSplash && <Splash onComplete={() => setShowSplash(false)} />}
