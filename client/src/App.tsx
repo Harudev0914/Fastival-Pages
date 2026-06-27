@@ -10,9 +10,11 @@ import Splash from './components/Splash';
 import CategoryManagement from './pages/Content/Rental/CategoryManagement';
 import ProductManagement from './pages/Content/Rental/ProductManagement';
 import InquiryList from './pages/Inquiry/InquiryList';
+import InquiryDetail from './pages/Inquiry/InquiryDetail';
 import ConstructionInquirySettings from './pages/ConstructionInquirySettings';
 import MainVisualList from './pages/Content/MainVisual/MainVisualList';
 import MainVisualDetail from './pages/Content/MainVisual/MainVisualDetail';
+import SEOManagement from './pages/Content/System/SEOManagement';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -25,15 +27,16 @@ function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
 
 function AdminContent() {
   const navigate = useNavigate();
-
   return (
     <Routes>
-      <Route path="inquiries" element={<InquiryList onViewDetail={(id) => console.log(id)} />} />
+      <Route path="inquiries" element={<InquiryList onViewDetail={(id) => navigate(`/admin/dashboard/inquiries/${id}`)} />} />
+      <Route path="inquiries/:id" element={<InquiryDetail />} />
       <Route path="inquiry-settings" element={<ConstructionInquirySettings />} />
       <Route path="categories" element={<CategoryManagement />} />
       <Route path="products" element={<ProductManagement />} />
       <Route path="content/main-visual" element={<MainVisualList onEdit={(id) => id ? navigate(`/admin/dashboard/content/main-visual/detail/${id}`) : navigate('/admin/dashboard/content/main-visual/detail/new')} />} />
-      <Route path="content/main-visual/detail/:id" element={<MainVisualDetail id={0} onBack={() => navigate('/admin/dashboard/content/main-visual')} />} />
+      <Route path="content/main-visual/detail/:id" element={<MainVisualDetail onBack={() => navigate('/admin/dashboard/content/main-visual')} />} />
+      <Route path="system/seo" element={<SEOManagement />} />
     </Routes>
   );
 }
@@ -56,7 +59,9 @@ function App() {
               </AdminRouteWrapper>
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="*" element={<AdminContent />} />
+        </Route>
         <Route path="/" element={
             <>
                 {showSplash && <Splash onComplete={() => setShowSplash(false)} />}
