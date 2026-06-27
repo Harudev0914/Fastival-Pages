@@ -17,8 +17,20 @@ import MainVisualDetail from './pages/Content/MainVisual/MainVisualDetail';
 import FAQList from './pages/Content/FAQ/FAQList';
 import FAQDetail from './pages/Content/FAQ/FAQDetail';
 import FAQCategoryManagement from './pages/Content/FAQ/FAQCategoryManagement';
-import NoticeList from './pages/Content/Notice/NoticeList';
-// ...
+import NewsList from './pages/Content/News/NewsList';
+import NewsDetail from './pages/Content/News/NewsDetail';
+import NewsCategoryManagement from './pages/Content/News/NewsCategoryManagement';
+import NoticeDetail from './pages/Content/Notice/NoticeDetail';
+import NoticeCategoryManagement from './pages/Content/Notice/NoticeCategoryManagement';
+
+function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <MobileRestrictionOverlay />
+      {children}
+    </>
+  );
+}
 
 function AdminContent() {
   const navigate = useNavigate();
