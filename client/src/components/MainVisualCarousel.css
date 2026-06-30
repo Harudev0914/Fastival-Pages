@@ -77,7 +77,8 @@
   display: flex; align-items: center; justify-content: center; cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
-.rv-arrows button:hover { background: #f8fafc; border-color: #cbd5e1; }
+.rv-arrows button:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+.rv-arrows button:disabled { opacity: 0.35; cursor: not-allowed; }
 
 @media (max-width: 1024px) {
   .rv-card { flex-basis: calc((100% - 16px) / 2); }

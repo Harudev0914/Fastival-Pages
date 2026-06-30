@@ -24,6 +24,8 @@ const MainVisualCarousel: React.FC<{ section: MvSection; autoPlayMs?: number }> 
   const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
   const [progress, setProgress] = useState(0);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
   const [banners, setBanners] = useState<BannerView[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -58,7 +60,16 @@ const MainVisualCarousel: React.FC<{ section: MvSection; autoPlayMs?: number }> 
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
     setProgress(max > 0 ? el.scrollLeft / max : 0);
+    setCanPrev(el.scrollLeft > 4);
+    setCanNext(max > 4 && el.scrollLeft < max - 4);
   }, []);
+
+  // 배너 로드/리사이즈 후 화살표 활성화 상태 초기 계산
+  useEffect(() => {
+    onScroll();
+    window.addEventListener('resize', onScroll);
+    return () => window.removeEventListener('resize', onScroll);
+  }, [banners.length, onScroll]);
 
   const slide = (dir: number) => {
     const el = trackRef.current;
@@ -119,10 +130,10 @@ const MainVisualCarousel: React.FC<{ section: MvSection; autoPlayMs?: number }> 
       <div className="rv-controls">
         <div className="rv-progress"><span style={{ transform: `scaleX(${0.25 + progress * 0.75})` }} /></div>
         <div className="rv-arrows">
-          <button type="button" onClick={() => slide(-1)} aria-label="이전">
+          <button type="button" onClick={() => slide(-1)} aria-label="이전" disabled={!canPrev}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
-          <button type="button" onClick={() => slide(1)} aria-label="다음">
+          <button type="button" onClick={() => slide(1)} aria-label="다음" disabled={!canNext}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
           </button>
         </div>
