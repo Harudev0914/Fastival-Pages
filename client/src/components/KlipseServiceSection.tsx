@@ -1,5 +1,7 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ImageOff } from "lucide-react";
+import { reviewApi, portfolioApi } from "../api/constructionApi";
 
 function ChevLeft() {
   return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>;
@@ -7,85 +9,6 @@ function ChevLeft() {
 function ChevRight() {
   return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>;
 }
-
-const SERVICES = [
-  {
-    id: "kitchen",
-    tag: "주방",
-    title: "오늘의집 키친",
-    sub: "중간마진 없는 합리적 가격",
-    image:
-      "https://images.unsplash.com/photo-1556912173-3d706393e772?w=900&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "wallpaper",
-    tag: "도배",
-    title: "오늘의집 도배",
-    sub: "리뷰가 검증한 시공 품질",
-    image:
-      "https://images.unsplash.com/photo-1615874694520-474822394e73?w=900&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "floor",
-    tag: "마루/장판",
-    title: "오늘의집 마루",
-    sub: "20년 경력 베테랑 시공팀",
-    image:
-      "https://images.unsplash.com/photo-1574362848149-11246daade8a?w=900&q=80&auto=format&fit=crop",
-  },
-];
-
-// 설정된 주소지 반경 내 최신 리뷰 (위치 기반)
-const NEARBY = [
-  {
-    id: "n1",
-    meta: "10평대 · 서울특별시 노원구",
-    text: "발품팔아 손품팔아 다 팔아 컨택한 곳이 새롬인테리어였습니다. 실장님과 대표님 두분과 소통이 찰떡처럼 잘 맞았어요.",
-    company: "새롬인테리어",
-    image:
-      "https://images.unsplash.com/photo-1556909190-eccf4a8bf97a?w=600&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "n2",
-    meta: "20평대 · 아파트",
-    text: "집 구매하면서 가장 걱정되었던 게 리모델링이었는데, 신우인테리어 만나고 생각이 많이 바뀌었습니다. 30년 된 집이 새집이 됐어요.",
-    company: "신우디자인",
-    image:
-      "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "n3",
-    meta: "40평대 · 서울특별시 도봉구",
-    text: "기존에 확장은 되어 있는데 집안 곳곳에 들어간 우드 톤이 넘 맘에 걸렸어요. 전체적으로 올드한 느낌을 싹 바꿨습니다.",
-    company: "에이치디자인",
-    image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "n4",
-    meta: "10평대 · 서울특별시 노원구",
-    text: "저희는 이미 한 번 손을 본 집이라 다시 공사를 해야 할지 말지 많이 고민했습니다. 집 근처에 이런 디자인 잘하는 곳이 있어 다행이에요.",
-    company: "에이치디자인",
-    image:
-      "https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=600&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "n5",
-    meta: "10평대 · 서울특별시 중랑구",
-    text: "인테리어 업체를 선택하면서 정말 많은 곳에서 견적을 받아봤는데, 대부분은 상담이 너무 형식적이었어요. 여긴 달랐습니다.",
-    company: "새롬인테리어",
-    image:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "n6",
-    meta: "30평대 · 경기도 의정부시",
-    text: "처음 상담부터 끝까지 꼼꼼하게 챙겨주셔서 믿음이 갔어요. 마감 디테일이 정말 깔끔합니다. 주변에도 추천하고 싶네요.",
-    company: "신우디자인",
-    image:
-      "https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&q=80&auto=format&fit=crop",
-  },
-];
 
 function ArrowIcon() {
   return (
@@ -103,41 +26,37 @@ function ArrowIcon() {
 }
 
 interface Service {
-  id: string;
+  id: number | string;
   tag: string;
   title: string;
-  sub: string;
-  image: string;
+  sub?: string;
+  image: string | null;
+  link?: string | null;
 }
 
-// 스크린샷처럼 이미지 위에 캡션이 올라가는 시공 서비스 카드
-function ServiceCard({ service }: { service: Service }) {
+// 이미지 캡션 카드 (시공 사례)
+function ServiceCard({ service, onClick }: { service: Service; onClick: () => void }) {
   const [hover, setHover] = useState(false);
   return (
     <div
       className="ksvc-card"
+      onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
       <div className="ksvc-media">
-        <img
-          src={service.image}
-          alt={service.title}
-          loading="lazy"
-          style={{ transform: hover ? "scale(1.1)" : "scale(1.02)" }}
-        />
+        {service.image
+          ? <img src={service.image} alt={service.title} loading="lazy" style={{ transform: hover ? "scale(1.1)" : "scale(1.02)" }} />
+          : <div className="ksvc-noimg"><ImageOff size={28} /></div>}
         <div className="ksvc-shade" />
         <div className="ksvc-caption">
           <span className="ksvc-cat">{service.tag}</span>
           <h3>{service.title}</h3>
-          <p>{service.sub}</p>
+          {service.sub ? <p>{service.sub}</p> : null}
         </div>
         <span
           className="ksvc-arrow"
-          style={{
-            opacity: hover ? 1 : 0,
-            transform: hover ? "scale(1) rotate(0deg)" : "scale(.6) rotate(-30deg)",
-          }}
+          style={{ opacity: hover ? 1 : 0, transform: hover ? "scale(1) rotate(0deg)" : "scale(.6) rotate(-30deg)" }}
         >
           <ArrowIcon />
         </span>
@@ -147,18 +66,20 @@ function ServiceCard({ service }: { service: Service }) {
 }
 
 interface Nearby {
-  id: string;
+  id: number | string;
   meta: string;
   text: string;
   company: string;
-  image: string;
+  image: string | null;
 }
 
-function NearbyCard({ item }: { item: Nearby }) {
+function NearbyCard({ item, onClick }: { item: Nearby; onClick: () => void }) {
   return (
-    <div className="knear-card">
+    <div className="knear-card" onClick={onClick}>
       <div className="knear-media">
-        <img src={item.image} alt={item.meta} loading="lazy" />
+        {item.image
+          ? <img src={item.image} alt={item.meta} loading="lazy" />
+          : <div className="knear-noimg"><ImageOff size={22} /></div>}
       </div>
       <div className="knear-body">
         <p className="knear-meta">{item.meta}</p>
@@ -169,19 +90,66 @@ function NearbyCard({ item }: { item: Nearby }) {
   );
 }
 
+// 데이터 미등록 시 대체 이미지 + 안내 워딩
+function EmptyBlock({ message }: { message: string }) {
+  return (
+    <div className="kempty">
+      <ImageOff size={34} strokeWidth={1.5} />
+      <p className="kempty__text">{message}</p>
+    </div>
+  );
+}
+
 export const KlipseServiceSection: React.FC = () => {
   const navigate = useNavigate();
   const nearRowRef = useRef<HTMLDivElement>(null);
+  const [reviews, setReviews] = useState<Nearby[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: rv }, { data: pf }] = [await reviewApi.list(), await portfolioApi.list()];
+      const nearby: Nearby[] = (rv || [])
+        .filter((r) => r.is_active)
+        .slice(0, 12)
+        .map((r) => ({
+          id: r.id,
+          meta: r.title || r.construction_categories?.name || '시공 후기',
+          text: r.content,
+          company: r.author_name,
+          image: (r.images && r.images[0]) || null,
+        }));
+      const svc: Service[] = (pf || [])
+        .filter((p) => p.is_active)
+        .slice(0, 6)
+        .map((p) => ({
+          id: p.id,
+          tag: p.construction_categories?.name || '시공 사례',
+          title: p.title,
+          image: p.thumbnail_url,
+          link: p.link_url,
+        }));
+      setReviews(nearby);
+      setServices(svc);
+      setLoaded(true);
+    })();
+  }, []);
 
   const slideNear = (dir: number) => {
     nearRowRef.current?.scrollBy({ left: dir * 340, behavior: 'smooth' });
+  };
+
+  const openService = (s: Service) => {
+    if (s.link) { if (/^https?:\/\//.test(s.link)) window.open(s.link, '_blank', 'noopener'); else navigate(s.link); }
+    else navigate('/portfolio');
   };
 
   return (
     <div className="ksection-wrap">
       <style>{CSS}</style>
 
-      {/* 최신 주변 리뷰 (위치 기반, 가로 스크롤) */}
+      {/* 시공 후기 (실제 등록 후기, 가로 스크롤) */}
       <div className="ksection-head">
         <div>
           <h2 className="ktitle">생생한 Klipse 시공 후기</h2>
@@ -193,30 +161,38 @@ export const KlipseServiceSection: React.FC = () => {
         </button>
       </div>
 
-      <div className="knear-wrap">
-        <button type="button" className="knear-nav prev" onClick={() => slideNear(-1)} aria-label="이전 리뷰"><ChevLeft /></button>
-        <div className="knear-row" ref={nearRowRef}>
-          {NEARBY.map((n) => (
-            <NearbyCard key={n.id} item={n} />
-          ))}
+      {loaded && reviews.length === 0 ? (
+        <EmptyBlock message="아직 등록된 시공 후기가 없습니다." />
+      ) : (
+        <div className="knear-wrap">
+          <button type="button" className="knear-nav prev" onClick={() => slideNear(-1)} aria-label="이전 리뷰"><ChevLeft /></button>
+          <div className="knear-row" ref={nearRowRef}>
+            {reviews.map((n) => (
+              <NearbyCard key={n.id} item={n} onClick={() => navigate('/reviews')} />
+            ))}
+          </div>
+          <button type="button" className="knear-nav next" onClick={() => slideNear(1)} aria-label="다음 리뷰"><ChevRight /></button>
         </div>
-        <button type="button" className="knear-nav next" onClick={() => slideNear(1)} aria-label="다음 리뷰"><ChevRight /></button>
-      </div>
+      )}
 
-      {/* 오늘의집이 직접하는 시공 서비스 (이미지 캡션 카드) */}
+      {/* 시공 서비스 (실제 등록 포트폴리오 캡션 카드) */}
       <div className="ksection-head ksection-head--gap">
-        <h2 className="ktitle">오늘의집이 직접하는 시공 서비스</h2>
+        <h2 className="ktitle">Klipse가 직접하는 시공 서비스</h2>
         <button type="button" className="kshortcut-btn" onClick={() => navigate("/portfolio")}>
           <span className="kbtn-full">전체 시공 서비스 보기</span><span className="kbtn-short">더보기</span>
           <ArrowIcon />
         </button>
       </div>
 
-      <div className="ksvc-grid">
-        {SERVICES.map((s) => (
-          <ServiceCard key={s.id} service={s} />
-        ))}
-      </div>
+      {loaded && services.length === 0 ? (
+        <EmptyBlock message="아직 등록된 시공 사례가 없습니다." />
+      ) : (
+        <div className="ksvc-grid">
+          {services.map((s) => (
+            <ServiceCard key={s.id} service={s} onClick={() => openService(s)} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -227,11 +203,20 @@ const CSS = `
 .ksection-wrap{
   --bg:#FFFFFF;--ink:#2A2724;--ink-soft:#6B6760;--line:#E8E4DC;
   --card:#FFFFFF;--accent:#2F6BFF;--clay:#C2784F;--radius:14px;
-  max-width:none;margin:0;padding:32px 0px 0px;
+  max-width:none;margin:0;padding:32px 0px 40px;
   font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
   color:var(--ink);background:var(--bg);
 }
 .ksection-wrap *{box-sizing:border-box;}
+
+/* 데이터 미등록 시 대체 블록 */
+.kempty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  text-align:center;padding:48px 16px;border:1px dashed var(--line);border-radius:var(--radius);
+  background:linear-gradient(135deg,#fafaf8 0%,#f1efe9 100%);color:#a8a39a;}
+.kempty__text{margin:0;font-size:14px;font-weight:600;color:#8a857c;}
+/* 이미지 없는 카드 placeholder */
+.ksvc-noimg,.knear-noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#f1efe9,#e6e2d9);color:#bcb7ad;}
 .keyebrow{font-size:13px;font-weight:600;color:var(--clay);letter-spacing:.04em;margin:0 0 10px;}
 .ktitle{font-size:28px;font-weight:700;margin:0;letter-spacing:-0.01em;}
 .ksub{font-size:14px;color:var(--ink-soft);margin:8px 0 0;}
@@ -324,7 +309,7 @@ const CSS = `
 
 /* 모바일 - 사진/카드 더 축소 */
 @media (max-width:560px){
-  .ksection-wrap{padding:24px 0px 0px;}
+  .ksection-wrap{padding:24px 0px 32px;}
   .ktitle{font-size:21px;}
   .ksub{font-size:13px;}
   .knear-card{flex:0 0 150px;}
