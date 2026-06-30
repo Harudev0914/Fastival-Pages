@@ -4,6 +4,7 @@
   "scripts": {
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
     "dev": "echo \"Client running at: http://localhost:5173\" && echo \"Server running at: http://localhost:3000\" && concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\"",
+    "postinstall": "npm --prefix client install --include=dev",
     "build": "npm --prefix client install --include=dev && npm --prefix client run build",
     "start": "npm --prefix client run start",
     "lint": "eslint . --ext .ts,.tsx,.js"
