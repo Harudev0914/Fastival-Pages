@@ -15,12 +15,16 @@ export interface MainVisual {
   id: number;
   section: MvSection;
   type: MvType;
-  image_url: string | null;
+  is_ad: boolean;                  // 시공: AD 배너 여부(우측 고정 배너)
+  image_url: string | null;        // 메인/AD 데스크탑 이미지
+  image_mobile_url: string | null; // AD 모바일(가로) 이미지
   badge: string | null;
   title: string;
   subtitle: string | null;
   cta_text: string | null;
-  link_url: string | null;
+  link_url: string | null;         // 포트폴리오 등 클릭 이동 링크
+  author_name: string | null;      // 클라이언트 표시 등록자명
+  author_avatar: string | null;    // 등록자 아바타
   display_order: number;
   is_active: boolean;
   created_at: string;
@@ -32,12 +36,16 @@ export interface MainVisual {
 export interface MainVisualInput {
   section: MvSection;
   type: MvType;
+  is_ad?: boolean;
   image_url?: string;
+  image_mobile_url?: string;
   badge?: string;
   title: string;
   subtitle?: string;
   cta_text?: string;
   link_url?: string;
+  author_name?: string;
+  author_avatar?: string;
   is_active?: boolean;
 }
 
@@ -69,12 +77,16 @@ export const mainVisualApi = {
     return run<MainVisual>(() => supabase.from(T).insert({
       section: input.section,
       type: input.type,
+      is_ad: !!input.is_ad,
       image_url: input.image_url?.trim() || null,
+      image_mobile_url: input.image_mobile_url?.trim() || null,
       badge: isB ? (input.badge?.trim() || null) : null,
       title: input.title.trim(),
       subtitle: input.subtitle?.trim() || null,
       cta_text: isB ? (input.cta_text?.trim() || null) : null,
       link_url: input.link_url?.trim() || null,
+      author_name: input.author_name?.trim() || null,
+      author_avatar: input.author_avatar?.trim() || null,
       is_active: input.is_active ?? true,
       display_order, created_by: by, updated_by: by,
     }).select().single() as any);
@@ -87,12 +99,16 @@ export const mainVisualApi = {
     return run<MainVisual>(() => supabase.from(T).update({
       section: input.section,
       type: input.type,
+      is_ad: !!input.is_ad,
       image_url: input.image_url?.trim() || null,
+      image_mobile_url: input.image_mobile_url?.trim() || null,
       badge: isB ? (input.badge?.trim() || null) : null,
       title: input.title.trim(),
       subtitle: input.subtitle?.trim() || null,
       cta_text: isB ? (input.cta_text?.trim() || null) : null,
       link_url: input.link_url?.trim() || null,
+      author_name: input.author_name?.trim() || null,
+      author_avatar: input.author_avatar?.trim() || null,
       is_active: input.is_active,
       updated_by: by,
     }).eq('id', id).select().single() as any);

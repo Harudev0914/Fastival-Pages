@@ -1,6 +1,6 @@
 import React from 'react';
 import { KlipseServiceSection } from '../components/KlipseServiceSection';
-import MainVisualCarousel from '../components/MainVisualCarousel';
+import ConstructionHero from '../components/ConstructionHero';
 
 const Home: React.FC = () => {
   return (
@@ -9,9 +9,9 @@ const Home: React.FC = () => {
       {/* Main Content Area */}
       <div className="home-container">
 
-        {/* 시공 메인 비주얼 (DB에 등록된 배너만 노출) */}
+        {/* 시공 메인 비주얼 (좌측 메인 슬라이더 + 우측 고정 AD) */}
         <div className="mb-[50px]">
-          <MainVisualCarousel section="construction" />
+          <ConstructionHero />
         </div>
 
         <KlipseServiceSection />
