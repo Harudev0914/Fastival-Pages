@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, Pause, X } from 'lucide-react';
 import { purchaseApi, PURCHASE_STATUS_LABEL, type PurchaseInquiry, type PurchaseStatus } from '../../../api/rentalApi';
-import { card, inputStyle, labelStyle, btnGhost, useAdminModal, Spinner, fmtDate } from '../../Content/Construction/shared';
+import { card, inputStyle, labelStyle, btnGhost, useAdminModal, Spinner, fmtDate } from '../../../components/admin/shared';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 

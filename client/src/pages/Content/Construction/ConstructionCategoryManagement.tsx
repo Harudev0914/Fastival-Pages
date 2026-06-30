@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { categoryApi, type ConstructionCategory } from '../../../api/constructionApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
-import BoardTable, { type Column } from './BoardTable';
-import BoardToolbar, { type SortOption } from './BoardToolbar';
-import { PageHead, btnPrimary, fmtDate, useAdminModal } from './shared';
+import BoardTable, { type Column } from '../../../components/admin/BoardTable';
+import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
+import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },

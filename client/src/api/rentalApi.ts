@@ -1,6 +1,6 @@
 // 렌탈 관리 API: 브랜드 / 카테고리 / 상품
 import { supabase } from '../supabaseClient';
-import { run, mapError, currentAdminName, type Result } from './constructionApi';
+import { run, mapError, currentAdminName, type Result } from './core';
 
 export interface RentalBrand {
   id: number;

@@ -4,9 +4,9 @@ import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { chatbotApi, type ChatbotQuestion } from '../../../api/constructionApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
-import BoardTable, { type Column } from './BoardTable';
-import BoardToolbar, { type SortOption } from './BoardToolbar';
-import { PageHead, btnPrimary, fmtDate, useAdminModal } from './shared';
+import BoardTable, { type Column } from '../../../components/admin/BoardTable';
+import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
+import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const TYPE_LABEL: Record<string, string> = {
   radio: '라디오', checkbox: '체크박스', select: '드롭다운', text: '텍스트', file: '파일업로드', application: '신청 폼',

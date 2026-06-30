@@ -1,79 +1,10 @@
-// =============================================================
-// 시공(Construction) 관리 API 레이어
-//  - 모든 CRUD를 Supabase에 실제 반영
-//  - 일관된 Result<T> 반환 + 빡빡한 예외 처리(코드별 한글 메시지)
-//  - 입력 검증 포함
-// =============================================================
+// 시공(Construction) 관리 API: 카테고리/후기/포트폴리오/챗봇/문의 CRUD
+// 공용 코어(Result·에러처리·실행기)는 core.ts 에서 재사용
 import { supabase } from '../supabaseClient';
+import { ok, fail, mapError, run, currentAdminName, nextOrder, type Result } from './core';
 
-export interface Result<T> {
-  data: T | null;
-  error: string | null;
-}
-
-const ok = <T>(data: T): Result<T> => ({ data, error: null });
-const fail = <T = never>(error: string): Result<T> => ({ data: null, error });
-
-// ----- 에러 정규화 -----------------------------------------------------
-export function mapError(error: any): string {
-  if (!error) return '알 수 없는 오류가 발생했습니다.';
-  const code: string | undefined = error.code;
-  const msg: string = error.message || '';
-
-  switch (code) {
-    case '42P01': return '시공 데이터 테이블이 없습니다. 마이그레이션 SQL을 먼저 적용해주세요.';
-    case '42703': return '필요한 컬럼이 없습니다. 최신 마이그레이션 SQL을 적용해주세요.';
-    case '42501': return '권한이 없습니다. 관리자 계정으로 로그인했는지 확인해주세요.';
-    case '23505': return '이미 동일한 항목이 존재합니다.';
-    case '23503': return '연결된 다른 데이터가 있어 처리할 수 없습니다.';
-    case '23502': return '필수 입력값이 비어 있습니다.';
-    case '23514': return '허용되지 않는 값이 포함되어 있습니다.';
-    case '22P02': return '잘못된 형식의 값이 있습니다.';
-    case 'PGRST116': return '해당 데이터를 찾을 수 없습니다.';
-    case 'PGRST301':
-    case '401': return '인증이 필요합니다. 다시 로그인해주세요.';
-    default: break;
-  }
-  if (/Failed to fetch|NetworkError|network|fetch/i.test(msg)) return '네트워크 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-  if (/JWT|permission|RLS|row-level|not authorized/i.test(msg)) return '권한 또는 인증 오류가 발생했습니다. 다시 로그인해주세요.';
-  return msg || '요청 처리 중 오류가 발생했습니다.';
-}
-
-// Supabase 쿼리({data,error}) 또는 네트워크 예외를 통합 처리
-export async function run<T>(op: () => Promise<{ data: T | null; error: any }>): Promise<Result<T>> {
-  try {
-    const { data, error } = await op();
-    if (error) {
-      console.error('[constructionApi]', error);
-      return fail(mapError(error));
-    }
-    return ok((data ?? null) as T);
-  } catch (e) {
-    console.error('[constructionApi] unexpected', e);
-    return fail(mapError(e));
-  }
-}
-
-// 현재 관리자 표시명(등록자/수정자 기록용)
-export async function currentAdminName(): Promise<string> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user?.user_metadata?.name || user?.email || '관리자';
-  } catch {
-    return '관리자';
-  }
-}
-
-// 신규 항목 display_order(맨 뒤). 실패 시 0
-async function nextOrder(table: string): Promise<number> {
-  try {
-    const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
-    if (error) return 0;
-    return count ?? 0;
-  } catch {
-    return 0;
-  }
-}
+// 하위 호환: 기존에 constructionApi 에서 helper 를 import 하던 곳 지원
+export { mapError, run, currentAdminName, type Result };
 
 // 순번 일괄 저장 공통 처리
 async function reorder(table: string, ids: (number | string)[]): Promise<Result<true>> {

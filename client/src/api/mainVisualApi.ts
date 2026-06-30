@@ -1,6 +1,6 @@
 // 메인 비주얼(시공/렌탈/DJ 배너) 관리 API
 import { supabase } from '../supabaseClient';
-import { run, mapError, currentAdminName, type Result } from './constructionApi';
+import { run, mapError, currentAdminName, type Result } from './core';
 
 export type MvSection = 'construction' | 'rental' | 'dj';
 export type MvType = 'type_a' | 'type_b'; // type_a: 기본, type_b: 쿠폰 제공(배지+버튼)

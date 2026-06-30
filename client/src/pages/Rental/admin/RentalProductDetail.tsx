@@ -6,7 +6,7 @@ import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import ImageUploader from '../../../components/UI/ImageUploader';
 import RichTextEditor from '../../../components/UI/RichTextEditor';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, fmtDate } from '../../Content/Construction/shared';
+import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, fmtDate } from '../../../components/admin/shared';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const numInput: React.CSSProperties = { ...inputStyle, textAlign: 'right' };

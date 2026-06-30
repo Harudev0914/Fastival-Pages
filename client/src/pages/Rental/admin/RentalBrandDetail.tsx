@@ -4,7 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { brandApi } from '../../../api/rentalApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import ImageUploader from '../../../components/UI/ImageUploader';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../Content/Construction/shared';
+import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
 
 const RentalBrandDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

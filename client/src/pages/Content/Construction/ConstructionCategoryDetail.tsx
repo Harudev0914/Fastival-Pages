@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { categoryApi } from '../../../api/constructionApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from './shared';
+import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
 
 const ConstructionCategoryDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -4,7 +4,7 @@ import { ArrowLeft, Save, X, Plus } from 'lucide-react';
 import { chatbotApi, categoryApi, type QType } from '../../../api/constructionApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from './shared';
+import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
 
 const HAS_OPTIONS: QType[] = ['radio', 'checkbox', 'select'];
 

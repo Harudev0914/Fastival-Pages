@@ -4,9 +4,9 @@ import { Plus, Edit2, Trash2, ImageOff } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, type RentalProduct } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
-import BoardTable, { type Column } from '../../Content/Construction/BoardTable';
-import BoardToolbar, { type SortOption } from '../../Content/Construction/BoardToolbar';
-import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../Content/Construction/shared';
+import BoardTable, { type Column } from '../../../components/admin/BoardTable';
+import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
+import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },

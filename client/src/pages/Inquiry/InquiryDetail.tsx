@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Save, FileText } from 'lucide-react';
 import { inquiryApi, type ConstructionInquiry, type InquiryStatus } from '../../api/constructionApi';
 import { SELECT_STYLE } from '../../components/UI/StyledSelect';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, fmtDate, useAdminModal, Spinner } from '../Content/Construction/shared';
+import { card, inputStyle, labelStyle, btnPrimary, btnGhost, fmtDate, useAdminModal, Spinner } from '../../components/admin/shared';
 import { STATUS_MAP } from './InquiryList';
 
 const InquiryDetail: React.FC<{ id: number; onBack: () => void }> = ({ id, onBack }) => {

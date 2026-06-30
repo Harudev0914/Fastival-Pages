@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { supabase } from '../../../supabaseClient';
-import Modal from '../../../components/Modal';
+import { supabase } from '../../supabaseClient';
+import Modal from '../Modal';
 
 // ===== 공통 스타일 (#008b8b 테마, 기존 어드민 페이지와 일관) =====
 export const card: React.CSSProperties = {

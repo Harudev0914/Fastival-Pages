@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight } from 'lucide-react';
 import { purchaseApi, PURCHASE_STATUS_LABEL, GRADES, type PurchaseInquiry, type PurchaseStatus, type Grade } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
-import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../Content/Construction/shared';
+import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const STATUS_COLOR: Record<PurchaseStatus, string> = { pending: '#2563eb', approved: '#059669', hold: '#d97706', rejected: '#dc2626' };

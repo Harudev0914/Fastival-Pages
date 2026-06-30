@@ -5,7 +5,7 @@ import AIKeywordChips from '../../components/ReviewDetail/AIKeywordChips';
 import FilterChipsRow from '../../components/ReviewDetail/FilterChipsRow';
 import ReviewCard from '../../components/ReviewDetail/ReviewCard';
 import { reviewApi } from '../../api/constructionApi';
-import { EmptyState } from '../Content/Construction/shared';
+import { EmptyState } from '../../components/admin/shared';
 import type { Review } from './reviewData';
 import './ReviewDetailPage.css';
 

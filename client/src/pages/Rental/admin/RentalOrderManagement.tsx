@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight } from 'lucide-react';
 import { orderApi, PAYMENT_LABEL, ORDER_LABEL, type RentalOrder, type OrderStatus, type PaymentStatus } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
-import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../Content/Construction/shared';
+import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const ORDER_COLOR: Record<OrderStatus, string> = { reserved: '#2563eb', renting: '#d97706', returned: '#059669', cancelled: '#94a3b8' };

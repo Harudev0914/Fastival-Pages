@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import CompanyCard from '../../components/ReviewDetail/CompanySidebar';
 import { FilterDropdown } from '../../components/ReviewDetail/FilterChipsRow';
 import { categoryApi, portfolioApi, type ConstructionPortfolio } from '../../api/constructionApi';
-import { EmptyState } from '../Content/Construction/shared';
+import { EmptyState } from '../../components/admin/shared';
 import '../ReviewDetail/ReviewDetailPage.css';
 import './PortfolioPage.css';
 

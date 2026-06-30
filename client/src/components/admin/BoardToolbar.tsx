@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
-import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
+import { SELECT_STYLE } from '../UI/StyledSelect';
 import { card, inputStyle } from './shared';
 
 export interface SortOption { value: string; label: string; }
