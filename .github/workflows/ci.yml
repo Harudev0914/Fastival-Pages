@@ -1,17 +1,28 @@
-name: CI/CD Pipeline
+name: CI
+
+# 푸시/PR 마다 ESLint + 타입체크 + 빌드로 품질을 검증합니다.
+# (실서비스 배포(CD)는 Cloudtype 가 main 푸시 시 자동 수행)
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  lint-and-build:
+    name: Lint & Build (client)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
     steps:
       - uses: actions/checkout@v4
 
@@ -19,27 +30,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
 
       - name: Install dependencies
-        run: |
-          npm install
-          cd client && npm install
+        run: npm ci
 
-      - name: Run Lint
-        run: cd client && npm run lint
-        continue-on-error: false
+      - name: ESLint
+        run: npm run lint
 
-      - name: Build Client
-        run: cd client && npm run build
+      - name: Type-check & Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_TOSS_CLIENT_KEY: ${{ secrets.VITE_TOSS_CLIENT_KEY }}
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload build output
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
         with:
-          path: './client/dist'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: client-dist
+          path: client/dist
+          retention-days: 7
