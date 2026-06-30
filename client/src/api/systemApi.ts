@@ -45,6 +45,10 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
 // 모든 권한 키(전체 선택용)
 export const ALL_MENU_KEYS: string[] = ADMIN_MENU_TREE.flatMap((g) => g.items.length ? g.items.map((i) => i.key) : [g.key]);
 
+// 최상위 관리자(권한/목록 노출 제외)
+export const SUPER_ADMIN_EMAIL = 'admin@klipse.com';
+export const SUPER_DEPT_NAME = '최상위 관리자';
+
 // 메뉴별 액션 권한 (조회/추가/수정/삭제)
 export interface ActionPerm { r: boolean; c: boolean; u: boolean; d: boolean; }
 export const ACTIONS: { k: keyof ActionPerm; label: string }[] = [

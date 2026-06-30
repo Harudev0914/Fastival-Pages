@@ -19,9 +19,10 @@ const RentalProductDetail: React.FC = () => {
   const mode = params.get('mode'); // 'exclusive' | 'event' (등록 화면 진입 시 프리셋)
 
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
-  const [allCats, setAllCats] = useState<{ id: number; name: string; brand_id: number | null }[]>([]);
+  const [allCats, setAllCats] = useState<{ id: number; name: string; brand_id: number | null; parent_id: number | null }[]>([]);
   const [brandId, setBrandId] = useState<number | ''>('');
-  const [categoryId, setCategoryId] = useState<number | ''>('');
+  const [parentCatId, setParentCatId] = useState<number | ''>(''); // 1차
+  const [categoryId, setCategoryId] = useState<number | ''>('');    // 2차(없으면 1차로 저장)
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -45,12 +46,17 @@ const RentalProductDetail: React.FC = () => {
       const [{ data: b }, { data: c }] = [await brandApi.listActive(), await rentalCategoryApi.list()];
       const blist = (b || []) as { id: number; name: string }[];
       setBrands(blist);
-      setAllCats(((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id })));
+      const catList = ((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id, parent_id: x.parent_id ?? null }));
+      setAllCats(catList);
       if (!isNew) {
         const { data, error } = await productApi.get(id!);
         if (error) alert('불러오기 오류', error);
         if (data) {
-          setBrandId(data.brand_id ?? ''); setCategoryId(data.category_id ?? '');
+          setBrandId(data.brand_id ?? '');
+          // 저장된 category_id가 2차면 1차/2차로 분해, 1차면 1차로 설정
+          const cat = catList.find((x) => x.id === data.category_id);
+          if (cat?.parent_id) { setParentCatId(cat.parent_id); setCategoryId(cat.id); }
+          else { setParentCatId(data.category_id ?? ''); setCategoryId(''); }
           setName(data.name); setDescription(data.description || '');
           setImages(Array.isArray(data.images) ? data.images : []);
           setDailyPrice(String(data.daily_price ?? 0)); setDeposit(String(data.deposit ?? 0));
@@ -72,13 +78,16 @@ const RentalProductDetail: React.FC = () => {
     })();
   }, [id, isNew, alert, mode]);
 
-  const cats = useMemo(() => allCats.filter((c) => c.brand_id === (brandId === '' ? null : brandId)), [allCats, brandId]);
+  // 1차: 해당 브랜드의 최상위 카테고리 / 2차: 선택한 1차의 하위
+  const firstCats = useMemo(() => allCats.filter((c) => c.brand_id === (brandId === '' ? null : brandId) && !c.parent_id), [allCats, brandId]);
+  const secondCats = useMemo(() => allCats.filter((c) => c.parent_id === (parentCatId === '' ? -1 : parentCatId)), [allCats, parentCatId]);
 
   const save = async () => {
     setSaving(true);
+    const finalCat = categoryId !== '' ? Number(categoryId) : (parentCatId !== '' ? Number(parentCatId) : null);
     const input = {
       brand_id: brandId === '' ? null : Number(brandId),
-      category_id: categoryId === '' ? null : Number(categoryId),
+      category_id: finalCat,
       name, description, images, thumbnail_url: images[0],
       daily_price: Number(dailyPrice), deposit: Number(deposit), delivery_fee: Number(deliveryFee),
       stock: Number(stock), min_days: Number(minDays), max_days: maxDays === '' ? null : Number(maxDays),
@@ -102,16 +111,23 @@ const RentalProductDetail: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', marginBottom: '18px' }}>
           <div>
             <label style={labelStyle}>브랜드 *</label>
-            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={brandId} onChange={(e) => { setBrandId(e.target.value === '' ? '' : Number(e.target.value)); setCategoryId(''); }}>
+            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={brandId} onChange={(e) => { setBrandId(e.target.value === '' ? '' : Number(e.target.value)); setParentCatId(''); setCategoryId(''); }}>
               <option value="">브랜드 선택</option>
               {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
           <div>
-            <label style={labelStyle}>카테고리 *</label>
-            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={categoryId} onChange={(e) => setCategoryId(e.target.value === '' ? '' : Number(e.target.value))} disabled={brandId === ''}>
-              <option value="">{brandId === '' ? '브랜드 먼저 선택' : '카테고리 선택'}</option>
-              {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <label style={labelStyle}>1차 카테고리 *</label>
+            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={parentCatId} onChange={(e) => { setParentCatId(e.target.value === '' ? '' : Number(e.target.value)); setCategoryId(''); }} disabled={brandId === ''}>
+              <option value="">{brandId === '' ? '브랜드 먼저 선택' : '1차 카테고리 선택'}</option>
+              {firstCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>2차 카테고리 {secondCats.length === 0 ? <span style={{ fontWeight: 400, color: '#94a3b8' }}>(하위 없음 — 1차로 등록)</span> : null}</label>
+            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={categoryId} onChange={(e) => setCategoryId(e.target.value === '' ? '' : Number(e.target.value))} disabled={parentCatId === '' || secondCats.length === 0}>
+              <option value="">{secondCats.length === 0 ? '없음' : '2차 카테고리 선택'}</option>
+              {secondCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
         </div>

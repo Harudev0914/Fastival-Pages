@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
-import { adminUserApi, departmentApi, type AdminUser, type Department } from '../../../api/systemApi';
+import { adminUserApi, departmentApi, SUPER_ADMIN_EMAIL, SUPER_DEPT_NAME, type AdminUser, type Department } from '../../../api/systemApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, th, td, EmptyState, Spinner, PageHead, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
@@ -18,7 +18,9 @@ const AdminUserManagement: React.FC = () => {
   const fetchAll = useCallback(async () => {
     const [{ data: a, error }, { data: d }] = [await adminUserApi.list(), await departmentApi.list()];
     if (error) alert('불러오기 오류', error);
-    setItems(a || []); setDepts(d || []);
+    // 최상위 관리자 계정/부서는 목록에서 숨김
+    setItems((a || []).filter((u) => u.email !== SUPER_ADMIN_EMAIL));
+    setDepts((d || []).filter((x) => x.name !== SUPER_DEPT_NAME));
   }, [alert]);
 
   useEffect(() => { (async () => { setLoading(true); await fetchAll(); setLoading(false); })(); }, [fetchAll]);
