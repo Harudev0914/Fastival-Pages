@@ -41,6 +41,7 @@ import RentalInquiryPage from './pages/Rental/RentalInquiryPage';
 import RentalProductListPage from './pages/Rental/RentalProductListPage';
 import PaymentSuccess from './pages/Rental/PaymentSuccess';
 import PaymentFail from './pages/Rental/PaymentFail';
+import SearchPage from './pages/SearchPage';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -118,6 +119,8 @@ function App() {
           <Route path="*" element={<AdminContent />} />
         </Route>
         
+        <Route path="/search" element={<SearchPage />} />
+
         <Route element={<ClientLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/construction-inquiry" element={<ConstructionInquiry />} />

@@ -79,9 +79,14 @@ const Header: React.FC = () => {
           <Link to="/cs" className="user-nav-link">고객센터</Link>
         </div>
 
-        <button className="mobile-only menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X /> : <Menu />}
-        </button>
+        <div className="mobile-actions">
+          <button className="menu-btn" onClick={handleSearchClick} aria-label="검색">
+            <Search size={24} />
+          </button>
+          <button className="menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="메뉴">
+            {isMobileMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
 
       {/* 모바일 전체화면 메뉴 (메뉴별 아코디언) */}
@@ -171,7 +176,9 @@ const Header: React.FC = () => {
         .sub-nav-item:hover { color: #2563eb; }
         .sub-nav-item.active { color: #2563eb !important; font-weight: 700 !important; border-bottom: 2px solid #2563eb !important; }
         
-        .menu-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
+        .menu-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; color: #111; padding: 4px; }
+        .mobile-actions { display: none; align-items: center; gap: 4px; }
+        @media (max-width: 1024px) { .mobile-actions { display: flex; } }
 
         /* 모바일 전체화면 메뉴 */
         .mobile-menu {

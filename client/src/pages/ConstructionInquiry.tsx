@@ -14,6 +14,11 @@ interface Question {
   is_active?: boolean;
 }
 
+// 신청 폼 필드 유효성 (이름 / 휴대폰 / 이메일)
+const isNameValid = (v: string) => /^[가-힣a-zA-Z][가-힣a-zA-Z\s]{1,}$/.test(v.trim());
+const isPhoneValid = (v: string) => /^01[016789]\d{3,4}\d{4}$/.test(v.replace(/[^0-9]/g, ''));
+const isEmailValid = (v: string) => /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(v.trim());
+
 const ConstructionInquiry: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [messages, setMessages] = useState<{ id: number; type: 'bot' | 'user'; content: React.ReactNode; step: number }[]>([]);
@@ -23,34 +28,10 @@ const ConstructionInquiry: React.FC = () => {
   const [fileName, setFileName] = useState('');
   const [privacyAgree, setPrivacyAgree] = useState(false);
   const [marketingAgree, setMarketingAgree] = useState(false);
-  const [formErrors, setFormErrors] = useState<{ name?: string; phone?: string; email?: string }>({});
-
-  // 신청 폼 유효성 검사 (이름 / 휴대폰 / 이메일 형식 검증)
-  const validateApplication = (): boolean => {
-    const errs: { name?: string; phone?: string; email?: string } = {};
-
-    // 이름: 2자 이상, 한글/영문(공백 허용) — 숫자·특수문자 불가
-    const name = userInfo.name.trim();
-    if (!name) errs.name = '이름을 입력해주세요.';
-    else if (!/^[가-힣a-zA-Z][가-힣a-zA-Z\s]{1,}$/.test(name)) errs.name = '이름을 정확히 입력해주세요. (2자 이상, 한글 또는 영문)';
-
-    // 휴대폰: 숫자만 추출 후 010/011 등 유효 형식
-    const phoneDigits = userInfo.phone.replace(/[^0-9]/g, '');
-    if (!phoneDigits) errs.phone = '연락처를 입력해주세요.';
-    else if (!/^01[016789]\d{3,4}\d{4}$/.test(phoneDigits)) errs.phone = '올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)';
-
-    // 이메일: 표준 형식 + TLD 2자 이상
-    const email = userInfo.email.trim();
-    if (!email) errs.email = '이메일을 입력해주세요.';
-    else if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email)) errs.email = '올바른 이메일 형식이 아닙니다. (예: name@example.com)';
-
-    setFormErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
 
   const handleApplySubmit = (step: number) => {
-    if (!validateApplication()) return;
-    if (!privacyAgree) return;
+    // 버튼은 유효할 때만 노출되지만, 안전을 위해 한 번 더 검증
+    if (!isNameValid(userInfo.name) || !isPhoneValid(userInfo.phone) || !isEmailValid(userInfo.email) || !privacyAgree) return;
     handleNext(step, '신청완료');
   };
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -242,25 +223,31 @@ const ConstructionInquiry: React.FC = () => {
                 </div>
               )}
 
-              {msg.type === 'bot' && msg.step !== -1 && msg.step === currentStep && (questions[msg.step].type === 'application' || questions[msg.step].type === 'file') && (
+              {msg.type === 'bot' && msg.step !== -1 && msg.step === currentStep && (questions[msg.step].type === 'application' || questions[msg.step].type === 'file') && (() => {
+                // 실시간 유효성: 값이 있는데 형식이 틀리면 에러 표기
+                const nameErr = userInfo.name.trim() !== '' && !isNameValid(userInfo.name) ? '이름을 정확히 입력해주세요. (2자 이상, 한글 또는 영문)' : '';
+                const phoneErr = userInfo.phone.trim() !== '' && !isPhoneValid(userInfo.phone) ? '올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)' : '';
+                const emailErr = userInfo.email.trim() !== '' && !isEmailValid(userInfo.email) ? '올바른 이메일 형식이 아닙니다. (예: name@example.com)' : '';
+                const canSubmit = isNameValid(userInfo.name) && isPhoneValid(userInfo.phone) && isEmailValid(userInfo.email) && privacyAgree;
+                return (
                 <div className="form-container">
                   <div className="form-field">
                     <label className="form-label">이름</label>
-                    <input className={`form-input ${formErrors.name ? 'has-error' : ''}`} placeholder="이름을 입력해주세요" value={userInfo.name}
-                      onChange={(e) => { setUserInfo({ ...userInfo, name: e.target.value }); if (formErrors.name) setFormErrors({ ...formErrors, name: undefined }); }} />
-                    {formErrors.name && <span className="form-error">{formErrors.name}</span>}
+                    <input className={`form-input ${nameErr ? 'has-error' : ''}`} placeholder="이름을 입력해주세요" value={userInfo.name}
+                      onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
+                    {nameErr && <span className="form-error">{nameErr}</span>}
                   </div>
                   <div className="form-field">
                     <label className="form-label">연락처</label>
-                    <input className={`form-input ${formErrors.phone ? 'has-error' : ''}`} placeholder="010-0000-0000" inputMode="tel" value={userInfo.phone}
-                      onChange={(e) => { setUserInfo({ ...userInfo, phone: e.target.value }); if (formErrors.phone) setFormErrors({ ...formErrors, phone: undefined }); }} />
-                    {formErrors.phone && <span className="form-error">{formErrors.phone}</span>}
+                    <input className={`form-input ${phoneErr ? 'has-error' : ''}`} placeholder="010-0000-0000" inputMode="tel" value={userInfo.phone}
+                      onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
+                    {phoneErr && <span className="form-error">{phoneErr}</span>}
                   </div>
                   <div className="form-field">
                     <label className="form-label">이메일</label>
-                    <input className={`form-input ${formErrors.email ? 'has-error' : ''}`} type="email" placeholder="example@email.com" value={userInfo.email}
-                      onChange={(e) => { setUserInfo({ ...userInfo, email: e.target.value }); if (formErrors.email) setFormErrors({ ...formErrors, email: undefined }); }} />
-                    {formErrors.email && <span className="form-error">{formErrors.email}</span>}
+                    <input className={`form-input ${emailErr ? 'has-error' : ''}`} type="email" placeholder="example@email.com" value={userInfo.email}
+                      onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })} />
+                    {emailErr && <span className="form-error">{emailErr}</span>}
                   </div>
                   <div className="form-field">
                     <label className="form-label">도면 <span className="form-optional">(선택)</span></label>
@@ -286,15 +273,14 @@ const ConstructionInquiry: React.FC = () => {
                       <span><b className="agree-opt">[선택]</b> 마케팅 활용 동의</span>
                     </label>
                   </div>
-                  <button
-                    className="form-submit"
-                    disabled={!privacyAgree}
-                    onClick={() => handleApplySubmit(msg.step)}
-                  >
-                    신청하기
-                  </button>
+                  {canSubmit ? (
+                    <button className="form-submit" onClick={() => handleApplySubmit(msg.step)}>신청하기</button>
+                  ) : (
+                    <p className="form-hint">이름·연락처·이메일을 올바르게 입력하고 <b>[필수]</b> 동의에 체크하면 신청할 수 있어요.</p>
+                  )}
                 </div>
-              )}
+                );
+              })()}
 
               {msg.type === 'bot' && msg.step !== -1 && msg.step === currentStep && questions[msg.step].type !== 'application' && questions[msg.step].type !== 'file' && questions[msg.step].type !== 'text' && (
                 <div className="options-container">
@@ -380,6 +366,8 @@ const ConstructionInquiry: React.FC = () => {
         .form-input:focus { border-color: #2563eb; }
         .form-input.has-error { border-color: #dc2626; }
         .form-error { display: block; margin-top: 5px; font-size: 0.78rem; color: #dc2626; }
+        .form-hint { margin: 4px 0 0; padding: 11px 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; font-size: 0.8rem; color: #64748b; text-align: center; line-height: 1.5; }
+        .form-hint b { color: #dc2626; }
         .file-upload { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border: 1px dashed #cbd5e1; border-radius: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
         .file-upload:hover { border-color: #2563eb; background: #f8fafc; }
         .file-upload__name { font-size: 0.86rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
