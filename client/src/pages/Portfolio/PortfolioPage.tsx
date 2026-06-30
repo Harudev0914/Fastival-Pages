@@ -54,11 +54,8 @@ const PortfolioPage: React.FC = () => {
       </aside>
 
       <div className="review-main">
-        {/* 어드민 카테고리 관리에 등록된 값으로 구성된 탭 (PC 슬라이드 버튼 / 모바일 터치 스크롤) */}
+        {/* 어드민 카테고리 관리에 등록된 값으로 구성된 탭 + 하단 좌/우 슬라이드 버튼 */}
         <div className="pf-tabs-wrap">
-          <button type="button" className="pf-tab-nav prev" onClick={() => slideTabs(-1)} aria-label="이전">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-          </button>
           <div className="pf-tabs" ref={tabsRef}>
             <button type="button" className={`pf-tab ${activeCat === 'all' ? 'active' : ''}`} onClick={() => setActiveCat('all')}>
               <span className="pf-tab__thumb pf-tab__all">ALL</span>
@@ -71,9 +68,14 @@ const PortfolioPage: React.FC = () => {
               </button>
             ))}
           </div>
-          <button type="button" className="pf-tab-nav next" onClick={() => slideTabs(1)} aria-label="다음">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
-          </button>
+          <div className="pf-tab-navs">
+            <button type="button" className="pf-tab-nav" onClick={() => slideTabs(-1)} aria-label="이전">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+            <button type="button" className="pf-tab-nav" onClick={() => slideTabs(1)} aria-label="다음">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
+          </div>
         </div>
 
         <div className="filter-row">

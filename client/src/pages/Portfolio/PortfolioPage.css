@@ -14,22 +14,19 @@
 }
 .pf-tabs::-webkit-scrollbar { display: none; }
 .pf-tab { flex: 0 0 auto; }
+/* 탭 바로 아래 좌/우 슬라이드 버튼 (겹침 없음) */
+.pf-tab-navs { display: flex; gap: 8px; justify-content: flex-start; margin-top: 12px; }
 .pf-tab-nav {
-  position: absolute;
-  top: 37px; /* 썸네일 중앙 정렬 */
-  transform: translateY(-50%);
-  width: 36px; height: 36px;
-  border-radius: 50%;
+  width: 36px; height: 34px;
+  border-radius: 8px;
   background: #fff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
   display: flex; align-items: center; justify-content: center;
-  color: #1e293b; cursor: pointer; z-index: 5;
-  transition: background 0.2s, transform 0.2s;
+  color: #475569; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
-.pf-tab-nav:hover { background: #f8fafc; transform: translateY(-50%) scale(1.06); }
-.pf-tab-nav.prev { left: -10px; }
-.pf-tab-nav.next { right: -10px; }
+.pf-tab-nav:hover { background: #f8fafc; border-color: #cbd5e1; }
+.pf-tab-nav:active { transform: scale(0.94); }
 .pf-tab {
   display: flex;
   flex-direction: column;
@@ -103,7 +100,6 @@
 
 @media (max-width: 900px) {
   .pf-grid { grid-template-columns: repeat(2, 1fr); }
-  .pf-tab-nav { display: none; } /* 모바일/태블릿은 터치 스크롤 */
 }
 @media (max-width: 767px) {
   .pf-grid { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }

@@ -8,8 +8,6 @@ function ChevRight() {
   return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>;
 }
 
-const NEARBY_REGION = "노원구";
-
 const SERVICES = [
   {
     id: "kitchen",
@@ -186,11 +184,11 @@ export const KlipseServiceSection: React.FC = () => {
       {/* 최신 주변 리뷰 (위치 기반, 가로 스크롤) */}
       <div className="ksection-head">
         <div>
-          <h2 className="ktitle">최신 {NEARBY_REGION} 주변 리뷰</h2>
-          <p className="ksub">설정된 주소지 반경 4km 내 리뷰를 보여드려요.</p>
+          <h2 className="ktitle">생생한 Klipse 시공 후기</h2>
+          <p className="ksub">직접 시공을 경험한 고객님들이 남긴 진짜 후기예요.</p>
         </div>
         <button type="button" className="kshortcut-btn" onClick={() => navigate("/reviews")}>
-          <span className="kbtn-full">주변 리뷰 더보기</span><span className="kbtn-short">더보기</span>
+          <span className="kbtn-full">후기 더보기</span><span className="kbtn-short">더보기</span>
           <ArrowIcon />
         </button>
       </div>
