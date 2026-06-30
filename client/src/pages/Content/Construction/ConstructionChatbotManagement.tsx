@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { chatbotApi, type ChatbotQuestion } from '../../../api/constructionApi';
+import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from './BoardTable';
+import BoardToolbar, { type SortOption } from './BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from './shared';
 
 const TYPE_LABEL: Record<string, string> = {
@@ -22,10 +24,20 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => {
   return <span style={{ background: c.bg, color: c.color, fontSize: '0.74rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>{TYPE_LABEL[type] || type}</span>;
 };
 
+const SORTS: SortOption[] = [
+  { value: 'order', label: '순번순' },
+  { value: 'recent', label: '최신 등록순' },
+  { value: 'title', label: '질문순' },
+];
+
 const ConstructionChatbotManagement: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<ChatbotQuestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('order');
+  const [active, setActive] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const { element: modal, alert, confirm } = useAdminModal();
 
   const fetchItems = useCallback(async () => {
@@ -38,11 +50,24 @@ const ConstructionChatbotManagement: React.FC = () => {
     (async () => { setLoading(true); await fetchItems(); setLoading(false); })();
   }, [fetchItems]);
 
+  const view = useMemo(() => {
+    let v = items.filter((it) => {
+      if (active === 'active' && !it.is_active) return false;
+      if (active === 'inactive' && it.is_active) return false;
+      if (typeFilter !== 'all' && it.type !== typeFilter) return false;
+      if (search.trim() && !it.title.toLowerCase().includes(search.trim().toLowerCase())) return false;
+      return true;
+    });
+    if (sort === 'recent') v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    else if (sort === 'title') v = [...v].sort((a, b) => a.title.localeCompare(b.title));
+    else v = [...v].sort((a, b) => a.display_order - b.display_order);
+    return v;
+  }, [items, search, sort, active, typeFilter]);
+
   const persistOrder = async (reordered: ChatbotQuestion[]) => {
-    const prev = items;
-    setItems(reordered);
     const { error } = await chatbotApi.reorder(reordered.map((it) => it.id));
-    if (error) { alert('순서 저장 오류', error); setItems(prev); }
+    if (error) alert('순서 저장 오류', error);
+    fetchItems();
   };
 
   const toggleActive = async (item: ChatbotQuestion) => {
@@ -90,8 +115,18 @@ const ConstructionChatbotManagement: React.FC = () => {
         desc="시공 문의 챗봇의 룰베이스(질문)를 등록·수정·삭제하고 순번/활성화를 관리합니다."
         right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/chatbot/detail/new')}><Plus size={18} /> 룰 등록</button>}
       />
+      <BoardToolbar
+        search={search} onSearch={setSearch} searchPlaceholder="질문 검색"
+        sort={sort} onSort={setSort} sortOptions={SORTS}
+        active={active} onActive={setActive} count={view.length}
+      >
+        <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+          <option value="all">전체 유형</option>
+          {Object.entries(TYPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </select>
+      </BoardToolbar>
       <BoardTable
-        items={items}
+        items={view}
         getId={(it) => it.id}
         columns={columns}
         onReorder={persistOrder}

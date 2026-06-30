@@ -1,11 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, ImageOff, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, ImageOff } from 'lucide-react';
 import { mainVisualApi, SECTION_LABEL, type MainVisual, type MvSection } from '../../api/mainVisualApi';
 import { SELECT_STYLE } from '../../components/UI/StyledSelect';
 import ToggleButton from '../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../Content/Construction/BoardTable';
-import { card, inputStyle, PageHead, btnPrimary, fmtDate, useAdminModal } from '../Content/Construction/shared';
+import BoardToolbar, { type SortOption } from '../Content/Construction/BoardToolbar';
+import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../Content/Construction/shared';
+
+const SORTS: SortOption[] = [
+  { value: 'order', label: '순번순' },
+  { value: 'recent', label: '최신 등록순' },
+  { value: 'title', label: '제목순' },
+];
 
 const SECTION_COLOR: Record<string, { bg: string; color: string }> = {
   construction: { bg: '#eff6ff', color: '#2563eb' },
@@ -18,7 +25,9 @@ const MainVisualManagement: React.FC = () => {
   const [items, setItems] = useState<MainVisual[]>([]);
   const [loading, setLoading] = useState(true);
   const [sectionFilter, setSectionFilter] = useState<MvSection | 'all'>('all');
-  const [keyword, setKeyword] = useState('');
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('order');
+  const [active, setActive] = useState('all');
   const { element: modal, alert, confirm } = useAdminModal();
 
   const fetchItems = useCallback(async () => {
@@ -31,22 +40,24 @@ const MainVisualManagement: React.FC = () => {
     (async () => { setLoading(true); await fetchItems(); setLoading(false); })();
   }, [fetchItems]);
 
-  const visible = useMemo(() => items.filter((it) => {
-    if (sectionFilter !== 'all' && it.section !== sectionFilter) return false;
-    if (keyword.trim() && !`${it.title} ${it.subtitle || ''} ${it.badge || ''}`.toLowerCase().includes(keyword.trim().toLowerCase())) return false;
-    return true;
-  }), [items, sectionFilter, keyword]);
+  const view = useMemo(() => {
+    let v = items.filter((it) => {
+      if (sectionFilter !== 'all' && it.section !== sectionFilter) return false;
+      if (active === 'active' && !it.is_active) return false;
+      if (active === 'inactive' && it.is_active) return false;
+      if (search.trim() && !`${it.title} ${it.subtitle || ''} ${it.badge || ''}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
+      return true;
+    });
+    if (sort === 'recent') v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    else if (sort === 'title') v = [...v].sort((a, b) => a.title.localeCompare(b.title));
+    else v = [...v].sort((a, b) => a.display_order - b.display_order);
+    return v;
+  }, [items, sectionFilter, search, sort, active]);
 
   const persistOrder = async (reordered: MainVisual[]) => {
-    // 화면에 보이는 목록 순서대로 display_order 저장
-    const prev = items;
-    const reorderedIds = reordered.map((r) => r.id);
-    setItems((all) => {
-      const map = new Map(reordered.map((r, i) => [r.id, i]));
-      return [...all].sort((a, b) => (map.has(a.id) && map.has(b.id) ? map.get(a.id)! - map.get(b.id)! : 0));
-    });
-    const { error } = await mainVisualApi.reorder(reorderedIds);
-    if (error) { alert('순서 저장 오류', error); setItems(prev); }
+    const { error } = await mainVisualApi.reorder(reordered.map((r) => r.id));
+    if (error) alert('순서 저장 오류', error);
+    fetchItems();
   };
 
   const toggleActive = async (item: MainVisual) => {
@@ -74,12 +85,19 @@ const MainVisualManagement: React.FC = () => {
       ),
     },
     {
-      key: 'section', label: '섹션', width: '90px', render: (it) => {
+      key: 'section', label: '섹션', width: '80px', render: (it) => {
         const c = SECTION_COLOR[it.section];
         return <span style={{ background: c.bg, color: c.color, fontSize: '0.74rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>{SECTION_LABEL[it.section]}</span>;
       },
     },
-    { key: 'title', label: '제목', width: '1.8fr', align: 'left', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.title}</span> },
+    {
+      key: 'type', label: '타입', width: '90px', render: (it) => (
+        <span style={{ background: it.type === 'type_b' ? '#fef2f2' : '#f1f5f9', color: it.type === 'type_b' ? '#dc2626' : '#475569', fontSize: '0.72rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
+          {it.type === 'type_b' ? 'B·쿠폰' : 'A·기본'}
+        </span>
+      ),
+    },
+    { key: 'title', label: '제목', width: '1.6fr', align: 'left', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.title}</span> },
     { key: 'created_at', label: '등록일', width: '140px', render: (it) => fmtDate(it.created_at) },
     { key: 'updated_at', label: '수정일', width: '140px', render: (it) => fmtDate(it.updated_at) },
     { key: 'created_by', label: '등록자', width: '90px', render: (it) => it.created_by || '-' },
@@ -99,27 +117,23 @@ const MainVisualManagement: React.FC = () => {
     <div>
       <PageHead
         title="메인 비주얼 관리"
-        desc="시공·렌탈·DJ 메인 비주얼 배너를 통합 관리합니다. (순번 드래그 / 활성화 / 검색)"
+        desc="시공·렌탈·DJ 메인 비주얼 배너를 통합 관리합니다. (타입/순번/활성화/검색)"
         right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/main-visuals/detail/new')}><Plus size={18} /> 메인 비주얼 등록</button>}
       />
-
-      {/* 검색 / 섹션 필터 */}
-      <div style={{ ...card, marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <BoardToolbar
+        search={search} onSearch={setSearch} searchPlaceholder="제목·문구 검색"
+        sort={sort} onSort={setSort} sortOptions={SORTS}
+        active={active} onActive={setActive} count={view.length}
+      >
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value as MvSection | 'all')}>
           <option value="all">전체 섹션</option>
           <option value="construction">시공</option>
           <option value="rental">렌탈</option>
           <option value="dj">DJ</option>
         </select>
-        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-          <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-          <input style={{ ...inputStyle, paddingLeft: '36px' }} placeholder="제목·문구 검색" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
-        </div>
-        <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{visible.length}건</span>
-      </div>
-
+      </BoardToolbar>
       <BoardTable
-        items={visible}
+        items={view}
         getId={(it) => it.id}
         columns={columns}
         onReorder={persistOrder}

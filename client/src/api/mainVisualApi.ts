@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { run, mapError, currentAdminName, type Result } from './constructionApi';
 
 export type MvSection = 'construction' | 'rental' | 'dj';
+export type MvType = 'type_a' | 'type_b'; // type_a: 기본, type_b: 쿠폰 제공(배지+버튼)
 
 export const SECTION_LABEL: Record<MvSection, string> = {
   construction: '시공',
@@ -13,6 +14,7 @@ export const SECTION_LABEL: Record<MvSection, string> = {
 export interface MainVisual {
   id: number;
   section: MvSection;
+  type: MvType;
   image_url: string | null;
   badge: string | null;
   title: string;
@@ -29,6 +31,7 @@ export interface MainVisual {
 
 export interface MainVisualInput {
   section: MvSection;
+  type: MvType;
   image_url?: string;
   badge?: string;
   title: string;
@@ -62,13 +65,15 @@ export const mainVisualApi = {
     if (!input.title?.trim()) return { data: null, error: '제목을 입력해주세요.' };
     const by = await currentAdminName();
     const display_order = await nextOrder();
+    const isB = input.type === 'type_b';
     return run<MainVisual>(() => supabase.from(T).insert({
       section: input.section,
+      type: input.type,
       image_url: input.image_url?.trim() || null,
-      badge: input.badge?.trim() || null,
+      badge: isB ? (input.badge?.trim() || null) : null,
       title: input.title.trim(),
       subtitle: input.subtitle?.trim() || null,
-      cta_text: input.cta_text?.trim() || null,
+      cta_text: isB ? (input.cta_text?.trim() || null) : null,
       link_url: input.link_url?.trim() || null,
       is_active: input.is_active ?? true,
       display_order, created_by: by, updated_by: by,
@@ -78,13 +83,15 @@ export const mainVisualApi = {
   async update(id: number | string, input: MainVisualInput): Promise<Result<MainVisual>> {
     if (!input.title?.trim()) return { data: null, error: '제목을 입력해주세요.' };
     const by = await currentAdminName();
+    const isB = input.type === 'type_b';
     return run<MainVisual>(() => supabase.from(T).update({
       section: input.section,
+      type: input.type,
       image_url: input.image_url?.trim() || null,
-      badge: input.badge?.trim() || null,
+      badge: isB ? (input.badge?.trim() || null) : null,
       title: input.title.trim(),
       subtitle: input.subtitle?.trim() || null,
-      cta_text: input.cta_text?.trim() || null,
+      cta_text: isB ? (input.cta_text?.trim() || null) : null,
       link_url: input.link_url?.trim() || null,
       is_active: input.is_active,
       updated_by: by,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
-import { mainVisualApi, type MvSection } from '../../api/mainVisualApi';
+import { mainVisualApi, type MvSection, type MvType } from '../../api/mainVisualApi';
 import { SELECT_STYLE } from '../../components/UI/StyledSelect';
 import ToggleButton from '../../components/UI/ToggleButton';
 import ImageUploader from '../../components/UI/ImageUploader';
@@ -13,6 +13,7 @@ const MainVisualDetail: React.FC = () => {
   const isNew = id === 'new';
 
   const [section, setSection] = useState<MvSection>('construction');
+  const [type, setType] = useState<MvType>('type_a');
   const [imageUrl, setImageUrl] = useState('');
   const [badge, setBadge] = useState('');
   const [title, setTitle] = useState('');
@@ -31,6 +32,7 @@ const MainVisualDetail: React.FC = () => {
       if (error) alert('불러오기 오류', error);
       if (data) {
         setSection(data.section);
+        setType(data.type || 'type_a');
         setImageUrl(data.image_url || '');
         setBadge(data.badge || '');
         setTitle(data.title || '');
@@ -45,7 +47,7 @@ const MainVisualDetail: React.FC = () => {
 
   const save = async () => {
     const input = {
-      section, image_url: imageUrl, badge, title, subtitle, cta_text: ctaText, link_url: linkUrl, is_active: isActive,
+      section, type, image_url: imageUrl, badge, title, subtitle, cta_text: ctaText, link_url: linkUrl, is_active: isActive,
     };
     setSaving(true);
     const { error } = isNew ? await mainVisualApi.create(input) : await mainVisualApi.update(id!, input);
@@ -66,7 +68,7 @@ const MainVisualDetail: React.FC = () => {
           {isNew ? '메인 비주얼 등록' : '메인 비주얼 수정'}
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '18px', marginBottom: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', marginBottom: '18px' }}>
           <div>
             <label style={labelStyle}>섹션 *</label>
             <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={section} onChange={(e) => setSection(e.target.value as MvSection)}>
@@ -76,8 +78,11 @@ const MainVisualDetail: React.FC = () => {
             </select>
           </div>
           <div>
-            <label style={labelStyle}>배지 (선택)</label>
-            <input style={inputStyle} value={badge} onChange={(e) => setBadge(e.target.value)} placeholder="예: 빈백 특가 세일" />
+            <label style={labelStyle}>타입 *</label>
+            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={type} onChange={(e) => setType(e.target.value as MvType)}>
+              <option value="type_a">Type A · 기본 (이미지 + 문구)</option>
+              <option value="type_b">Type B · 쿠폰형 (배지 + 버튼)</option>
+            </select>
           </div>
         </div>
 
@@ -96,15 +101,25 @@ const MainVisualDetail: React.FC = () => {
           <input style={inputStyle} value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="하나의 취향으로 완성하는 라이프스타일 컬렉션" />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', marginBottom: '18px' }}>
-          <div>
-            <label style={labelStyle}>버튼 문구 (선택)</label>
-            <input style={inputStyle} value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="예: 브랜드쿠폰 최대 20%" />
+        {type === 'type_b' && (
+          <div style={{ border: '1px dashed #fca5a5', background: '#fef2f2', borderRadius: '10px', padding: '16px', marginBottom: '18px' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#dc2626', marginBottom: '12px' }}>쿠폰형(Type B) 전용 항목</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>
+                <label style={labelStyle}>배지</label>
+                <input style={inputStyle} value={badge} onChange={(e) => setBadge(e.target.value)} placeholder="예: 빈백 특가 세일" />
+              </div>
+              <div>
+                <label style={labelStyle}>쿠폰 버튼 문구</label>
+                <input style={inputStyle} value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="예: 브랜드쿠폰 최대 20%" />
+              </div>
+            </div>
           </div>
-          <div>
-            <label style={labelStyle}>링크 URL (선택)</label>
-            <input style={inputStyle} value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://..." />
-          </div>
+        )}
+
+        <div style={{ marginBottom: '18px' }}>
+          <label style={labelStyle}>링크 URL (선택) <span style={{ fontWeight: 400, color: '#94a3b8' }}>(배너 클릭 시 이동)</span></label>
+          <input style={inputStyle} value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://... 또는 /construction-inquiry" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>

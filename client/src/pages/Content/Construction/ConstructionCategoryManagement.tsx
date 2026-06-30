@@ -1,15 +1,25 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { categoryApi, type ConstructionCategory } from '../../../api/constructionApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from './BoardTable';
+import BoardToolbar, { type SortOption } from './BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from './shared';
+
+const SORTS: SortOption[] = [
+  { value: 'order', label: '순번순' },
+  { value: 'recent', label: '최신 등록순' },
+  { value: 'name', label: '이름순' },
+];
 
 const ConstructionCategoryManagement: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<ConstructionCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('order');
+  const [active, setActive] = useState('all');
   const { element: modal, alert, confirm } = useAdminModal();
 
   const fetchItems = useCallback(async () => {
@@ -22,11 +32,23 @@ const ConstructionCategoryManagement: React.FC = () => {
     (async () => { setLoading(true); await fetchItems(); setLoading(false); })();
   }, [fetchItems]);
 
+  const view = useMemo(() => {
+    let v = items.filter((it) => {
+      if (active === 'active' && !it.is_active) return false;
+      if (active === 'inactive' && it.is_active) return false;
+      if (search.trim() && !`${it.name} ${it.description || ''}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
+      return true;
+    });
+    if (sort === 'recent') v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    else if (sort === 'name') v = [...v].sort((a, b) => a.name.localeCompare(b.name));
+    else v = [...v].sort((a, b) => a.display_order - b.display_order);
+    return v;
+  }, [items, search, sort, active]);
+
   const persistOrder = async (reordered: ConstructionCategory[]) => {
-    const prev = items;
-    setItems(reordered); // 낙관적 업데이트
     const { error } = await categoryApi.reorder(reordered.map((it) => it.id));
-    if (error) { alert('순서 저장 오류', error); setItems(prev); }
+    if (error) alert('순서 저장 오류', error);
+    fetchItems();
   };
 
   const toggleActive = async (item: ConstructionCategory) => {
@@ -68,8 +90,13 @@ const ConstructionCategoryManagement: React.FC = () => {
         desc="시공 분야 카테고리를 등록·수정·삭제하고 순번/활성화를 관리합니다."
         right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/categories/detail/new')}><Plus size={18} /> 카테고리 등록</button>}
       />
+      <BoardToolbar
+        search={search} onSearch={setSearch} searchPlaceholder="카테고리명·설명 검색"
+        sort={sort} onSort={setSort} sortOptions={SORTS}
+        active={active} onActive={setActive} count={view.length}
+      />
       <BoardTable
-        items={items}
+        items={view}
         getId={(it) => it.id}
         columns={columns}
         onReorder={persistOrder}

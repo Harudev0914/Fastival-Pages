@@ -1,5 +1,31 @@
 import React from 'react';
 import { KlipseServiceSection } from '../components/KlipseServiceSection';
+import MainVisualCarousel, { type BannerView } from '../components/MainVisualCarousel';
+
+// DB에 등록된 시공 메인 비주얼이 없을 때 대체 배너
+const CONSTRUCTION_FALLBACK: BannerView[] = [
+  {
+    id: 'c1',
+    image_url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80&auto=format&fit=crop',
+    title: '공간을 바꾸는\nKlipse 시공',
+    subtitle: '검증된 시공팀과 함께하는 프리미엄 인테리어',
+  },
+  {
+    id: 'c2',
+    image_url: 'https://images.unsplash.com/photo-1556912173-3d706393e772?w=900&q=80&auto=format&fit=crop',
+    title: '주방부터 거실까지',
+    subtitle: '취향을 완성하는 맞춤 시공',
+  },
+  {
+    id: 'c3',
+    image_url: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=900&q=80&auto=format&fit=crop',
+    badge: '상담 이벤트',
+    title: '무료 방문 견적',
+    subtitle: '지금 신청하면 시공 상담 무료',
+    cta_text: '시공 문의하기',
+    link_url: '/construction-inquiry',
+  },
+];
 
 const Home: React.FC = () => {
   return (
@@ -8,20 +34,11 @@ const Home: React.FC = () => {
       {/* Main Content Area */}
       <div className="home-container">
 
-        <div style={{ position: 'relative' }} className="mb-[50px]">
-          <div className="desktop-only" style={{ display: 'flex', gap: '20px', height: '400px' }}>
-            <div style={{ flex: '3 1 0%', backgroundColor: 'rgb(226, 232, 240)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(100, 116, 139)' }}>Main Visual Banner</div>
-            <div style={{ flex: '1 1 0%', backgroundColor: 'rgb(241, 245, 249)', borderRadius: '16px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(100, 116, 139)' }}>
-              Ad Banner
-              <div style={{ position: 'absolute', bottom: '15px', right: '15px', backgroundColor: 'rgba(0, 0, 0, 0.5)', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem' }}>1 / 10</div>
-            </div>
-          </div>
-          <div className="mobile-only" style={{ width: '100%', height: '102px', backgroundColor: 'rgb(241, 245, 249)', borderRadius: '16px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(100, 116, 139)', textAlign: 'center' }}>
-            <div>Ad Banner (Mobile)</div>
-            <div style={{ position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'rgba(0, 0, 0, 0.5)', color: 'white', padding: '2px 6px', borderRadius: '8px', fontSize: '0.7rem' }}>1 / 10</div>
-          </div>
+        {/* 시공 메인 비주얼 (DB 연동, 미등록 시 대체 배너) */}
+        <div className="mb-[50px]">
+          <MainVisualCarousel section="construction" fallback={CONSTRUCTION_FALLBACK} />
         </div>
-        
+
         <KlipseServiceSection />
       </div>
 

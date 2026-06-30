@@ -153,7 +153,6 @@ const AdminDashboard: React.FC = () => {
         </div>
         {expandedMenus['컨텐츠 관리'] && (
             <div className="sub-menu">
-                <span onClick={() => handleMenuClick('메인 비주얼 관리', '/admin/dashboard/content/main-visual')}>메인 비주얼 관리</span>
                 <span onClick={() => handleMenuClick('팝업 관리', '/admin/dashboard/content/popups')}>팝업 관리</span>
             </div>
         )}

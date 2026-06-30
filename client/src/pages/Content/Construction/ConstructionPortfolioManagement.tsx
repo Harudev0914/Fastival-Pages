@@ -1,15 +1,28 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, ImageOff } from 'lucide-react';
-import { portfolioApi, type ConstructionPortfolio } from '../../../api/constructionApi';
+import { portfolioApi, categoryApi, type ConstructionPortfolio } from '../../../api/constructionApi';
+import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from './BoardTable';
+import BoardToolbar, { type SortOption } from './BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from './shared';
+
+const SORTS: SortOption[] = [
+  { value: 'order', label: '순번순' },
+  { value: 'recent', label: '최신 등록순' },
+  { value: 'title', label: '제목순' },
+];
 
 const ConstructionPortfolioManagement: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<ConstructionPortfolio[]>([]);
+  const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('order');
+  const [active, setActive] = useState('all');
+  const [catFilter, setCatFilter] = useState<number | 'all'>('all');
   const { element: modal, alert, confirm } = useAdminModal();
 
   const fetchItems = useCallback(async () => {
@@ -19,14 +32,33 @@ const ConstructionPortfolioManagement: React.FC = () => {
   }, [alert]);
 
   useEffect(() => {
-    (async () => { setLoading(true); await fetchItems(); setLoading(false); })();
+    (async () => {
+      setLoading(true);
+      const { data: c } = await categoryApi.listActive();
+      setCats(c || []);
+      await fetchItems();
+      setLoading(false);
+    })();
   }, [fetchItems]);
 
+  const view = useMemo(() => {
+    let v = items.filter((it) => {
+      if (active === 'active' && !it.is_active) return false;
+      if (active === 'inactive' && it.is_active) return false;
+      if (catFilter !== 'all' && it.category_id !== catFilter) return false;
+      if (search.trim() && !`${it.title}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
+      return true;
+    });
+    if (sort === 'recent') v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    else if (sort === 'title') v = [...v].sort((a, b) => a.title.localeCompare(b.title));
+    else v = [...v].sort((a, b) => a.display_order - b.display_order);
+    return v;
+  }, [items, search, sort, active, catFilter]);
+
   const persistOrder = async (reordered: ConstructionPortfolio[]) => {
-    const prev = items;
-    setItems(reordered);
     const { error } = await portfolioApi.reorder(reordered.map((it) => it.id));
-    if (error) { alert('순서 저장 오류', error); setItems(prev); }
+    if (error) alert('순서 저장 오류', error);
+    fetchItems();
   };
 
   const toggleActive = async (item: ConstructionPortfolio) => {
@@ -77,8 +109,18 @@ const ConstructionPortfolioManagement: React.FC = () => {
         desc="시공 내역(이미지·제목·상세·링크)을 등록·수정·삭제하고 순번/활성화를 관리합니다."
         right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/portfolio/detail/new')}><Plus size={18} /> 포트폴리오 등록</button>}
       />
+      <BoardToolbar
+        search={search} onSearch={setSearch} searchPlaceholder="제목 검색"
+        sort={sort} onSort={setSort} sortOptions={SORTS}
+        active={active} onActive={setActive} count={view.length}
+      >
+        <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={catFilter} onChange={(e) => setCatFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+          <option value="all">전체 카테고리</option>
+          {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </BoardToolbar>
       <BoardTable
-        items={items}
+        items={view}
         getId={(it) => it.id}
         columns={columns}
         onReorder={persistOrder}

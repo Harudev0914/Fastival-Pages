@@ -1,15 +1,29 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, Star } from 'lucide-react';
-import { reviewApi, type ConstructionReview } from '../../../api/constructionApi';
+import { reviewApi, categoryApi, type ConstructionReview } from '../../../api/constructionApi';
+import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from './BoardTable';
+import BoardToolbar, { type SortOption } from './BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from './shared';
+
+const SORTS: SortOption[] = [
+  { value: 'order', label: '순번순' },
+  { value: 'recent', label: '최신 등록순' },
+  { value: 'rating', label: '평점 높은순' },
+  { value: 'author', label: '작성자순' },
+];
 
 const ConstructionReviewManagement: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<ConstructionReview[]>([]);
+  const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('order');
+  const [active, setActive] = useState('all');
+  const [catFilter, setCatFilter] = useState<number | 'all'>('all');
   const { element: modal, alert, confirm } = useAdminModal();
 
   const fetchItems = useCallback(async () => {
@@ -19,14 +33,34 @@ const ConstructionReviewManagement: React.FC = () => {
   }, [alert]);
 
   useEffect(() => {
-    (async () => { setLoading(true); await fetchItems(); setLoading(false); })();
+    (async () => {
+      setLoading(true);
+      const { data: c } = await categoryApi.listActive();
+      setCats(c || []);
+      await fetchItems();
+      setLoading(false);
+    })();
   }, [fetchItems]);
 
+  const view = useMemo(() => {
+    let v = items.filter((it) => {
+      if (active === 'active' && !it.is_active) return false;
+      if (active === 'inactive' && it.is_active) return false;
+      if (catFilter !== 'all' && it.category_id !== catFilter) return false;
+      if (search.trim() && !`${it.author_name} ${it.title || ''} ${it.content}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
+      return true;
+    });
+    if (sort === 'recent') v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    else if (sort === 'rating') v = [...v].sort((a, b) => Number(b.rating) - Number(a.rating));
+    else if (sort === 'author') v = [...v].sort((a, b) => a.author_name.localeCompare(b.author_name));
+    else v = [...v].sort((a, b) => a.display_order - b.display_order);
+    return v;
+  }, [items, search, sort, active, catFilter]);
+
   const persistOrder = async (reordered: ConstructionReview[]) => {
-    const prev = items;
-    setItems(reordered);
     const { error } = await reviewApi.reorder(reordered.map((it) => it.id));
-    if (error) { alert('순서 저장 오류', error); setItems(prev); }
+    if (error) alert('순서 저장 오류', error);
+    fetchItems();
   };
 
   const toggleActive = async (item: ConstructionReview) => {
@@ -45,7 +79,7 @@ const ConstructionReviewManagement: React.FC = () => {
 
   const columns: Column<ConstructionReview>[] = [
     {
-      key: 'thumb', label: '사진', width: '64px', render: (it) => (
+      key: 'thumb', label: '사진', width: '60px', render: (it) => (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           {it.images && it.images.length > 0
             ? <div style={{ position: 'relative' }}>
@@ -56,7 +90,7 @@ const ConstructionReviewManagement: React.FC = () => {
         </div>
       ),
     },
-    { key: 'author', label: '작성자', width: '110px', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b' }}>{it.author_name}</span> },
+    { key: 'author', label: '작성자', width: '100px', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b' }}>{it.author_name}</span> },
     { key: 'content', label: '내용', width: '1.6fr', align: 'left', render: (it) => <span style={{ color: '#475569', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.title ? `[${it.title}] ` : ''}{it.content}</span> },
     { key: 'cat', label: '카테고리', width: '120px', render: (it) => it.construction_categories?.name || '미분류' },
     { key: 'rating', label: '평점', width: '80px', render: (it) => <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: '#f59e0b', fontWeight: 700 }}><Star size={14} fill="#f59e0b" color="#f59e0b" />{it.rating}</span> },
@@ -82,8 +116,18 @@ const ConstructionReviewManagement: React.FC = () => {
         desc="사용자가 등록한 시공 후기를 조회·추가·삭제하고 순번/활성화를 관리합니다."
         right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/reviews/detail/new')}><Plus size={18} /> 후기 추가</button>}
       />
+      <BoardToolbar
+        search={search} onSearch={setSearch} searchPlaceholder="작성자·제목·내용 검색"
+        sort={sort} onSort={setSort} sortOptions={SORTS}
+        active={active} onActive={setActive} count={view.length}
+      >
+        <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={catFilter} onChange={(e) => setCatFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+          <option value="all">전체 카테고리</option>
+          {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </BoardToolbar>
       <BoardTable
-        items={items}
+        items={view}
         getId={(it) => it.id}
         columns={columns}
         onReorder={persistOrder}

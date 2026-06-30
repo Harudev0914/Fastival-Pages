@@ -13,8 +13,6 @@ import InquiryList from './pages/Inquiry/InquiryList';
 import InquiryDetail from './pages/Inquiry/InquiryDetail';
 import ConstructionInquiry from './pages/ConstructionInquiry';
 import ConstructionInquirySettings from './pages/ConstructionInquirySettings';
-import MainVisualList from './pages/Content/MainVisual/MainVisualList';
-import MainVisualDetail from './pages/Content/MainVisual/MainVisualDetail';
 import FAQList from './pages/Content/FAQ/FAQList';
 import FAQDetail from './pages/Content/FAQ/FAQDetail';
 import FAQCategoryManagement from './pages/Content/FAQ/FAQCategoryManagement';
@@ -61,13 +59,6 @@ import SEOManagement from './pages/Content/System/SEOManagement';
 
 import DashboardHome from './pages/Content/DashboardHome';
 
-function MainVisualDetailWrapper() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  return <MainVisualDetail id={id === 'new' ? undefined : Number(id)} onBack={() => navigate('/admin/dashboard/content/main-visual')} />;
-}
-
-
 function AdminContent() {
   const navigate = useNavigate();
   return (
@@ -106,9 +97,6 @@ function AdminContent() {
       <Route path="faq" element={<FAQList />} />
       <Route path="faq/detail/:id" element={<FAQDetail />} />
       <Route path="faq-categories" element={<FAQCategoryManagement />} />
-      <Route path="content/main-visual" element={<MainVisualList onEdit={(id) => id ? navigate(`/admin/dashboard/content/main-visual/detail/${id}`) : navigate('/admin/dashboard/content/main-visual/detail/new')} />} />
-      <Route path="content/main-visual/detail/:id" element={<MainVisualDetailWrapper />} />
-      <Route path="content/main-visual/detail/new" element={<MainVisualDetailWrapper />} />
     </Routes>
   );
 }

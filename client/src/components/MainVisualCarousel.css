@@ -1,0 +1,79 @@
+/* ===== 메인 비주얼 캐러셀 (공용: 시공/렌탈/DJ) ===== */
+.rv-hero { position: relative; }
+.rv-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.rv-track::-webkit-scrollbar { display: none; }
+
+.rv-card {
+  position: relative;
+  flex: 0 0 calc((100% - 32px) / 3);
+  aspect-ratio: 3 / 3.4;
+  border-radius: 16px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: #e2e8f0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+.rv-card__img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rv-card:hover .rv-card__img { transform: scale(1.04); }
+.rv-card__shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.45) 100%);
+}
+.rv-card__body { position: absolute; left: 28px; right: 28px; bottom: 30px; color: #fff; }
+.rv-card__badge {
+  display: inline-block; margin-bottom: 10px; padding: 5px 10px; border-radius: 6px;
+  background: #b91c1c; color: #fff; font-size: 0.8rem; font-weight: 700;
+}
+.rv-card__title { font-size: 1.7rem; font-weight: 800; line-height: 1.25; margin: 0; white-space: pre-line; }
+.rv-card__sub { margin: 12px 0 0; font-size: 0.92rem; color: rgba(255,255,255,0.9); }
+.rv-card__cta {
+  margin-top: 16px; width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff; color: #1e293b; border: none; border-radius: 10px;
+  padding: 13px 16px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+}
+
+.rv-controls {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-top: 20px;
+}
+.rv-progress { flex: 1; height: 2px; background: #e2e8f0; position: relative; overflow: hidden; }
+.rv-progress span {
+  position: absolute; left: 0; top: 0; height: 100%; width: 100%;
+  background: #1e293b; transform-origin: left center;
+  transition: transform 0.2s ease;
+}
+.rv-arrows { display: flex; gap: 8px; flex-shrink: 0; }
+.rv-arrows button {
+  width: 40px; height: 40px; border-radius: 8px;
+  border: 1px solid #e2e8f0; background: #fff; color: #475569;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.rv-arrows button:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+@media (max-width: 1024px) {
+  .rv-card { flex-basis: calc((100% - 16px) / 2); }
+  .rv-card__title { font-size: 1.4rem; }
+}
+@media (max-width: 767px) {
+  .rv-card { flex-basis: 86%; aspect-ratio: 3 / 3.6; }
+  .rv-card__body { left: 20px; right: 20px; bottom: 22px; }
+  .rv-card__title { font-size: 1.35rem; }
+  .rv-card__sub { font-size: 0.85rem; }
+  .rv-arrows { display: none; }
+}
