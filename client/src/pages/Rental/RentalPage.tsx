@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainVisualCarousel, { type BannerView } from '../../components/MainVisualCarousel';
+import { productApi, type RentalProduct } from '../../api/rentalApi';
 import './RentalPage.css';
 
 // DB에 등록된 렌탈 메인 비주얼이 없을 때 대체로 보여줄 배너
@@ -57,9 +59,21 @@ const PRODUCTS: Product[] = [
   { id: 8, image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=600&q=80&auto=format&fit=crop', brand: '오늘의집', name: '내추럴 우드 1인 라운지 체어', monthly: 11900, discount: 28 },
 ];
 
-const won = (n: number) => `₩${n.toLocaleString()}`;
+const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 
 const RentalPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<RentalProduct[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await productApi.list();
+      setProducts((data || []).filter((p) => p.is_active));
+      setLoaded(true);
+    })();
+  }, []);
+
   return (
     <div className="rental-page">
       {/* 메인 비주얼 (DB 연동, 미등록 시 대체 배너) */}
@@ -79,22 +93,36 @@ const RentalPage: React.FC = () => {
       <section className="rv-section">
         <div className="rv-section__head">
           <h3>이번 주 베스트 렌탈</h3>
-          <button type="button" className="rv-more">전체보기</button>
+          <button type="button" className="rv-more" onClick={() => navigate('/rental/best')}>전체보기</button>
         </div>
         <div className="rv-grid">
-          {PRODUCTS.map((p) => (
-            <article className="rv-prod" key={p.id}>
-              <div className="rv-prod__media">
-                <img src={p.image} alt={p.name} loading="lazy" />
-              </div>
-              <p className="rv-prod__brand">{p.brand}</p>
-              <p className="rv-prod__name">{p.name}</p>
-              <div className="rv-prod__price">
-                <span className="rv-prod__disc">{p.discount}%</span>
-                <span className="rv-prod__monthly">월 {won(p.monthly)}</span>
-              </div>
-            </article>
-          ))}
+          {/* DB 상품 우선, 없으면 예시 상품 */}
+          {(loaded && products.length > 0)
+            ? products.map((p) => (
+              <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
+                <div className="rv-prod__media">
+                  <img src={p.thumbnail_url || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&q=80&auto=format&fit=crop'} alt={p.name} loading="lazy" />
+                </div>
+                <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>
+                <p className="rv-prod__name">{p.name}</p>
+                <div className="rv-prod__price">
+                  <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
+                </div>
+              </article>
+            ))
+            : PRODUCTS.map((p) => (
+              <article className="rv-prod" key={p.id}>
+                <div className="rv-prod__media">
+                  <img src={p.image} alt={p.name} loading="lazy" />
+                </div>
+                <p className="rv-prod__brand">{p.brand}</p>
+                <p className="rv-prod__name">{p.name}</p>
+                <div className="rv-prod__price">
+                  <span className="rv-prod__disc">{p.discount}%</span>
+                  <span className="rv-prod__monthly">월 {won(p.monthly)}</span>
+                </div>
+              </article>
+            ))}
         </div>
       </section>
     </div>

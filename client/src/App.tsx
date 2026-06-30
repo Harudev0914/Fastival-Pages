@@ -45,6 +45,8 @@ import { InfoPage } from './pages/PlaceholderPages';
 import ReviewDetailPage from './pages/ReviewDetail/ReviewDetailPage';
 import PortfolioPage from './pages/Portfolio/PortfolioPage';
 import RentalPage from './pages/Rental/RentalPage';
+import RentalProductDetailPublic from './pages/Rental/RentalProductDetailPublic';
+import RentalInquiryPage from './pages/Rental/RentalInquiryPage';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -147,6 +149,8 @@ function App() {
           <Route path="/info" element={<InfoPage />} />
           <Route path="/reviews" element={<ReviewDetailPage />} />
           <Route path="/rental" element={<RentalPage />} />
+          <Route path="/rental/product/:id" element={<RentalProductDetailPublic />} />
+          <Route path="/rental/inquiry" element={<RentalInquiryPage />} />
           <Route path="/rental/*" element={<RentalPage />} />
         </Route>
       </Routes>
