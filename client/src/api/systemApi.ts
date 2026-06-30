@@ -76,6 +76,22 @@ export interface AdminUser {
   departments?: { name: string } | null;
 }
 
+// 현재 로그인 관리자의 권한(부서 기준) 조회. 최상위 관리자는 전체 통과
+export interface MyPermissions { isSuper: boolean; perms: Record<string, ActionPerm>; }
+export async function getMyPermissions(): Promise<MyPermissions> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    const email = user?.email || '';
+    if (email === SUPER_ADMIN_EMAIL) return { isSuper: true, perms: {} };
+    const { data } = await supabase.from('admins').select('department_id, departments(name, permissions)').eq('email', email).maybeSingle();
+    const dept = (data as any)?.departments;
+    if (dept?.name === SUPER_DEPT_NAME) return { isSuper: true, perms: {} };
+    return { isSuper: false, perms: (dept?.permissions || {}) as Record<string, ActionPerm> };
+  } catch {
+    return { isSuper: false, perms: {} };
+  }
+}
+
 export const departmentApi = {
   list: () => run<Department[]>(() => supabase.from('departments').select('*').order('name') as any),
   create: (name: string) => run<Department>(() => supabase.from('departments').insert({ name: name.trim() }).select().single() as any),
