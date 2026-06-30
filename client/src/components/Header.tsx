@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -44,6 +44,15 @@ const Header: React.FC = () => {
   const currentParent = getParentPath(location.pathname);
   const activeSubNav = navMap[currentParent]?.sub || [];
 
+  // 모바일 메뉴: 아코디언 펼침 상태(기본: 현재 메뉴), 열림 시 body 스크롤 잠금
+  const [expanded, setExpanded] = useState<string | null>(currentParent);
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
+
+  const go = (path: string) => { setIsMobileMenuOpen(false); navigate(path); };
+
   return (
     <header className="site-header">
       <div className="header-padding header-top">
@@ -74,6 +83,54 @@ const Header: React.FC = () => {
           {isMobileMenuOpen ? <X /> : <Menu />}
         </button>
       </div>
+
+      {/* 모바일 전체화면 메뉴 (메뉴별 아코디언) */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu">
+          <nav className="mm-nav">
+            {Object.keys(navMap).map((path) => {
+              const m = navMap[path];
+              const hasSub = m.sub.length > 0;
+              const isOpen = expanded === path;
+              return (
+                <div className="mm-group" key={path}>
+                  <button
+                    className={`mm-top ${currentParent === path ? 'active' : ''}`}
+                    onClick={() => (hasSub ? setExpanded(isOpen ? null : path) : go(path))}
+                  >
+                    <span>{m.top}</span>
+                    {hasSub ? <ChevronDown size={20} className={`mm-chev ${isOpen ? 'rot' : ''}`} /> : <ChevronRight size={20} color="#cbd5e1" />}
+                  </button>
+                  {hasSub && isOpen && (
+                    <div className="mm-sub">
+                      {m.sub.map((s) => (
+                        <button
+                          key={s.path}
+                          className={`mm-sub-item ${location.pathname === s.path ? 'active' : ''}`}
+                          onClick={() => go(s.path)}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+
+          <div className="mm-foot">
+            <div className="mm-search" onClick={() => go('/search')}>
+              <Search size={18} color="#64748b" /> <span>통합검색</span>
+            </div>
+            <div className="mm-users">
+              <button onClick={() => go('/login')}>로그인</button>
+              <button onClick={() => go('/signup')}>회원가입</button>
+              <button onClick={() => go('/cs')}>고객센터</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeSubNav.length > 0 && (
         <div className="sub-nav-container header-padding">
@@ -114,8 +171,45 @@ const Header: React.FC = () => {
         .sub-nav-item:hover { color: #2563eb; }
         .sub-nav-item.active { color: #2563eb !important; font-weight: 700 !important; border-bottom: 2px solid #2563eb !important; }
         
-        .menu-btn { background: none; border: none; cursor: pointer; }
-        
+        .menu-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
+
+        /* 모바일 전체화면 메뉴 */
+        .mobile-menu {
+          position: fixed; top: 60px; left: 0; right: 0; bottom: 0;
+          background: #ffffff; z-index: 1500; overflow-y: auto;
+          display: flex; flex-direction: column; justify-content: space-between;
+          animation: mmFade 0.2s ease;
+        }
+        @keyframes mmFade { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        .mm-nav { padding: 6px 0; }
+        .mm-group { border-bottom: 1px solid #f1f5f9; }
+        .mm-top {
+          width: 100%; display: flex; align-items: center; justify-content: space-between;
+          background: none; border: none; padding: 18px 20px; font-size: 18px; font-weight: 700;
+          color: #111; cursor: pointer; font-family: "Pretendard", sans-serif;
+        }
+        .mm-top.active { color: #2563eb; }
+        .mm-chev { transition: transform 0.2s ease; color: #64748b; }
+        .mm-chev.rot { transform: rotate(180deg); color: #2563eb; }
+        .mm-sub { background: #f8fafc; padding: 4px 0 10px; }
+        .mm-sub-item {
+          display: block; width: 100%; text-align: left; background: none; border: none;
+          padding: 13px 28px; font-size: 15px; color: #475569; font-weight: 500; cursor: pointer;
+          font-family: "Pretendard", sans-serif;
+        }
+        .mm-sub-item.active { color: #2563eb; font-weight: 700; }
+        .mm-foot { padding: 20px; border-top: 1px solid #e2e8f0; }
+        .mm-search {
+          display: flex; align-items: center; gap: 8px; background: #f1f5f9; border-radius: 50px;
+          padding: 13px 18px; color: #64748b; font-size: 15px; margin-bottom: 16px; cursor: pointer;
+        }
+        .mm-users { display: flex; gap: 8px; }
+        .mm-users button {
+          flex: 1; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 13px 4px;
+          font-size: 14px; font-weight: 600; color: #111; cursor: pointer; font-family: "Pretendard", sans-serif;
+        }
+        .mm-users button:hover { border-color: #2563eb; color: #2563eb; }
+
         @media (max-width: 1024px) {
           .header-padding { padding-left: 4vw; padding-right: 4vw; }
           .desktop-only { display: none !important; }
