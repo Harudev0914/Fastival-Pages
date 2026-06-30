@@ -8,13 +8,6 @@ const IcYoutube = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="no
 const IcX = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" /></svg>;
 const IcTiktok = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.32-1.48z" /></svg>;
 
-const FOOTER_LINKS: { label: string; to: string }[] = [
-  { label: '포트폴리오', to: '/portfolio' },
-  { label: '시공 후기', to: '/reviews' },
-  { label: '시공 문의', to: '/construction-inquiry' },
-  { label: '렌탈', to: '/rental' },
-];
-
 const DEFAULTS = {
   site_name: '클립스', ceo_name: '홍길동', biz_name: '(주)클립스', biz_number: '123-45-67890',
   mail_order_number: '', phone: '1600-0000', fax: '', address: '서울특별시 서초구 서초대로 74길',
@@ -45,9 +38,6 @@ const Footer: React.FC = () => {
       <div className="footer-inner">
         <div className="footer-head">
           <img src="/Klipse_Logo.png" alt="Klipse" className="footer-logo" />
-          <nav className="footer-links">
-            {FOOTER_LINKS.map((l) => <Link key={l.label} to={l.to}>{l.label}</Link>)}
-          </nav>
         </div>
 
         <div className="footer-divider" />
