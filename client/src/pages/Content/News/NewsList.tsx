@@ -30,7 +30,7 @@ const NewsList: React.FC = () => {
       .order('created_at', { ascending: false });
     
     if (error) console.error('Error fetching news:', error);
-    else setNews(data?.map(n => ({...n, category_name: n.news_categories?.name, author: '관리자'})) || []);
+    else setNews(data?.map(n => ({...n, category_name: (n.news_categories as any)?.name, author: '관리자'})) || []);
     setLoading(false);
   }, []);
 

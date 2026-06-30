@@ -1,3 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Pretendard Font */
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2') format('woff2');
+    font-weight: 100;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraLight.woff2') format('woff2');
+    font-weight: 200;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Light.woff2') format('woff2');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraBold.woff2') format('woff2');
+    font-weight: 800;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Black.woff2') format('woff2');
+    font-weight: 900;
+    font-display: swap;
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -11,8 +85,8 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Pretendard', system-ui, sans-serif;
+  --heading: 'Pretendard', system-ui, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
@@ -24,10 +98,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,48 +130,97 @@
 
 body {
   margin: 0;
+  font-family: var(--sans);
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h1, h2, a, span, button, input {
+  font-family: var(--sans) !important;
+  font-weight: 500 !important;
+}
+
+a[href="/"] {
+  font-family: 'Pretendard', sans-serif !important;
 }
 
 h1 {
   font-size: 56px;
   letter-spacing: -1.68px;
   margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
 }
 h2 {
   font-size: 24px;
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
 }
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+/* Container Responsive Styles */
+.container {
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+@media (min-width: 768px) { /* Tablet */
+  .container {
+    padding: 24px;
+  }
 }
+
+@media (min-width: 1024px) { /* Laptop/PC */
+  .container {
+    padding: 32px;
+  }
+}
+
+@media (min-width: 1440px) { /* Large Monitor */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 0;
+  }
+}
+
+/* Home Container Styles */
+@media (max-width: 1024px) {
+  .home-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 50px 4vw !important;
+  }
+}
+
+/* 공통 페이지 좌우 패딩 (헤더/홈/시공후기/포트폴리오 동일 스킴: PC 12vw · 1024px 이하 4vw) */
+.page-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 50px 12vw;
+}
+@media (max-width: 1024px) {
+  .page-shell {
+    padding-left: 4vw;
+    padding-right: 4vw;
+  }
+}
+
+/* Global Responsive Utility Classes */
+@media (max-width: 767px) { /* Mobile */
+  .desktop-only { display: none !important; }
+  .mobile-only { display: flex !important; }
+}
+
+@media (min-width: 768px) { /* Tablet, Laptop, Desktop */
+  .mobile-only { display: none !important; }
+  .desktop-only { display: flex !important; }
+}
+
+@media (min-width: 1024px) {
+  .header-padding {
+    padding-left: 18vw;
+    padding-right: 18vw;
+  }
+}
+

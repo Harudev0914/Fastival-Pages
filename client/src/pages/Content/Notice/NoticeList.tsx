@@ -30,7 +30,7 @@ const NoticeList: React.FC = () => {
       .order('created_at', { ascending: false });
     
     if (error) console.error('Error fetching notices:', error);
-    else setNotices(data?.map(n => ({...n, category_name: n.notice_categories?.name, author: '관리자'})) || []);
+    else setNotices(data?.map(n => ({...n, category_name: (n.notice_categories as any)?.name, author: '관리자'})) || []);
     setLoading(false);
   }, []);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trash2, Edit2, Loader2, Plus, Save } from 'lucide-react';
+import { Trash2, Edit2, Loader2, Plus } from 'lucide-react';
 import { supabase } from '../../../supabaseClient';
 import Modal from '../../../components/Modal';
 import ToggleButton from '../../../components/UI/ToggleButton';

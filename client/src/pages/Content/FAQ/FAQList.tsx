@@ -29,7 +29,7 @@ const FAQList: React.FC = () => {
       .order('created_at', { ascending: false });
     
     if (error) console.error('Error fetching faqs:', error);
-    else setFaqs(data?.map(f => ({...f, category_name: f.faq_categories?.name})) || []);
+    else setFaqs(data?.map(f => ({...f, category_name: (f.faq_categories as any)?.name})) || []);
     setLoading(false);
   }, []);
 

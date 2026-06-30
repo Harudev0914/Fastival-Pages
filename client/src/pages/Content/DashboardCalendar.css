@@ -1,0 +1,28 @@
+/* 캘린더 커스텀 스타일 */
+.rbc-calendar {
+    font-size: 0.9rem;
+}
+
+.rbc-header {
+    background-color: #f8fafc;
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #64748b;
+}
+
+.rbc-month-view, .rbc-time-view {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.rbc-off-range-bg {
+    background-color: #fcfcfc;
+}
+
+.rbc-current-time-indicator {
+    background-color: #008b8b;
+}
+
+.rbc-event {
+    background-color: #008b8b;
+}

@@ -5,7 +5,7 @@ interface ModalProps {
   onClose: () => void;
   onConfirm?: () => void;
   title: string;
-  message: string;
+  message: React.ReactNode;
   type: 'confirm' | 'alert';
 }
 

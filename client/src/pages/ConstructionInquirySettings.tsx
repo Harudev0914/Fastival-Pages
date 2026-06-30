@@ -4,7 +4,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { supabase } from '../supabaseClient';
 import Modal from '../components/Modal';
 
-type QuestionType = 'radio' | 'checkbox' | 'select' | 'text' | 'file';
+type QuestionType = 'radio' | 'checkbox' | 'select' | 'text' | 'file' | 'application';
 
 interface Question {
   id: number;
@@ -135,6 +135,7 @@ const ConstructionInquirySettings: React.FC = () => {
                                                 <option value="select">드롭다운</option>
                                                 <option value="text">텍스트</option>
                                                 <option value="file">파일업로드</option>
+                                                <option value="application">신청 폼 (이름·연락처·이메일·도면)</option>
                                             </select>
                                             <button onClick={() => removeQuestion(q.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '5px' }} title="삭제"><Trash2 size={18} /></button>
                                         </div>
