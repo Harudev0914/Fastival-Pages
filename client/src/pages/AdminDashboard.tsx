@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, FileText, Settings, Package, Megaphone, ChevronLeft, HelpCircle, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 
@@ -100,79 +100,6 @@ const AdminDashboard: React.FC = () => {
             </div>
         )}
 
-        {/* 뉴스 관리 */}
-        <div className={`menu-item`} onClick={() => toggleMenu('뉴스 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> <span>뉴스 관리</span></div>
-            {expandedMenus['뉴스 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['뉴스 관리'] && (
-            <div className="sub-menu">
-                <span onClick={() => handleMenuClick('뉴스 목록', '/admin/dashboard/news')}>뉴스 목록</span>
-                <span onClick={() => handleMenuClick('뉴스 카테고리 관리', '/admin/dashboard/news-categories')}>뉴스 카테고리 관리</span>
-            </div>
-        )}
-
-        {/* FAQ 관리 */}
-        <div className={`menu-item`} onClick={() => toggleMenu('FAQ 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HelpCircle size={18} /> <span>FAQ 관리</span></div>
-            {expandedMenus['FAQ 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['FAQ 관리'] && (
-            <div className="sub-menu">
-                <span onClick={() => handleMenuClick('FAQ 목록', '/admin/dashboard/faq')}>FAQ 목록</span>
-                <span onClick={() => handleMenuClick('FAQ 카테고리 관리', '/admin/dashboard/faq-categories')}>FAQ 카테고리 관리</span>
-            </div>
-        )}
-
-        {/* 공지 사항 관리 */}
-        <div className={`menu-item`} onClick={() => toggleMenu('공지 사항 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Megaphone size={18} /> <span>공지 사항 관리</span></div>
-            {expandedMenus['공지 사항 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['공지 사항 관리'] && (
-            <div className="sub-menu">
-                <span onClick={() => handleMenuClick('공지 사항 목록', '/admin/dashboard/notices')}>공지 사항 목록</span>
-                <span onClick={() => handleMenuClick('공지 사항 카테고리 관리', '/admin/dashboard/notice-categories')}>공지 사항 카테고리 관리</span>
-            </div>
-        )}
-
-        {/* 견적서 관리 */}
-        <div className={`menu-item`} onClick={() => toggleMenu('견적서 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> <span>견적서 관리</span></div>
-            {expandedMenus['견적서 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['견적서 관리'] && (
-            <div className="sub-menu">
-                <span onClick={() => handleMenuClick('시공 견적서', '/admin/dashboard/estimates/construction')}>시공 견적서</span>
-                <span onClick={() => handleMenuClick('렌탈 견적서', '/admin/dashboard/estimates/rental')}>렌탈 견적서</span>
-                <span onClick={() => handleMenuClick('DJ 견적서', '/admin/dashboard/estimates/dj')}>DJ 견적서</span>
-            </div>
-        )}
-
-        {/* 컨텐츠 관리 */}
-        <div className={`menu-item`} onClick={() => toggleMenu('컨텐츠 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Megaphone size={18} /> <span>컨텐츠 관리</span></div>
-            {expandedMenus['컨텐츠 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['컨텐츠 관리'] && (
-            <div className="sub-menu">
-                <span onClick={() => handleMenuClick('팝업 관리', '/admin/dashboard/content/popups')}>팝업 관리</span>
-            </div>
-        )}
-
-        {/* 시스템 설정 */}
-        <div className={`menu-item`} onClick={() => toggleMenu('시스템 설정')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Settings size={18} /> <span>시스템 설정</span></div>
-            {expandedMenus['시스템 설정'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['시스템 설정'] && (
-            <div className="sub-menu">
-                <span onClick={() => handleMenuClick('관리자 관리', '/admin/dashboard/system/admins')}>관리자 관리</span>
-                <span onClick={() => handleMenuClick('파비콘 관리', '/admin/dashboard/system/favicon')}>파비콘 관리</span>
-                <span onClick={() => handleMenuClick('로고 관리', '/admin/dashboard/system/logo')}>로고 관리</span>
-                <span onClick={() => handleMenuClick('SEO 관리', '/admin/dashboard/system/seo')}>SEO 관리</span>
-            </div>
-        )}
       </nav>
 
       <main className="main-content">

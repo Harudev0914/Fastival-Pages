@@ -1,32 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MainVisualCarousel, { type BannerView } from '../../components/MainVisualCarousel';
+import MainVisualCarousel from '../../components/MainVisualCarousel';
 import { productApi, type RentalProduct } from '../../api/rentalApi';
 import './RentalPage.css';
-
-// DB에 등록된 렌탈 메인 비주얼이 없을 때 대체로 보여줄 배너
-const RENTAL_FALLBACK: BannerView[] = [
-  {
-    id: 'f1',
-    image_url: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=900&q=80&auto=format&fit=crop',
-    title: '거실부터\n다이닝까지, 피아바',
-    subtitle: '하나의 취향으로 완성하는 라이프스타일 컬렉션',
-  },
-  {
-    id: 'f2',
-    image_url: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=900&q=80&auto=format&fit=crop',
-    title: '여름침구 최대 혜택\n지금 여기서',
-    subtitle: 'Klipse layer 스페셜 브랜드위크 ~30%',
-  },
-  {
-    id: 'f3',
-    image_url: 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=900&q=80&auto=format&fit=crop',
-    badge: '빈백 특가 세일',
-    title: '요기보 최대 44%',
-    subtitle: '최대 27만원 할인',
-    cta_text: '브랜드쿠폰 최대 20%',
-  },
-];
 
 const CATEGORIES: { icon: string; label: string }[] = [
   { icon: '🧺', label: '생활가전' },
@@ -77,7 +53,7 @@ const RentalPage: React.FC = () => {
   return (
     <div className="rental-page">
       {/* 메인 비주얼 (DB 연동, 미등록 시 대체 배너) */}
-      <MainVisualCarousel section="rental" fallback={RENTAL_FALLBACK} />
+      <MainVisualCarousel section="rental" />
 
       {/* 카테고리 퀵메뉴 */}
       <section className="rv-cats">

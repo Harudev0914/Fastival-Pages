@@ -1,5 +1,18 @@
 /* ===== 메인 비주얼 캐러셀 (공용: 시공/렌탈/DJ) ===== */
 .rv-hero { position: relative; }
+
+/* 미등록 시 빈 상태 */
+.rv-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; text-align: center;
+  width: 100%; aspect-ratio: 16 / 5; min-height: 200px;
+  border: 1px dashed #cbd5e1; border-radius: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+  color: #94a3b8;
+}
+.rv-empty__title { margin: 6px 0 0; font-size: 1rem; font-weight: 700; color: #64748b; }
+.rv-empty__desc { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+
 .rv-track {
   display: flex;
   gap: 16px;

@@ -11,15 +11,6 @@ import InquiryList from './pages/Inquiry/InquiryList';
 import InquiryDetail from './pages/Inquiry/InquiryDetail';
 import ConstructionInquiry from './pages/ConstructionInquiry';
 import ConstructionInquirySettings from './pages/ConstructionInquirySettings';
-import FAQList from './pages/Content/FAQ/FAQList';
-import FAQDetail from './pages/Content/FAQ/FAQDetail';
-import FAQCategoryManagement from './pages/Content/FAQ/FAQCategoryManagement';
-import NewsList from './pages/Content/News/NewsList';
-import NewsDetail from './pages/Content/News/NewsDetail';
-import NewsCategoryManagement from './pages/Content/News/NewsCategoryManagement';
-import NoticeList from './pages/Content/Notice/NoticeList';
-import NoticeDetail from './pages/Content/Notice/NoticeDetail';
-import NoticeCategoryManagement from './pages/Content/Notice/NoticeCategoryManagement';
 import ConstructionCategoryManagement from './pages/Content/Construction/ConstructionCategoryManagement';
 import ConstructionCategoryDetail from './pages/Content/Construction/ConstructionCategoryDetail';
 import ConstructionReviewManagement from './pages/Content/Construction/ConstructionReviewManagement';
@@ -64,10 +55,6 @@ function InquiryDetailWrapper() {
   return <InquiryDetail id={Number(id)} onBack={() => navigate('/admin/dashboard/inquiries')} />;
 }
 
-import AdminManagement from './pages/Content/System/AdminManagement';
-import { FaviconManagement, LogoManagement } from './pages/Content/System/MediaManagement';
-import SEOManagement from './pages/Content/System/SEOManagement';
-
 import DashboardHome from './pages/Content/DashboardHome';
 
 function AdminContent() {
@@ -104,20 +91,6 @@ function AdminContent() {
       <Route path="rental/orders/detail/:id" element={<RentalOrderDetail />} />
       <Route path="rental/purchases" element={<RentalPurchaseManagement />} />
       <Route path="rental/purchases/detail/:id" element={<RentalPurchaseDetail />} />
-      <Route path="system/admins" element={<AdminManagement />} />
-      <Route path="system/favicon" element={<FaviconManagement />} />
-      <Route path="system/logo" element={<LogoManagement />} />
-      <Route path="system/seo" element={<SEOManagement />} />
-
-      <Route path="news" element={<NewsList />} />
-      <Route path="news/detail/:id" element={<NewsDetail />} />
-      <Route path="news-categories" element={<NewsCategoryManagement />} />
-      <Route path="notices" element={<NoticeList />} />
-      <Route path="notices/detail/:id" element={<NoticeDetail />} />
-      <Route path="notice-categories" element={<NoticeCategoryManagement />} />
-      <Route path="faq" element={<FAQList />} />
-      <Route path="faq/detail/:id" element={<FAQDetail />} />
-      <Route path="faq-categories" element={<FAQCategoryManagement />} />
     </Routes>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ImageOff } from 'lucide-react';
 import { mainVisualApi, type MvSection } from '../api/mainVisualApi';
 import './MainVisualCarousel.css';
 
@@ -14,25 +15,27 @@ export interface BannerView {
   link_url?: string | null;
 }
 
-// 이미지가 등록되지 않았을 때 사용할 대체 이미지
+// 배너에 이미지가 비어 있을 때만 쓰는 대체 이미지
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=900&q=80&auto=format&fit=crop';
 
-const MainVisualCarousel: React.FC<{ section: MvSection; fallback?: BannerView[]; autoPlayMs?: number }> = ({ section, fallback = [], autoPlayMs = 4500 }) => {
+// 어드민에 등록된 메인 비주얼만 노출. 미등록 시 빈 상태(이미지+안내) 표시
+const MainVisualCarousel: React.FC<{ section: MvSection; autoPlayMs?: number }> = ({ section, autoPlayMs = 4500 }) => {
   const navigate = useNavigate();
   const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
   const [progress, setProgress] = useState(0);
-  const [banners, setBanners] = useState<BannerView[]>(fallback);
+  const [banners, setBanners] = useState<BannerView[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await mainVisualApi.listBySection(section);
       if (cancelled) return;
-      setBanners(data && data.length > 0 ? data : fallback);
+      setBanners(data || []);
+      setLoaded(true);
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section]);
 
   // 자동 슬라이드: 일정 시간마다 다음 배너로 이동(끝이면 처음으로). 마우스 오버 시 일시정지
@@ -69,7 +72,21 @@ const MainVisualCarousel: React.FC<{ section: MvSection; fallback?: BannerView[]
     else navigate(b.link_url);
   };
 
-  if (banners.length === 0) return null;
+  // 로딩 전에는 아무것도 그리지 않음
+  if (!loaded) return null;
+
+  // 등록된 메인 비주얼이 없을 때: 빈 상태(이미지 + 안내)
+  if (banners.length === 0) {
+    return (
+      <section className="rv-hero">
+        <div className="rv-empty">
+          <ImageOff size={40} strokeWidth={1.5} />
+          <p className="rv-empty__title">등록된 메인 비주얼이 없습니다</p>
+          <p className="rv-empty__desc">관리자 페이지 &gt; 메인 비주얼 관리에서 배너를 등록해 주세요.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="rv-hero">
