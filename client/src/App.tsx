@@ -7,8 +7,6 @@ import AdminError from './pages/AdminError';
 import Home from './pages/Home';
 import ProtectedRoute from './components/ProtectedRoute';
 import MobileRestrictionOverlay from './components/MobileRestrictionOverlay';
-import CategoryManagement from './pages/Content/Rental/CategoryManagement';
-import ProductManagement from './pages/Content/Rental/ProductManagement';
 import InquiryList from './pages/Inquiry/InquiryList';
 import InquiryDetail from './pages/Inquiry/InquiryDetail';
 import ConstructionInquiry from './pages/ConstructionInquiry';
@@ -32,6 +30,16 @@ import ConstructionChatbotManagement from './pages/Content/Construction/Construc
 import ConstructionChatbotDetail from './pages/Content/Construction/ConstructionChatbotDetail';
 import MainVisualManagement from './pages/MainVisual/MainVisualManagement';
 import MainVisualBannerDetail from './pages/MainVisual/MainVisualDetail';
+import RentalBrandManagement from './pages/Rental/admin/RentalBrandManagement';
+import RentalBrandDetail from './pages/Rental/admin/RentalBrandDetail';
+import RentalCategoryManagement from './pages/Rental/admin/RentalCategoryManagement';
+import RentalCategoryDetail from './pages/Rental/admin/RentalCategoryDetail';
+import RentalProductManagement from './pages/Rental/admin/RentalProductManagement';
+import RentalProductDetail from './pages/Rental/admin/RentalProductDetail';
+import RentalOrderManagement from './pages/Rental/admin/RentalOrderManagement';
+import RentalOrderDetail from './pages/Rental/admin/RentalOrderDetail';
+import RentalPurchaseManagement from './pages/Rental/admin/RentalPurchaseManagement';
+import RentalPurchaseDetail from './pages/Rental/admin/RentalPurchaseDetail';
 import ClientLayout from './components/ClientLayout';
 import { InfoPage } from './pages/PlaceholderPages';
 import ReviewDetailPage from './pages/ReviewDetail/ReviewDetailPage';
@@ -81,8 +89,18 @@ function AdminContent() {
       {/* 메인 비주얼 관리 */}
       <Route path="main-visuals" element={<MainVisualManagement />} />
       <Route path="main-visuals/detail/:id" element={<MainVisualBannerDetail />} />
-      <Route path="categories" element={<CategoryManagement />} />
-      <Route path="products" element={<ProductManagement />} />
+
+      {/* 렌탈 관리 */}
+      <Route path="rental/brands" element={<RentalBrandManagement />} />
+      <Route path="rental/brands/detail/:id" element={<RentalBrandDetail />} />
+      <Route path="rental/categories" element={<RentalCategoryManagement />} />
+      <Route path="rental/categories/detail/:id" element={<RentalCategoryDetail />} />
+      <Route path="rental/products" element={<RentalProductManagement />} />
+      <Route path="rental/products/detail/:id" element={<RentalProductDetail />} />
+      <Route path="rental/orders" element={<RentalOrderManagement />} />
+      <Route path="rental/orders/detail/:id" element={<RentalOrderDetail />} />
+      <Route path="rental/purchases" element={<RentalPurchaseManagement />} />
+      <Route path="rental/purchases/detail/:id" element={<RentalPurchaseDetail />} />
       <Route path="system/admins" element={<AdminManagement />} />
       <Route path="system/favicon" element={<FaviconManagement />} />
       <Route path="system/logo" element={<LogoManagement />} />
