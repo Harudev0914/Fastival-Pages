@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard } from 'lucide-react';
 import './AdminLogin.css';
 
 const AdminLogin: React.FC = () => {
@@ -40,7 +39,7 @@ const AdminLogin: React.FC = () => {
     <div className="login-wrapper">
       <div className="login-box">
         <div className="logo-area">
-          <LayoutDashboard size={60} color="#00a8a8" />
+          <img src="/Klipse_Logo.png" alt="Klipse" style={{ height: '40px' }} />
         </div>
         <form onSubmit={handleLogin}>
           <input 

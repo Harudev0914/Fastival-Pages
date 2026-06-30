@@ -48,6 +48,8 @@ export interface RentalProduct {
   options: ProductOption[];
   display_order: number;
   is_active: boolean;
+  is_exclusive: boolean;
+  is_event: boolean;
   created_at: string;
   updated_at: string | null;
   created_by: string | null;
@@ -175,6 +177,8 @@ export interface ProductInput {
   max_days?: number | null;
   options?: ProductOption[];
   is_active?: boolean;
+  is_exclusive?: boolean;
+  is_event?: boolean;
 }
 
 function productPayload(input: ProductInput, by: string) {
@@ -194,6 +198,8 @@ function productPayload(input: ProductInput, by: string) {
     min_days: Number(input.min_days) || 1,
     max_days: input.max_days == null || input.max_days === ('' as any) ? null : Number(input.max_days),
     options: opts,
+    is_exclusive: !!input.is_exclusive,
+    is_event: !!input.is_event,
     updated_by: by,
   };
 }
@@ -264,6 +270,16 @@ export interface RentalOrder {
 
 export const orderApi = {
   list: () => run<RentalOrder[]>(() => supabase.from('rental_orders').select('*').order('created_at', { ascending: false }) as any),
+
+  // 상품별 판매 수량(결제완료 기준) → { [productId]: count }
+  async salesCountByProduct(): Promise<Record<number, number>> {
+    try {
+      const { data } = await supabase.from('rental_orders').select('product_id, quantity').eq('payment_status', 'paid');
+      const m: Record<number, number> = {};
+      (data || []).forEach((r: any) => { if (r.product_id) m[r.product_id] = (m[r.product_id] || 0) + (Number(r.quantity) || 1); });
+      return m;
+    } catch { return {}; }
+  },
   listByProduct: (productId: number) => run<RentalOrder[]>(() => supabase.from('rental_orders').select('*').eq('product_id', productId).order('rental_start', { ascending: false }) as any),
   get: (id: number | string) => run<RentalOrder>(() => supabase.from('rental_orders').select('*').eq('id', id).single() as any),
 

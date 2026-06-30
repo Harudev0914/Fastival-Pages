@@ -17,7 +17,14 @@ const SORTS: SortOption[] = [
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 
-const RentalProductManagement: React.FC = () => {
+type Mode = 'all' | 'exclusive' | 'event';
+const MODE_META: Record<Mode, { title: string; desc: string }> = {
+  all: { title: '상품 관리', desc: '브랜드 → 카테고리 → 상품을 등록하고 일일 단가·재고·옵션·렌탈 현황을 관리합니다.' },
+  exclusive: { title: '단독 상품 관리', desc: 'Klipse 단독 상품으로 노출할 상품을 관리합니다. (상품의 ‘단독 상품’ 토글 ON)' },
+  event: { title: '기획전 관리', desc: '기획전에 노출할 상품을 관리합니다. (상품의 ‘기획전’ 토글 ON)' },
+};
+
+const RentalProductManagement: React.FC<{ mode?: Mode }> = ({ mode = 'all' }) => {
   const navigate = useNavigate();
   const [items, setItems] = useState<RentalProduct[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
@@ -51,6 +58,8 @@ const RentalProductManagement: React.FC = () => {
 
   const view = useMemo(() => {
     let v = items.filter((it) => {
+      if (mode === 'exclusive' && !it.is_exclusive) return false;
+      if (mode === 'event' && !it.is_event) return false;
       if (active === 'active' && !it.is_active) return false;
       if (active === 'inactive' && it.is_active) return false;
       if (brandFilter !== 'all' && it.brand_id !== brandFilter) return false;
@@ -63,7 +72,7 @@ const RentalProductManagement: React.FC = () => {
     else if (sort === 'price') v = [...v].sort((a, b) => Number(b.daily_price) - Number(a.daily_price));
     else v = [...v].sort((a, b) => a.display_order - b.display_order);
     return v;
-  }, [items, search, sort, active, brandFilter, catFilter]);
+  }, [items, search, sort, active, brandFilter, catFilter, mode]);
 
   const persistOrder = async (reordered: RentalProduct[]) => {
     const { error } = await productApi.reorder(reordered.map((it) => it.id));
@@ -94,6 +103,15 @@ const RentalProductManagement: React.FC = () => {
     { key: 'name', label: '상품명', width: '1.6fr', align: 'left', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span> },
     { key: 'price', label: '일일 단가', width: '110px', render: (it) => <span style={{ fontWeight: 700, color: '#008b8b' }}>{won(it.daily_price)}</span> },
     { key: 'stock', label: '재고', width: '70px', render: (it) => <span style={{ color: it.stock > 0 ? '#1e293b' : '#dc2626', fontWeight: 700 }}>{it.stock}</span> },
+    {
+      key: 'flags', label: '구분', width: '110px', render: (it) => (
+        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {it.is_exclusive && <span style={{ background: '#f5f3ff', color: '#7c3aed', fontSize: '0.7rem', fontWeight: 700, padding: '2px 7px', borderRadius: '999px' }}>단독</span>}
+          {it.is_event && <span style={{ background: '#fdf2f8', color: '#db2777', fontSize: '0.7rem', fontWeight: 700, padding: '2px 7px', borderRadius: '999px' }}>기획전</span>}
+          {!it.is_exclusive && !it.is_event && <span style={{ color: '#cbd5e1' }}>-</span>}
+        </div>
+      ),
+    },
     { key: 'created_at', label: '등록일', width: '130px', render: (it) => fmtDate(it.created_at) },
     { key: 'active', label: '활성화', width: '80px', render: (it) => <div style={{ display: 'flex', justifyContent: 'center' }}><ToggleButton isOn={it.is_active} onToggle={() => toggleActive(it)} /></div> },
     {
@@ -109,9 +127,9 @@ const RentalProductManagement: React.FC = () => {
   return (
     <div>
       <PageHead
-        title="상품 관리"
-        desc="브랜드 → 카테고리 → 상품을 등록하고 일일 단가·재고·옵션·렌탈 현황을 관리합니다."
-        right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/rental/products/detail/new')} disabled={brands.length === 0}><Plus size={18} /> 상품 등록</button>}
+        title={MODE_META[mode].title}
+        desc={MODE_META[mode].desc}
+        right={<button style={btnPrimary} onClick={() => navigate(`/admin/dashboard/rental/products/detail/new${mode !== 'all' ? `?mode=${mode}` : ''}`)} disabled={brands.length === 0}><Plus size={18} /> 상품 등록</button>}
       />
       <BoardToolbar search={search} onSearch={setSearch} searchPlaceholder="상품명·설명 검색" sort={sort} onSort={setSort} sortOptions={SORTS} active={active} onActive={setActive} count={view.length}>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={brandFilter} onChange={(e) => { setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value)); setCatFilter('all'); }}>

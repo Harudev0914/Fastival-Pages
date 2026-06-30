@@ -95,6 +95,8 @@ const AdminDashboard: React.FC = () => {
                 <span className={activeMenu === '브랜드 관리' ? 'active' : ''} onClick={() => handleMenuClick('브랜드 관리', '/admin/dashboard/rental/brands')}>브랜드 관리</span>
                 <span className={activeMenu === '카테고리 관리(렌탈)' ? 'active' : ''} onClick={() => handleMenuClick('카테고리 관리(렌탈)', '/admin/dashboard/rental/categories')}>카테고리 관리</span>
                 <span className={activeMenu === '상품 관리' ? 'active' : ''} onClick={() => handleMenuClick('상품 관리', '/admin/dashboard/rental/products')}>상품 관리</span>
+                <span className={activeMenu === '단독 상품' ? 'active' : ''} onClick={() => handleMenuClick('단독 상품', '/admin/dashboard/rental/exclusive')}>단독 상품</span>
+                <span className={activeMenu === '기획전' ? 'active' : ''} onClick={() => handleMenuClick('기획전', '/admin/dashboard/rental/events')}>기획전</span>
                 <span className={activeMenu === '렌탈 주문 관리' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 주문 관리', '/admin/dashboard/rental/orders')}>렌탈 관리(주문)</span>
                 <span className={activeMenu === '렌탈 입점 문의' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 입점 문의', '/admin/dashboard/rental/purchases')}>렌탈 입점 문의</span>
             </div>

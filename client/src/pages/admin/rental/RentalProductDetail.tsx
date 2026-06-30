@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, orderApi, ORDER_LABEL, type ProductOption, type RentalOrder } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
@@ -14,7 +14,9 @@ const numInput: React.CSSProperties = { ...inputStyle, textAlign: 'right' };
 const RentalProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const isNew = id === 'new';
+  const mode = params.get('mode'); // 'exclusive' | 'event' (등록 화면 진입 시 프리셋)
 
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const [allCats, setAllCats] = useState<{ id: number; name: string; brand_id: number | null }[]>([]);
@@ -31,6 +33,8 @@ const RentalProductDetail: React.FC = () => {
   const [maxDays, setMaxDays] = useState('');
   const [options, setOptions] = useState<ProductOption[]>([]);
   const [isActive, setIsActive] = useState(true);
+  const [isExclusive, setIsExclusive] = useState(false);
+  const [isEvent, setIsEvent] = useState(false);
   const [orders, setOrders] = useState<RentalOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,15 +58,19 @@ const RentalProductDetail: React.FC = () => {
           setMinDays(String(data.min_days ?? 1)); setMaxDays(data.max_days == null ? '' : String(data.max_days));
           setOptions(Array.isArray(data.options) ? data.options : []);
           setIsActive(data.is_active);
+          setIsExclusive(!!data.is_exclusive);
+          setIsEvent(!!data.is_event);
         }
         const { data: ord } = await orderApi.listByProduct(Number(id));
         setOrders(ord || []);
-      } else if (blist.length) {
-        setBrandId(blist[0].id);
+      } else {
+        if (blist.length) setBrandId(blist[0].id);
+        if (mode === 'exclusive') setIsExclusive(true);
+        if (mode === 'event') setIsEvent(true);
       }
       setLoading(false);
     })();
-  }, [id, isNew, alert]);
+  }, [id, isNew, alert, mode]);
 
   const cats = useMemo(() => allCats.filter((c) => c.brand_id === (brandId === '' ? null : brandId)), [allCats, brandId]);
 
@@ -74,7 +82,7 @@ const RentalProductDetail: React.FC = () => {
       name, description, images, thumbnail_url: images[0],
       daily_price: Number(dailyPrice), deposit: Number(deposit), delivery_fee: Number(deliveryFee),
       stock: Number(stock), min_days: Number(minDays), max_days: maxDays === '' ? null : Number(maxDays),
-      options, is_active: isActive,
+      options, is_active: isActive, is_exclusive: isExclusive, is_event: isEvent,
     };
     const { error } = isNew ? await productApi.create(input) : await productApi.update(id!, input);
     setSaving(false);
@@ -151,9 +159,19 @@ const RentalProductDetail: React.FC = () => {
           <button onClick={() => setOptions((arr) => [...arr, { name: '', add_price: 0 }])} style={{ ...btnGhost, marginTop: '4px' }}><Plus size={16} /> 옵션 추가</button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
-          <label style={{ ...labelStyle, marginBottom: 0 }}>활성화(판매중)</label>
-          <ToggleButton isOn={isActive} onToggle={() => setIsActive((v) => !v)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '28px', flexWrap: 'wrap', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label style={{ ...labelStyle, marginBottom: 0 }}>활성화(판매중)</label>
+            <ToggleButton isOn={isActive} onToggle={() => setIsActive((v) => !v)} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label style={{ ...labelStyle, marginBottom: 0 }}>단독 상품</label>
+            <ToggleButton isOn={isExclusive} onToggle={() => setIsExclusive((v) => !v)} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label style={{ ...labelStyle, marginBottom: 0 }}>기획전</label>
+            <ToggleButton isOn={isEvent} onToggle={() => setIsEvent((v) => !v)} />
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>

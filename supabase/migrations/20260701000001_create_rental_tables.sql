@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS public.rental_products (
   options       JSONB NOT NULL DEFAULT '[]'::jsonb,    -- [{ name, add_price }]
   display_order INTEGER NOT NULL DEFAULT 0,
   is_active     BOOLEAN NOT NULL DEFAULT true,
+  is_exclusive  BOOLEAN NOT NULL DEFAULT false,        -- 단독 상품
+  is_event      BOOLEAN NOT NULL DEFAULT false,        -- 기획전
   created_at    TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()),
   created_by    TEXT,

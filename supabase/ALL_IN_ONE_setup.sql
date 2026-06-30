@@ -107,6 +107,8 @@ CREATE TABLE IF NOT EXISTS public.rental_products (
   options       JSONB NOT NULL DEFAULT '[]'::jsonb,
   display_order INTEGER NOT NULL DEFAULT 0,
   is_active     BOOLEAN NOT NULL DEFAULT true,
+  is_exclusive  BOOLEAN NOT NULL DEFAULT false,
+  is_event      BOOLEAN NOT NULL DEFAULT false,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()),
   created_by    TEXT,

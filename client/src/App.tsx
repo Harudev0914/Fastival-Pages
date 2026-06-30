@@ -90,6 +90,8 @@ function AdminContent() {
       <Route path="rental/categories/detail/:id" element={<RentalCategoryDetail />} />
       <Route path="rental/products" element={<RentalProductManagement />} />
       <Route path="rental/products/detail/:id" element={<RentalProductDetail />} />
+      <Route path="rental/exclusive" element={<RentalProductManagement mode="exclusive" />} />
+      <Route path="rental/events" element={<RentalProductManagement mode="event" />} />
       <Route path="rental/orders" element={<RentalOrderManagement />} />
       <Route path="rental/orders/detail/:id" element={<RentalOrderDetail />} />
       <Route path="rental/purchases" element={<RentalPurchaseManagement />} />
