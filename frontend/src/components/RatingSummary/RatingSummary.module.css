@@ -1,0 +1,5 @@
+.overallRating { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.stars { display: inline-flex; align-items: center; gap: 2px; }
+.stars svg { width: 18px; height: 18px; }
+.num { font-size: 16px; font-weight: 800; }
+.count { font-size: 13px; color: #6b6b70; }

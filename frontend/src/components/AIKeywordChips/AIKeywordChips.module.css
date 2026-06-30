@@ -1,0 +1,8 @@
+.aiBlock { margin-bottom: 22px; }
+.aiTitle { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 800; margin-bottom: 12px; }
+.aiPill { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #7b5cff; background: #f1edff; padding: 3px 7px; border-radius: 6px; }
+.aiPill svg { width: 11px; height: 11px; }
+.keywordRow { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.keywordRow::-webkit-scrollbar { display: none; }
+.keywordChip { flex-shrink: 0; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; background: #f4f5f6; border-radius: 20px; padding: 9px 16px; white-space: nowrap; }
+.n { color: #0b6efd; font-weight: 700; }

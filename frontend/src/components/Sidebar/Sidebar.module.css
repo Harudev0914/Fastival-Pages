@@ -1,0 +1,13 @@
+.sidebar { position: relative; }
+.sidebarSticky {
+  position: sticky; top: 24px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  padding: 20px;
+}
+.brandRow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.brandName { font-size: 17px; font-weight: 700; }
+.ctaPrimary {
+  width: 100%; background: #0b6efd; color: #fff; font-weight: 700; font-size: 15px;
+  padding: 13px 0; border-radius: 8px; margin-bottom: 8px;
+}

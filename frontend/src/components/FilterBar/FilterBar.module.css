@@ -1,0 +1,24 @@
+.filterRow { display: flex; gap: 8px; margin: 20px 0 24px; flex-wrap: wrap; position: relative; z-index: 5; }
+.filterWrap { position: relative; }
+.filterChip {
+  display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: #1c1c1e;
+  border: 1px solid #ececec; border-radius: 20px; padding: 8px 14px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.filterChip:hover { background: #f4f5f6; }
+.filterChip.active { border-color: #0b6efd; color: #0b6efd; background: #eaf2ff; }
+.caretIcon { width: 11px; height: 11px; color: #9a9a9e; transition: transform .18s ease; }
+.filterWrap.open .caretIcon { transform: rotate(180deg); }
+.filterPanel {
+  position: absolute; top: calc(100% + 8px); left: 0; min-width: 160px;
+  background: #fff; border: 1px solid #ececec; border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.09);
+  padding: 6px; display: flex; flex-direction: column; gap: 1px; z-index: 50;
+}
+.filterOption {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: 13px; color: #1c1c1e; padding: 9px 10px; border-radius: 6px;
+  text-align: left; white-space: nowrap;
+}
+.filterOption:hover { background: #f4f5f6; }
+.filterOption.selected { color: #0b6efd; font-weight: 700; }
