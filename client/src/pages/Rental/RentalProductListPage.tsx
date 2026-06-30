@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { productApi, brandApi, rentalCategoryApi, type RentalProduct } from '../../api/rentalApi';
 import './RentalPage.css';
 
@@ -18,15 +18,17 @@ const sel: React.CSSProperties = { padding: '9px 12px', border: '1px solid #e2e8
 const RentalProductListPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [params] = useSearchParams();
   const key = location.pathname.split('/')[2] || 'all';
   const meta = TITLES[key] || TITLES.all;
+  const initialCat = params.get('category') ? Number(params.get('category')) : 'all';
 
   const [products, setProducts] = useState<RentalProduct[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const [cats, setCats] = useState<{ id: number; name: string; brand_id: number | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [brandFilter, setBrandFilter] = useState<number | 'all'>('all');
-  const [catFilter, setCatFilter] = useState<number | 'all'>('all');
+  const [catFilter, setCatFilter] = useState<number | 'all'>(initialCat);
   const [sort, setSort] = useState('recent');
 
   useEffect(() => {

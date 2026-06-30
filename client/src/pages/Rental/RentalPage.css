@@ -26,6 +26,15 @@
 .rv-cat:hover .rv-cat__icon { background: #e2e8f0; transform: translateY(-2px); }
 .rv-cat__label { font-size: 0.84rem; color: #334155; font-weight: 500; }
 
+/* 빈 상태 / 이미지 없음 */
+.rv-empty-grid {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 56px 16px; border: 1px dashed #cbd5e1; border-radius: 14px;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%); color: #94a3b8;
+}
+.rv-empty-grid p { margin: 0; font-size: 0.9rem; font-weight: 600; color: #64748b; }
+.rv-prod__noimg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; }
+
 /* 섹션 공통 */
 .rv-section { margin-top: 56px; }
 .rv-section__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
