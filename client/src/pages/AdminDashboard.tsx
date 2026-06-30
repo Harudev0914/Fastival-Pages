@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, FileText, Settings, Package, Megaphone, ChevronLeft, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Package, Megaphone, ChevronLeft, HelpCircle, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 
@@ -66,7 +66,10 @@ const AdminDashboard: React.FC = () => {
     <div className="dashboard-container">
       <nav className="sidebar">
         <div className={`menu-item ${activeMenu === '대시보드' ? 'active' : ''}`} onClick={() => handleMenuClick('대시보드', '/admin/dashboard')}><LayoutDashboard size={18} /> <span>대시보드 홈</span></div>
-        
+
+        {/* 메인 비주얼 관리 (1Depth) */}
+        <div className={`menu-item ${activeMenu === '메인 비주얼 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('메인 비주얼 관리', '/admin/dashboard/main-visuals')}><ImageIcon size={18} /> <span>메인 비주얼 관리</span></div>
+
         {/* 시공 관리 */}
         <div className={`menu-item`} onClick={() => toggleMenu('시공 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Settings size={18} /> <span>시공 관리</span></div>

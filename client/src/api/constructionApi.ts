@@ -40,7 +40,7 @@ export function mapError(error: any): string {
 }
 
 // Supabase 쿼리({data,error}) 또는 네트워크 예외를 통합 처리
-async function run<T>(op: () => Promise<{ data: T | null; error: any }>): Promise<Result<T>> {
+export async function run<T>(op: () => Promise<{ data: T | null; error: any }>): Promise<Result<T>> {
   try {
     const { data, error } = await op();
     if (error) {

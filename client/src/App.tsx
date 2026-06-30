@@ -32,6 +32,8 @@ import ConstructionPortfolioManagement from './pages/Content/Construction/Constr
 import ConstructionPortfolioDetail from './pages/Content/Construction/ConstructionPortfolioDetail';
 import ConstructionChatbotManagement from './pages/Content/Construction/ConstructionChatbotManagement';
 import ConstructionChatbotDetail from './pages/Content/Construction/ConstructionChatbotDetail';
+import MainVisualManagement from './pages/MainVisual/MainVisualManagement';
+import MainVisualBannerDetail from './pages/MainVisual/MainVisualDetail';
 import ClientLayout from './components/ClientLayout';
 import { InfoPage } from './pages/PlaceholderPages';
 import ReviewDetailPage from './pages/ReviewDetail/ReviewDetailPage';
@@ -84,6 +86,10 @@ function AdminContent() {
       <Route path="construction/portfolio/detail/:id" element={<ConstructionPortfolioDetail />} />
       <Route path="construction/chatbot" element={<ConstructionChatbotManagement />} />
       <Route path="construction/chatbot/detail/:id" element={<ConstructionChatbotDetail />} />
+
+      {/* 메인 비주얼 관리 */}
+      <Route path="main-visuals" element={<MainVisualManagement />} />
+      <Route path="main-visuals/detail/:id" element={<MainVisualBannerDetail />} />
       <Route path="categories" element={<CategoryManagement />} />
       <Route path="products" element={<ProductManagement />} />
       <Route path="system/admins" element={<AdminManagement />} />
