@@ -16,7 +16,7 @@ export const RecommendationSection: React.FC = () => {
         setLoading(true);
         const data = await companyService.fetchRecommendedCompanies();
         setCompanies(data);
-      } catch (err) {
+      } catch {
         setError(true);
       } finally {
         setLoading(false);

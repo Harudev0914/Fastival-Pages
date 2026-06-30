@@ -1,11 +1,35 @@
 /* ===== 포트폴리오 페이지 (레이아웃은 시공후기 .review-* 재사용) ===== */
 
-/* 미디어 유형 탭 */
+/* 카테고리 탭 (가로 스크롤 + PC 슬라이드 버튼, review-main 영역 내로 클리핑) */
+.pf-tabs-wrap { position: relative; margin-bottom: 22px; }
 .pf-tabs {
   display: flex;
   gap: 26px;
-  margin-bottom: 22px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
 }
+.pf-tabs::-webkit-scrollbar { display: none; }
+.pf-tab { flex: 0 0 auto; }
+.pf-tab-nav {
+  position: absolute;
+  top: 37px; /* 썸네일 중앙 정렬 */
+  transform: translateY(-50%);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
+  display: flex; align-items: center; justify-content: center;
+  color: #1e293b; cursor: pointer; z-index: 5;
+  transition: background 0.2s, transform 0.2s;
+}
+.pf-tab-nav:hover { background: #f8fafc; transform: translateY(-50%) scale(1.06); }
+.pf-tab-nav.prev { left: -10px; }
+.pf-tab-nav.next { right: -10px; }
 .pf-tab {
   display: flex;
   flex-direction: column;
@@ -79,6 +103,7 @@
 
 @media (max-width: 900px) {
   .pf-grid { grid-template-columns: repeat(2, 1fr); }
+  .pf-tab-nav { display: none; } /* 모바일/태블릿은 터치 스크롤 */
 }
 @media (max-width: 767px) {
   .pf-grid { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }

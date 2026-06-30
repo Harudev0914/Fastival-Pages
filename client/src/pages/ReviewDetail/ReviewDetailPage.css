@@ -33,6 +33,8 @@
 .company-card__head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .company-card__logo {
@@ -387,19 +389,45 @@
   /* 데스크탑 사이드바는 숨기고 하단 푸터 카드로 대체 */
   .review-sidebar { display: none; }
 
-  .review-title { font-size: 1.3rem; }
   .review-main { width: 100%; }
+
+  /* 상단 타이틀/요약 폰트 축소 + 필터와 간격 확보 */
+  .review-title { font-size: 1.2rem; }
+  .review-subtitle { font-size: 0.8rem; margin-top: 2px; }
+  .rating-summary { gap: 4px; margin: 10px 0 22px; }
+  .rating-summary .score { font-size: 1.25rem; }
+  .rating-summary .count { font-size: 0.85rem; }
+
+  /* 필터 아래 구분선 — 가로 전체(full-bleed) */
+  .filter-row { position: relative; padding-bottom: 16px; margin-bottom: 18px; }
+  .filter-row::after {
+    content: '';
+    position: absolute;
+    left: calc(50% - 50vw);
+    bottom: 0;
+    width: 100vw;
+    height: 1px;
+    background: #e2e8f0;
+  }
 
   .rc-thumbs { gap: 5px; }
   .rc-hero { aspect-ratio: 4 / 3; }
 
-  /* 업체 정보 카드를 페이지 하단에 푸터처럼 배치 */
+  /* 업체 정보 카드 = 하단 플로팅 푸터(스크롤 따라옴) → 페이지 끝(사이트 푸터)에서 자연스럽게 안착 */
   .review-mobile-footer {
     display: block;
-    margin: 8px -4vw 0;
-    padding: 20px 4vw calc(24px + env(safe-area-inset-bottom));
-    background: #f8fafc;
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    /* 부모 패딩과 무관하게 뷰포트 가로 전체를 꽉 채움(full-bleed) */
+    width: 100vw;
+    margin-top: 16px;
+    margin-left: calc(50% - 50vw);
+    box-sizing: border-box;
+    padding: 16px 4vw calc(16px + env(safe-area-inset-bottom));
+    background: #fff;
     border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.1);
   }
   .review-mobile-footer .company-card {
     border: none;
@@ -407,4 +435,10 @@
     background: transparent;
     padding: 0;
   }
+  /* 플로팅 바 높이 절약: 주소/공지 행은 숨기고 핵심 정보 + CTA 위주로 */
+  .review-mobile-footer .company-card__row { display: none; }
+  .review-mobile-footer .company-card__head { margin-bottom: 4px; }
+  .review-mobile-footer .company-card__status { margin: 8px 0 10px; }
+  .review-mobile-footer .btn-primary { padding: 11px; }
+  .review-mobile-footer .btn-outline { padding: 11px; margin-top: 6px; }
 }

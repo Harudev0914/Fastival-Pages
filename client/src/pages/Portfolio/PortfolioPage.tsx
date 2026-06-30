@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import CompanyCard from '../../components/ReviewDetail/CompanySidebar';
 import { FilterDropdown } from '../../components/ReviewDetail/FilterChipsRow';
 import { categoryApi, portfolioApi, type ConstructionPortfolio } from '../../api/constructionApi';
@@ -30,6 +30,11 @@ const PortfolioPage: React.FC = () => {
   const [items, setItems] = useState<ConstructionPortfolio[]>([]);
   const [activeCat, setActiveCat] = useState<number | 'all'>('all');
   const [loading, setLoading] = useState(true);
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  const slideTabs = (dir: number) => {
+    tabsRef.current?.scrollBy({ left: dir * 280, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     (async () => {
@@ -49,18 +54,26 @@ const PortfolioPage: React.FC = () => {
       </aside>
 
       <div className="review-main">
-        {/* 어드민 카테고리 관리에 등록된 값으로 구성된 탭 */}
-        <div className="pf-tabs">
-          <button type="button" className={`pf-tab ${activeCat === 'all' ? 'active' : ''}`} onClick={() => setActiveCat('all')}>
-            <span className="pf-tab__thumb pf-tab__all">ALL</span>
-            <span className="pf-tab__label">전체</span>
+        {/* 어드민 카테고리 관리에 등록된 값으로 구성된 탭 (PC 슬라이드 버튼 / 모바일 터치 스크롤) */}
+        <div className="pf-tabs-wrap">
+          <button type="button" className="pf-tab-nav prev" onClick={() => slideTabs(-1)} aria-label="이전">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
-          {categories.map((c) => (
-            <button key={c.id} type="button" className={`pf-tab ${activeCat === c.id ? 'active' : ''}`} onClick={() => setActiveCat(c.id)}>
-              <span className="pf-tab__thumb"><img src={catImage(c.name, c.id)} alt={c.name} loading="lazy" /></span>
-              <span className="pf-tab__label">{c.name}</span>
+          <div className="pf-tabs" ref={tabsRef}>
+            <button type="button" className={`pf-tab ${activeCat === 'all' ? 'active' : ''}`} onClick={() => setActiveCat('all')}>
+              <span className="pf-tab__thumb pf-tab__all">ALL</span>
+              <span className="pf-tab__label">전체</span>
             </button>
-          ))}
+            {categories.map((c) => (
+              <button key={c.id} type="button" className={`pf-tab ${activeCat === c.id ? 'active' : ''}`} onClick={() => setActiveCat(c.id)}>
+                <span className="pf-tab__thumb"><img src={catImage(c.name, c.id)} alt={c.name} loading="lazy" /></span>
+                <span className="pf-tab__label">{c.name}</span>
+              </button>
+            ))}
+          </div>
+          <button type="button" className="pf-tab-nav next" onClick={() => slideTabs(1)} aria-label="다음">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+          </button>
         </div>
 
         <div className="filter-row">

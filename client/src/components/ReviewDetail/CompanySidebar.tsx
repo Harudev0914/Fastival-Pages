@@ -36,6 +36,7 @@ const CompanyCard: React.FC = () => {
     <div className="company-card">
       <div className="company-card__head">
         <img className="company-card__logo" src="/Klipse_Logo.png" alt="Klipse" />
+        <span className="benefit-badge">혜택보장</span>
       </div>
 
       <div className="company-card__rating">
@@ -44,8 +45,6 @@ const CompanyCard: React.FC = () => {
           <strong>{rating.toFixed(1)}</strong> · 리뷰 {reviewCount}
         </span>
       </div>
-
-      <span className="benefit-badge">혜택보장</span>
 
       <div className="company-card__row" role="button">
         <MapPinIcon />

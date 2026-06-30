@@ -59,24 +59,28 @@ export const StarRating: React.FC<{ value: number; size?: number; gap?: number }
   size = 22,
   gap = 2,
 }) => {
+  const uid = React.useId(); // 인스턴스별 고유 그라데이션 id (중복/모바일 렌더 버그 방지)
   const stars = [0, 1, 2, 3, 4];
+  const STAR_D = 'M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.3l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z';
+  const EMPTY = '#e2e8f0';
+  const FULL = '#ffc107';
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap }} aria-label={`평점 ${value}점`}>
       {stars.map((i) => {
         const fill = Math.max(0, Math.min(1, value - i)); // 0~1 채움 비율
-        const gradId = `star-grad-${i}-${Math.round(fill * 100)}`;
+        // 빈/꽉 찬 별은 단색(모바일에서 0%/0% 그라데이션이 흰색으로 보이는 문제 방지)
+        if (fill <= 0) return <svg key={i} width={size} height={size} viewBox="0 0 24 24"><path d={STAR_D} fill={EMPTY} /></svg>;
+        if (fill >= 1) return <svg key={i} width={size} height={size} viewBox="0 0 24 24"><path d={STAR_D} fill={FULL} /></svg>;
+        const gradId = `${uid}-star-${i}`;
         return (
           <svg key={i} width={size} height={size} viewBox="0 0 24 24">
             <defs>
               <linearGradient id={gradId}>
-                <stop offset={`${fill * 100}%`} stopColor="#ffc107" />
-                <stop offset={`${fill * 100}%`} stopColor="#e2e8f0" />
+                <stop offset={`${fill * 100}%`} stopColor={FULL} />
+                <stop offset={`${fill * 100}%`} stopColor={EMPTY} />
               </linearGradient>
             </defs>
-            <path
-              d="M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.3l-5.8 3.05 1.1-6.46-4.69-4.58 6.49-.94L12 2.5z"
-              fill={`url(#${gradId})`}
-            />
+            <path d={STAR_D} fill={`url(#${gradId})`} />
           </svg>
         );
       })}
