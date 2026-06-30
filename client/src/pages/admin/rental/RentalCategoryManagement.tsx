@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Plus, Edit2, Trash2, FolderTree, ArrowLeft } from 'lucide-react';
 import { rentalCategoryApi, brandApi, type RentalCategory } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
-import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { PageHead, btnPrimary, btnGhost, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },
@@ -16,6 +16,9 @@ const SORTS: SortOption[] = [
 
 const RentalCategoryManagement: React.FC = () => {
   const navigate = useNavigate();
+  const { parentId } = useParams<{ parentId: string }>();
+  const pid = parentId ? Number(parentId) : null;
+
   const [items, setItems] = useState<RentalCategory[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,8 +44,18 @@ const RentalCategoryManagement: React.FC = () => {
     })();
   }, [fetchItems]);
 
+  const parent = useMemo(() => items.find((c) => c.id === pid) || null, [items, pid]);
+  const childCount = useMemo(() => {
+    const m: Record<number, number> = {};
+    items.forEach((c) => { if (c.parent_id) m[c.parent_id] = (m[c.parent_id] || 0) + 1; });
+    return m;
+  }, [items]);
+
   const view = useMemo(() => {
     let v = items.filter((it) => {
+      // 1Depth 보드: parent_id 없는 것 / 2Depth 보드: 해당 parent의 자식
+      if (pid) { if (it.parent_id !== pid) return false; }
+      else if (it.parent_id) return false;
       if (active === 'active' && !it.is_active) return false;
       if (active === 'inactive' && it.is_active) return false;
       if (brandFilter !== 'all' && it.brand_id !== brandFilter) return false;
@@ -53,7 +66,7 @@ const RentalCategoryManagement: React.FC = () => {
     else if (sort === 'name') v = [...v].sort((a, b) => a.name.localeCompare(b.name));
     else v = [...v].sort((a, b) => a.display_order - b.display_order);
     return v;
-  }, [items, search, sort, active, brandFilter]);
+  }, [items, pid, search, sort, active, brandFilter]);
 
   const persistOrder = async (reordered: RentalCategory[]) => {
     const { error } = await rentalCategoryApi.reorder(reordered.map((it) => it.id));
@@ -64,18 +77,25 @@ const RentalCategoryManagement: React.FC = () => {
     const { error } = await rentalCategoryApi.setActive(item.id, !item.is_active);
     if (error) alert('상태 변경 오류', error); else fetchItems();
   };
-  const removeItem = (item: RentalCategory) => confirm('삭제 확인', `'${item.name}' 카테고리를 삭제하시겠습니까?`, async () => {
+  const removeItem = (item: RentalCategory) => confirm('삭제 확인', `'${item.name}' 카테고리를 삭제하시겠습니까?${!pid ? '\n(하위 카테고리도 함께 삭제됩니다)' : ''}`, async () => {
     const { error } = await rentalCategoryApi.remove(item.id);
     if (error) alert('삭제 오류', error); else fetchItems();
   });
 
+  const addUrl = pid
+    ? `/admin/dashboard/rental/categories/detail/new?parent=${pid}${parent?.brand_id ? `&brand=${parent.brand_id}` : ''}`
+    : '/admin/dashboard/rental/categories/detail/new';
+
   const columns: Column<RentalCategory>[] = [
-    { key: 'brand', label: '브랜드', width: '140px', render: (it) => <span style={{ color: '#008b8b', fontWeight: 700 }}>{it.rental_brands?.name || '-'}</span> },
-    { key: 'name', label: '카테고리명', width: '1.2fr', align: 'left', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b' }}>{it.name}</span> },
-    { key: 'desc', label: '설명', width: '1.5fr', align: 'left', render: (it) => <span style={{ color: '#64748b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.description || '-'}</span> },
+    ...(!pid ? [{ key: 'brand', label: '브랜드', width: '130px', render: (it: RentalCategory) => <span style={{ color: '#008b8b', fontWeight: 700 }}>{it.rental_brands?.name || '-'}</span> }] : []),
+    { key: 'name', label: pid ? '하위 카테고리명' : '카테고리명', width: '1.2fr', align: 'left', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b' }}>{it.name}</span> },
+    { key: 'desc', label: '설명', width: '1.4fr', align: 'left', render: (it) => <span style={{ color: '#64748b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.description || '-'}</span> },
+    ...(!pid ? [{ key: 'sub', label: '하위', width: '110px', render: (it: RentalCategory) => (
+      <button onClick={() => navigate(`/admin/dashboard/rental/categories/sub/${it.id}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#e0f2f1', color: '#008b8b', border: 'none', borderRadius: '999px', padding: '5px 10px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+        <FolderTree size={13} /> {childCount[it.id] || 0}개
+      </button>
+    ) }] : []),
     { key: 'created_at', label: '등록일', width: '140px', render: (it) => fmtDate(it.created_at) },
-    { key: 'updated_at', label: '수정일', width: '140px', render: (it) => fmtDate(it.updated_at) },
-    { key: 'created_by', label: '등록자', width: '90px', render: (it) => it.created_by || '-' },
     { key: 'active', label: '활성화', width: '80px', render: (it) => <div style={{ display: 'flex', justifyContent: 'center' }}><ToggleButton isOn={it.is_active} onToggle={() => toggleActive(it)} /></div> },
     {
       key: 'manage', label: '관리', width: '90px', render: (it) => (
@@ -89,19 +109,24 @@ const RentalCategoryManagement: React.FC = () => {
 
   return (
     <div>
+      {pid && (
+        <button style={{ ...btnGhost, marginBottom: '14px' }} onClick={() => navigate('/admin/dashboard/rental/categories')}><ArrowLeft size={16} /> 1Depth 카테고리로</button>
+      )}
       <PageHead
-        title="카테고리 관리"
-        desc="브랜드별 렌탈 카테고리를 등록·수정·삭제하고 순번/활성화를 관리합니다."
-        right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/rental/categories/detail/new')} disabled={brands.length === 0}><Plus size={18} /> 카테고리 등록</button>}
+        title={pid ? `${parent?.name || ''} · 하위 카테고리` : '카테고리 관리'}
+        desc={pid ? '선택한 1Depth 카테고리의 2Depth 세부 카테고리를 관리합니다.' : '1Depth 카테고리를 등록하고, 각 카테고리의 하위(2Depth)를 설정합니다.'}
+        right={<button style={btnPrimary} onClick={() => navigate(addUrl)} disabled={brands.length === 0}><Plus size={18} /> {pid ? '하위 카테고리 등록' : '카테고리 등록'}</button>}
       />
       <BoardToolbar search={search} onSearch={setSearch} searchPlaceholder="카테고리명·설명 검색" sort={sort} onSort={setSort} sortOptions={SORTS} active={active} onActive={setActive} count={view.length}>
-        <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={brandFilter} onChange={(e) => setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
-          <option value="all">전체 브랜드</option>
-          {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
+        {!pid && (
+          <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={brandFilter} onChange={(e) => setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+            <option value="all">전체 브랜드</option>
+            {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        )}
       </BoardToolbar>
       {brands.length === 0 && <div style={{ color: '#dc2626', fontSize: '0.85rem', marginBottom: '12px' }}>먼저 브랜드를 등록해주세요.</div>}
-      <BoardTable items={view} getId={(it) => it.id} columns={columns} onReorder={persistOrder} loading={loading} emptyMessage="등록된 카테고리가 없습니다." />
+      <BoardTable items={view} getId={(it) => it.id} columns={columns} onReorder={persistOrder} loading={loading} emptyMessage={pid ? '하위 카테고리가 없습니다.' : '등록된 카테고리가 없습니다.'} />
       {modal}
     </div>
   );

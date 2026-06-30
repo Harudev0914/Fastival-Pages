@@ -1,11 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Save, Check } from 'lucide-react';
-import { departmentApi, ADMIN_MENU_TREE, ALL_MENU_KEYS, type Department } from '../../../api/systemApi';
+import { Save } from 'lucide-react';
+import { departmentApi, ADMIN_MENU_TREE, ACTIONS, type Department, type ActionPerm } from '../../../api/systemApi';
 import { card, btnPrimary, btnGhost, EmptyState, Spinner, PageHead, useAdminModal } from '../../../components/admin/shared';
+
+// 트리 → 리프(2Depth) 목록 (그룹 라벨 포함)
+const GROUPS = ADMIN_MENU_TREE.map((g) => ({
+  label: g.label,
+  leaves: g.items.length ? g.items : [{ key: g.key, label: g.label }],
+}));
+
+const emptyPerm = (): ActionPerm => ({ r: false, c: false, u: false, d: false });
 
 const DepartmentPermissions: React.FC = () => {
   const [items, setItems] = useState<Department[]>([]);
-  const [draft, setDraft] = useState<Record<number, Set<string>>>({});
+  const [draft, setDraft] = useState<Record<number, Record<string, ActionPerm>>>({});
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<number | null>(null);
   const { element: modal, alert } = useAdminModal();
@@ -14,79 +22,88 @@ const DepartmentPermissions: React.FC = () => {
     const { data, error } = await departmentApi.list();
     if (error) alert('불러오기 오류', error);
     setItems(data || []);
-    const d: Record<number, Set<string>> = {};
-    (data || []).forEach((x) => { d[x.id] = new Set(Array.isArray(x.menu_keys) ? x.menu_keys : []); });
+    const d: Record<number, Record<string, ActionPerm>> = {};
+    (data || []).forEach((dep) => { d[dep.id] = { ...(dep.permissions || {}) }; });
     setDraft(d);
   }, [alert]);
   useEffect(() => { (async () => { setLoading(true); await fetchAll(); setLoading(false); })(); }, [fetchAll]);
 
-  const has = (id: number, key: string) => draft[id]?.has(key);
-  const setKeys = (id: number, fn: (s: Set<string>) => void) => setDraft((p) => {
-    const next = new Set(p[id] || []); fn(next); return { ...p, [id]: next };
+  const perm = (depId: number, key: string): ActionPerm => draft[depId]?.[key] || emptyPerm();
+  const setPerm = (depId: number, key: string, patch: Partial<ActionPerm>) => setDraft((p) => ({
+    ...p, [depId]: { ...(p[depId] || {}), [key]: { ...(p[depId]?.[key] || emptyPerm()), ...patch } },
+  }));
+  const toggleRowAll = (depId: number, key: string, on: boolean) => setPerm(depId, key, { r: on, c: on, u: on, d: on });
+  const setAll = (depId: number, on: boolean) => setDraft((p) => {
+    const all: Record<string, ActionPerm> = {};
+    GROUPS.forEach((g) => g.leaves.forEach((l) => { all[l.key] = { r: on, c: on, u: on, d: on }; }));
+    return { ...p, [depId]: all };
   });
-  const toggle = (id: number, key: string) => setKeys(id, (s) => { if (s.has(key)) s.delete(key); else s.add(key); });
-  const toggleGroup = (id: number, keys: string[], on: boolean) => setKeys(id, (s) => keys.forEach((k) => (on ? s.add(k) : s.delete(k))));
-  const setAll = (id: number, on: boolean) => setDraft((p) => ({ ...p, [id]: new Set(on ? ALL_MENU_KEYS : []) }));
 
-  const save = async (id: number) => {
-    setSavingId(id);
-    const { error } = await departmentApi.update(id, { menu_keys: [...(draft[id] || [])] });
+  const save = async (depId: number) => {
+    setSavingId(depId);
+    const permissions = draft[depId] || {};
+    const menu_keys = Object.entries(permissions).filter(([, v]) => v.r || v.c || v.u || v.d).map(([k]) => k);
+    const { error } = await departmentApi.update(depId, { permissions, menu_keys });
     setSavingId(null);
     if (error) alert('저장 오류', error); else alert('저장 완료', '접근 권한이 저장되었습니다.');
   };
 
   if (loading) return <Spinner />;
 
-  const pill = (on: boolean): React.CSSProperties => ({
-    padding: '8px 13px', borderRadius: '999px', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700,
-    border: on ? '1px solid #008b8b' : '1px solid #e2e8f0', background: on ? '#e0f2f1' : '#fff', color: on ? '#008b8b' : '#64748b',
-    display: 'inline-flex', alignItems: 'center', gap: '5px',
-  });
+  const th: React.CSSProperties = { padding: '8px 6px', fontSize: '0.78rem', color: '#64748b', fontWeight: 700, textAlign: 'center' };
+  const cellChk = (depId: number, key: string, k: keyof ActionPerm) => (
+    <td style={{ textAlign: 'center', padding: '6px' }}>
+      <input type="checkbox" style={{ width: 16, height: 16, accentColor: '#008b8b', cursor: 'pointer' }}
+        checked={perm(depId, key)[k]} onChange={(e) => setPerm(depId, key, { [k]: e.target.checked })} />
+    </td>
+  );
 
   return (
-    <div style={{ maxWidth: '900px' }}>
-      <PageHead title="부서별 접근 권한" desc="부서별로 접근 가능한 어드민 메뉴를 2Depth 세부 메뉴 단위로 부여합니다." />
-      {items.length === 0 ? <EmptyState message="먼저 부서를 등록해주세요." /> : items.map((d) => {
-        const all = ALL_MENU_KEYS.every((k) => has(d.id, k));
-        return (
-          <div key={d.id} style={{ ...card, marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '10px', flexWrap: 'wrap' }}>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#1e293b' }}>{d.name}</h3>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={btnGhost} onClick={() => setAll(d.id, !all)}>{all ? '전체 해제' : '전체 선택'}</button>
-                <button style={btnPrimary} onClick={() => save(d.id)} disabled={savingId === d.id}><Save size={16} /> {savingId === d.id ? '저장 중...' : '저장'}</button>
-              </div>
+    <div style={{ maxWidth: '760px' }}>
+      <PageHead title="부서별 접근 권한" desc="부서별로 2Depth 메뉴마다 조회·추가·수정·삭제 권한을 부여합니다." />
+      {items.length === 0 ? <EmptyState message="먼저 부서를 등록해주세요." /> : items.map((dep) => (
+        <div key={dep.id} style={{ ...card, marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '10px', flexWrap: 'wrap' }}>
+            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#1e293b' }}>{dep.name}</h3>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button style={btnGhost} onClick={() => setAll(dep.id, true)}>전체 허용</button>
+              <button style={btnGhost} onClick={() => setAll(dep.id, false)}>전체 해제</button>
+              <button style={btnPrimary} onClick={() => save(dep.id)} disabled={savingId === dep.id}><Save size={16} /> {savingId === dep.id ? '저장 중...' : '저장'}</button>
             </div>
-
-            {ADMIN_MENU_TREE.map((g) => {
-              const groupKeys = g.items.length ? g.items.map((i) => i.key) : [g.key];
-              const groupAll = groupKeys.every((k) => has(d.id, k));
-              return (
-                <div key={g.key} style={{ borderTop: '1px solid #f1f5f9', padding: '14px 0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: g.items.length ? '10px' : 0 }}>
-                    <button
-                      onClick={() => (g.items.length ? toggleGroup(d.id, groupKeys, !groupAll) : toggle(d.id, g.key))}
-                      style={{ ...pill(g.items.length ? groupAll : !!has(d.id, g.key)), fontSize: '0.9rem' }}
-                    >
-                      {(g.items.length ? groupAll : has(d.id, g.key)) && <Check size={14} />}{g.label}
-                      {g.items.length ? <span style={{ fontWeight: 400, opacity: 0.7 }}>(전체)</span> : null}
-                    </button>
-                  </div>
-                  {g.items.length > 0 && (
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', paddingLeft: '14px' }}>
-                      {g.items.map((it) => (
-                        <button key={it.key} onClick={() => toggle(d.id, it.key)} style={pill(!!has(d.id, it.key))}>
-                          {has(d.id, it.key) && <Check size={13} />}{it.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
-        );
-      })}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '480px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ ...th, textAlign: 'left' }}>메뉴</th>
+                  {ACTIONS.map((a) => <th key={a.k} style={th}>{a.label}</th>)}
+                  <th style={th}>전체</th>
+                </tr>
+              </thead>
+              <tbody>
+                {GROUPS.map((g) => (
+                  <React.Fragment key={g.label}>
+                    <tr><td colSpan={6} style={{ padding: '10px 6px 4px', fontSize: '0.8rem', fontWeight: 800, color: '#008b8b' }}>{g.label}</td></tr>
+                    {g.leaves.map((l) => {
+                      const p = perm(dep.id, l.key);
+                      const rowAll = p.r && p.c && p.u && p.d;
+                      return (
+                        <tr key={l.key} style={{ borderBottom: '1px solid #f8fafc' }}>
+                          <td style={{ padding: '6px 6px 6px 18px', fontSize: '0.86rem', color: '#334155' }}>{l.label}</td>
+                          {ACTIONS.map((a) => <React.Fragment key={a.k}>{cellChk(dep.id, l.key, a.k)}</React.Fragment>)}
+                          <td style={{ textAlign: 'center', padding: '6px' }}>
+                            <input type="checkbox" style={{ width: 16, height: 16, accentColor: '#1e293b', cursor: 'pointer' }} checked={rowAll} onChange={(e) => toggleRowAll(dep.id, l.key, e.target.checked)} />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
       {modal}
     </div>
   );

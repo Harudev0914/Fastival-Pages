@@ -45,10 +45,17 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
 // 모든 권한 키(전체 선택용)
 export const ALL_MENU_KEYS: string[] = ADMIN_MENU_TREE.flatMap((g) => g.items.length ? g.items.map((i) => i.key) : [g.key]);
 
+// 메뉴별 액션 권한 (조회/추가/수정/삭제)
+export interface ActionPerm { r: boolean; c: boolean; u: boolean; d: boolean; }
+export const ACTIONS: { k: keyof ActionPerm; label: string }[] = [
+  { k: 'r', label: '조회' }, { k: 'c', label: '추가' }, { k: 'u', label: '수정' }, { k: 'd', label: '삭제' },
+];
+
 export interface Department {
   id: number;
   name: string;
   menu_keys: string[];
+  permissions: Record<string, ActionPerm>; // { [menuKey]: {r,c,u,d} }
   created_at: string;
   updated_at: string | null;
 }
@@ -68,7 +75,7 @@ export interface AdminUser {
 export const departmentApi = {
   list: () => run<Department[]>(() => supabase.from('departments').select('*').order('name') as any),
   create: (name: string) => run<Department>(() => supabase.from('departments').insert({ name: name.trim() }).select().single() as any),
-  update: (id: number, patch: Partial<Pick<Department, 'name' | 'menu_keys'>>) =>
+  update: (id: number, patch: Partial<Pick<Department, 'name' | 'menu_keys' | 'permissions'>>) =>
     run<Department>(() => supabase.from('departments').update(patch).eq('id', id).select().single() as any),
   remove: (id: number) => run<true>(async () => {
     const { error } = await supabase.from('departments').delete().eq('id', id);

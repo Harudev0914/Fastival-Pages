@@ -18,6 +18,7 @@ export interface RentalBrand {
 export interface RentalCategory {
   id: number;
   brand_id: number | null;
+  parent_id: number | null;
   name: string;
   description: string | null;
   display_order: number;
@@ -135,23 +136,23 @@ export const rentalCategoryApi = {
   listByBrand: (brandId: number) => run<RentalCategory[]>(() => supabase.from('rental_categories').select('id, name, brand_id').eq('brand_id', brandId).eq('is_active', true).order('display_order', { ascending: true }) as any),
   get: (id: number | string) => run<RentalCategory>(() => supabase.from('rental_categories').select('*').eq('id', id).single() as any),
 
-  async create(input: { brand_id: number | null; name: string; description?: string; is_active?: boolean }): Promise<Result<RentalCategory>> {
+  async create(input: { brand_id: number | null; parent_id?: number | null; name: string; description?: string; is_active?: boolean }): Promise<Result<RentalCategory>> {
     if (!input.brand_id) return { data: null, error: '브랜드를 선택해주세요.' };
     if (!input.name?.trim()) return { data: null, error: '카테고리명을 입력해주세요.' };
     const by = await currentAdminName();
     const display_order = await nextOrder('rental_categories', { col: 'brand_id', val: input.brand_id });
     return run<RentalCategory>(() => supabase.from('rental_categories').insert({
-      brand_id: input.brand_id, name: input.name.trim(), description: input.description?.trim() || null,
+      brand_id: input.brand_id, parent_id: input.parent_id ?? null, name: input.name.trim(), description: input.description?.trim() || null,
       is_active: input.is_active ?? true, display_order, created_by: by, updated_by: by,
     }).select().single() as any);
   },
 
-  async update(id: number | string, input: { brand_id: number | null; name: string; description?: string; is_active?: boolean }): Promise<Result<RentalCategory>> {
+  async update(id: number | string, input: { brand_id: number | null; parent_id?: number | null; name: string; description?: string; is_active?: boolean }): Promise<Result<RentalCategory>> {
     if (!input.brand_id) return { data: null, error: '브랜드를 선택해주세요.' };
     if (!input.name?.trim()) return { data: null, error: '카테고리명을 입력해주세요.' };
     const by = await currentAdminName();
     return run<RentalCategory>(() => supabase.from('rental_categories').update({
-      brand_id: input.brand_id, name: input.name.trim(), description: input.description?.trim() || null,
+      brand_id: input.brand_id, parent_id: input.parent_id ?? null, name: input.name.trim(), description: input.description?.trim() || null,
       is_active: input.is_active, updated_by: by,
     }).eq('id', id).select().single() as any);
   },
