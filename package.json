@@ -1,6 +1,6 @@
 {
   "name": "fastival-pages",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
     "dev": "echo \"Client running at: http://localhost:5173\" && echo \"Server running at: http://localhost:3000\" && concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\"",
