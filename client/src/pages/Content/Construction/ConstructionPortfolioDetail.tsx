@@ -5,6 +5,7 @@ import { portfolioApi, categoryApi } from '../../../api/constructionApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import RichTextEditor from '../../../components/UI/RichTextEditor';
+import ImageUploader from '../../../components/UI/ImageUploader';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from './shared';
 
 interface CategoryOpt { id: number; name: string; }
@@ -84,9 +85,14 @@ const ConstructionPortfolioDetail: React.FC = () => {
         </div>
 
         <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>대표 이미지 URL</label>
-          <input style={inputStyle} value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="https://..." />
-          {thumbnailUrl && <img src={thumbnailUrl} alt="미리보기" style={{ marginTop: '10px', maxWidth: '240px', borderRadius: '8px', border: '1px solid #e2e8f0' }} />}
+          <label style={labelStyle}>대표 이미지</label>
+          <ImageUploader
+            value={thumbnailUrl ? [thumbnailUrl] : []}
+            onChange={(urls) => setThumbnailUrl(urls[0] || '')}
+            folder="portfolio"
+            multiple={false}
+            max={1}
+          />
         </div>
 
         <div style={{ marginBottom: '18px' }}>

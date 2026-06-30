@@ -25,18 +25,24 @@ const ConstructionInquiry: React.FC = () => {
   const [marketingAgree, setMarketingAgree] = useState(false);
   const [formErrors, setFormErrors] = useState<{ name?: string; phone?: string; email?: string }>({});
 
-  // 신청 폼 유효성 검사 (이름 필수 / 휴대폰·이메일 형식)
+  // 신청 폼 유효성 검사 (이름 / 휴대폰 / 이메일 형식 검증)
   const validateApplication = (): boolean => {
     const errs: { name?: string; phone?: string; email?: string } = {};
-    if (!userInfo.name.trim()) errs.name = '이름을 입력해주세요.';
 
-    const phone = userInfo.phone.replace(/\s/g, '');
-    if (!phone) errs.phone = '연락처를 입력해주세요.';
-    else if (!/^01[016789]-?\d{3,4}-?\d{4}$/.test(phone)) errs.phone = '올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)';
+    // 이름: 2자 이상, 한글/영문(공백 허용) — 숫자·특수문자 불가
+    const name = userInfo.name.trim();
+    if (!name) errs.name = '이름을 입력해주세요.';
+    else if (!/^[가-힣a-zA-Z][가-힣a-zA-Z\s]{1,}$/.test(name)) errs.name = '이름을 정확히 입력해주세요. (2자 이상, 한글 또는 영문)';
 
+    // 휴대폰: 숫자만 추출 후 010/011 등 유효 형식
+    const phoneDigits = userInfo.phone.replace(/[^0-9]/g, '');
+    if (!phoneDigits) errs.phone = '연락처를 입력해주세요.';
+    else if (!/^01[016789]\d{3,4}\d{4}$/.test(phoneDigits)) errs.phone = '올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)';
+
+    // 이메일: 표준 형식 + TLD 2자 이상
     const email = userInfo.email.trim();
     if (!email) errs.email = '이메일을 입력해주세요.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = '올바른 이메일 형식이 아닙니다.';
+    else if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email)) errs.email = '올바른 이메일 형식이 아닙니다. (예: name@example.com)';
 
     setFormErrors(errs);
     return Object.keys(errs).length === 0;

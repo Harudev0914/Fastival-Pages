@@ -4,6 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { reviewApi, categoryApi } from '../../../api/constructionApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
+import ImageUploader from '../../../components/UI/ImageUploader';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from './shared';
 
 interface CategoryOpt { id: number; name: string; }
@@ -19,7 +20,7 @@ const ConstructionReviewDetail: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(5);
-  const [imagesText, setImagesText] = useState('');
+  const [images, setImages] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -38,7 +39,7 @@ const ConstructionReviewDetail: React.FC = () => {
           setTitle(data.title || '');
           setContent(data.content || '');
           setRating(Number(data.rating) || 5);
-          setImagesText(Array.isArray(data.images) ? data.images.join('\n') : '');
+          setImages(Array.isArray(data.images) ? data.images : []);
           setIsActive(data.is_active);
         }
         setLoading(false);
@@ -47,7 +48,6 @@ const ConstructionReviewDetail: React.FC = () => {
   }, [id, isNew, alert]);
 
   const save = async () => {
-    const images = imagesText.split('\n').map((s) => s.trim()).filter(Boolean);
     const input = {
       category_id: categoryId === '' ? null : Number(categoryId),
       author_name: authorName, title, content, rating, images, is_active: isActive,
@@ -58,8 +58,6 @@ const ConstructionReviewDetail: React.FC = () => {
     if (error) alert('저장 오류', error);
     else navigate('/admin/dashboard/construction/reviews');
   };
-
-  const previewImages = imagesText.split('\n').map((s) => s.trim()).filter(Boolean);
 
   if (loading) return <Spinner />;
 
@@ -106,15 +104,8 @@ const ConstructionReviewDetail: React.FC = () => {
         </div>
 
         <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>후기 이미지 (URL을 한 줄에 하나씩)</label>
-          <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} value={imagesText} onChange={(e) => setImagesText(e.target.value)} placeholder={'https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg'} />
-          {previewImages.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' }}>
-              {previewImages.map((src, i) => (
-                <img key={i} src={src} alt={`미리보기 ${i + 1}`} style={{ width: '84px', height: '64px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f1f5f9' }} />
-              ))}
-            </div>
-          )}
+          <label style={labelStyle}>후기 이미지</label>
+          <ImageUploader value={images} onChange={setImages} folder="reviews" multiple max={10} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
