@@ -39,6 +39,8 @@ import RentalPage from './pages/Rental/RentalPage';
 import RentalProductDetailPublic from './pages/Rental/RentalProductDetailPublic';
 import RentalInquiryPage from './pages/Rental/RentalInquiryPage';
 import RentalProductListPage from './pages/Rental/RentalProductListPage';
+import PaymentSuccess from './pages/Rental/PaymentSuccess';
+import PaymentFail from './pages/Rental/PaymentFail';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -125,6 +127,8 @@ function App() {
           <Route path="/rental" element={<RentalPage />} />
           <Route path="/rental/product/:id" element={<RentalProductDetailPublic />} />
           <Route path="/rental/inquiry" element={<RentalInquiryPage />} />
+          <Route path="/rental/payment/success" element={<PaymentSuccess />} />
+          <Route path="/rental/payment/fail" element={<PaymentFail />} />
           <Route path="/rental/best" element={<RentalProductListPage />} />
           <Route path="/rental/exclusive" element={<RentalProductListPage />} />
           <Route path="/rental/event" element={<RentalProductListPage />} />

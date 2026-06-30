@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { productApi, orderApi, type RentalProduct } from '../../api/rentalApi';
+import { requestTossPayment, genOrderId } from '../../lib/toss';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const TEAL = '#008b8b';
@@ -29,7 +30,6 @@ const RentalProductDetailPublic: React.FC = () => {
   const [email, setEmail] = useState('');
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -74,8 +74,8 @@ const RentalProductDetailPublic: React.FC = () => {
     end.setDate(end.getDate() + days);
 
     setSubmitting(true);
-    // ※ PG 연동 지점: 실제 결제 성공 콜백에서 아래 create 를 호출하도록 교체.
-    //    현재는 결제 미연동이라 '예약 접수(pending)' 상태로 주문을 생성합니다.
+    // 1) 결제 전 'pending' 주문 선생성 (merchant orderId 를 payment_id 에 보관)
+    const orderId = genOrderId();
     const { error } = await orderApi.create({
       product_id: product.id,
       product_name: product.name,
@@ -93,26 +93,27 @@ const RentalProductDetailPublic: React.FC = () => {
       delivery_fee: Number(product.delivery_fee),
       total_amount: total,
       payment_status: 'pending',
-      payment_method: '예약접수(PG 미연동)',
+      payment_method: 'toss',
+      payment_id: orderId,
       order_status: 'reserved',
     });
-    setSubmitting(false);
-    if (error) return alert(`신청 중 오류가 발생했습니다: ${error}`);
-    setDone(true);
-  };
+    if (error) { setSubmitting(false); return alert(`주문 생성 오류: ${error}`); }
 
-  if (done) {
-    return (
-      <div style={{ maxWidth: '560px', margin: '0 auto', padding: '80px 20px', textAlign: 'center' }}>
-        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#ecfdf5', color: TEAL, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-        </div>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>렌탈 예약이 접수되었습니다</h2>
-        <p style={{ color: '#64748b', marginTop: '10px', lineHeight: 1.6 }}>담당자가 결제·배송 안내를 위해 곧 연락드릴 예정입니다.<br />감사합니다.</p>
-        <button onClick={() => navigate('/rental')} style={{ marginTop: '28px', background: TEAL, color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 28px', fontWeight: 700, cursor: 'pointer' }}>렌탈 홈으로</button>
-      </div>
-    );
-  }
+    // 2) 토스 결제창 호출 → 성공 시 /rental/payment/success 로 리다이렉트(서버 승인)
+    try {
+      await requestTossPayment({
+        orderId,
+        orderName: qty > 1 ? `${product.name} 외 ${qty - 1}건` : product.name,
+        amount: total,
+        customerName: name.trim(),
+        customerEmail: email.trim(),
+        customerMobilePhone: phone.trim(),
+      });
+    } catch (e: any) {
+      setSubmitting(false);
+      if (e?.code !== 'USER_CANCEL') alert(`결제를 시작할 수 없습니다: ${e?.message || e}`);
+    }
+  };
 
   return (
     <div className="rental-page">
