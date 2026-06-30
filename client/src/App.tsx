@@ -42,6 +42,10 @@ import RentalProductListPage from './pages/Rental/RentalProductListPage';
 import PaymentSuccess from './pages/Rental/PaymentSuccess';
 import PaymentFail from './pages/Rental/PaymentFail';
 import SearchPage from './pages/SearchPage';
+import AdminUserManagement from './pages/admin/system/AdminUserManagement';
+import DepartmentManagement from './pages/admin/system/DepartmentManagement';
+import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
+import CompanyInfoManagement from './pages/admin/system/CompanyInfoManagement';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -92,6 +96,12 @@ function AdminContent() {
       <Route path="rental/products/detail/:id" element={<RentalProductDetail />} />
       <Route path="rental/exclusive" element={<RentalProductManagement mode="exclusive" />} />
       <Route path="rental/events" element={<RentalProductManagement mode="event" />} />
+
+      {/* 환경설정 */}
+      <Route path="system/admins" element={<AdminUserManagement />} />
+      <Route path="system/departments" element={<DepartmentManagement />} />
+      <Route path="system/permissions" element={<DepartmentPermissions />} />
+      <Route path="system/company" element={<CompanyInfoManagement />} />
       <Route path="rental/orders" element={<RentalOrderManagement />} />
       <Route path="rental/orders/detail/:id" element={<RentalOrderDetail />} />
       <Route path="rental/purchases" element={<RentalPurchaseManagement />} />

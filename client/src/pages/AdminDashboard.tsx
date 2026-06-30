@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 
@@ -72,7 +72,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* 시공 관리 */}
         <div className={`menu-item`} onClick={() => toggleMenu('시공 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Settings size={18} /> <span>시공 관리</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Hammer size={18} /> <span>시공 관리</span></div>
             {expandedMenus['시공 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
         </div>
         {expandedMenus['시공 관리'] && (
@@ -99,6 +99,20 @@ const AdminDashboard: React.FC = () => {
                 <span className={activeMenu === '기획전' ? 'active' : ''} onClick={() => handleMenuClick('기획전', '/admin/dashboard/rental/events')}>기획전</span>
                 <span className={activeMenu === '렌탈 주문 관리' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 주문 관리', '/admin/dashboard/rental/orders')}>렌탈 관리(주문)</span>
                 <span className={activeMenu === '렌탈 입점 문의' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 입점 문의', '/admin/dashboard/rental/purchases')}>렌탈 입점 문의</span>
+            </div>
+        )}
+
+        {/* 환경설정 */}
+        <div className={`menu-item`} onClick={() => toggleMenu('환경설정')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Settings size={18} /> <span>환경설정</span></div>
+            {expandedMenus['환경설정'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['환경설정'] && (
+            <div className="sub-menu">
+                <span className={activeMenu === '관리자 목록' ? 'active' : ''} onClick={() => handleMenuClick('관리자 목록', '/admin/dashboard/system/admins')}>관리자 목록</span>
+                <span className={activeMenu === '부서 관리' ? 'active' : ''} onClick={() => handleMenuClick('부서 관리', '/admin/dashboard/system/departments')}>부서 관리</span>
+                <span className={activeMenu === '부서별 접근 권한' ? 'active' : ''} onClick={() => handleMenuClick('부서별 접근 권한', '/admin/dashboard/system/permissions')}>부서별 접근 권한</span>
+                <span className={activeMenu === '회사 정보 관리' ? 'active' : ''} onClick={() => handleMenuClick('회사 정보 관리', '/admin/dashboard/system/company')}>회사 정보 관리</span>
             </div>
         )}
 
