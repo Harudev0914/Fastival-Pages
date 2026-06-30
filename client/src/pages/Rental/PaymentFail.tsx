@@ -15,7 +15,7 @@ const PaymentFail: React.FC = () => {
         </div>
         <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>결제가 완료되지 않았습니다</h2>
         <p style={{ color: '#64748b', marginTop: '10px', lineHeight: 1.6 }}>{message}</p>
-        <button onClick={() => navigate(-1)} style={{ marginTop: '28px', background: '#008b8b', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 28px', fontWeight: 700, cursor: 'pointer' }}>다시 시도</button>
+        <button onClick={() => navigate(-1)} style={{ marginTop: '28px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 28px', fontWeight: 700, cursor: 'pointer' }}>다시 시도</button>
       </div>
     </div>
   );

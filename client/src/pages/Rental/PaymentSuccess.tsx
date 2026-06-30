@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 
-const TEAL = '#008b8b';
+const TEAL = '#2563eb';
 
 // 토스 결제 성공 리다이렉트 → 서버(Edge Function)에서 최종 승인(confirm)
 const PaymentSuccess: React.FC = () => {

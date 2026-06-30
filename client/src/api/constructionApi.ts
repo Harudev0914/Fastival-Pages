@@ -25,6 +25,7 @@ export interface ConstructionCategory {
   id: number;
   name: string;
   description: string | null;
+  image_url: string | null;
   display_order: number;
   is_active: boolean;
   created_at: string;
@@ -32,7 +33,7 @@ export interface ConstructionCategory {
   created_by: string | null;
   updated_by: string | null;
 }
-export interface CategoryInput { name: string; description?: string; is_active?: boolean; }
+export interface CategoryInput { name: string; description?: string; image_url?: string; is_active?: boolean; }
 
 export interface ConstructionReview {
   id: number;
@@ -154,7 +155,7 @@ export const categoryApi = {
     const by = await currentAdminName();
     const display_order = await nextOrder(T.cat);
     return run<ConstructionCategory>(() => supabase.from(T.cat).insert({
-      name, description: input.description?.trim() || null, is_active: input.is_active ?? true,
+      name, description: input.description?.trim() || null, image_url: input.image_url?.trim() || null, is_active: input.is_active ?? true,
       display_order, created_by: by, updated_by: by,
     }).select().single() as any);
   },

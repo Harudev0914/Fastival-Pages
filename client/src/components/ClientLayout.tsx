@@ -83,7 +83,7 @@ const Footer: React.FC = () => {
         .footer-logo { height: 26px; }
         .footer-links { display: flex; gap: 26px; flex-wrap: wrap; }
         .footer-links a { font-size: 0.92rem; font-weight: 600; color: #374151; text-decoration: none; transition: color 0.15s; }
-        .footer-links a:hover { color: #008b8b; }
+        .footer-links a:hover { color: #2563eb; }
         .footer-divider { height: 1px; background: #e5e7eb; margin: 22px 0; }
         .footer-legal p { margin: 0 0 8px; font-size: 0.84rem; color: #6b7280; line-height: 1.5; }
         .footer-legal b { font-weight: 600; color: #4b5563; }
@@ -92,11 +92,11 @@ const Footer: React.FC = () => {
         .footer-disclaimer { margin: 16px 0 0; font-size: 0.82rem; color: #9ca3af; line-height: 1.6; }
         .footer-social { display: flex; gap: 10px; margin-top: 22px; }
         .footer-sns { width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; color: #4b5563; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s; }
-        .footer-sns:hover { background: #008b8b; color: #fff; }
+        .footer-sns:hover { background: #2563eb; color: #fff; }
         .footer-bottom { margin-top: 26px; }
         .footer-policy { display: flex; align-items: center; gap: 0; margin-bottom: 10px; }
         .footer-policy a { font-size: 0.82rem; font-weight: 700; color: #374151; text-decoration: none; }
-        .footer-policy a:hover { color: #008b8b; }
+        .footer-policy a:hover { color: #2563eb; }
         .footer-copy { margin: 0; font-size: 0.8rem; color: #9ca3af; }
 
         @media (max-width: 1024px) { .footer-inner { padding: 36px 4vw 28px; } }

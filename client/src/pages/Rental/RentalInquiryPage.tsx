@@ -4,7 +4,7 @@ import { purchaseApi, GRADES, type Grade } from '../../api/rentalApi';
 import ImageUploader from '../../components/UI/ImageUploader';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
-const TEAL = '#008b8b';
+const TEAL = '#2563eb';
 const label: React.CSSProperties = { display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '7px' };
 const input: React.CSSProperties = { width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.92rem', boxSizing: 'border-box' };
 

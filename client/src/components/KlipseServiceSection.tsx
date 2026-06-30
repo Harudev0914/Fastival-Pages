@@ -202,7 +202,7 @@ export default KlipseServiceSection;
 const CSS = `
 .ksection-wrap{
   --bg:#FFFFFF;--ink:#2A2724;--ink-soft:#6B6760;--line:#E8E4DC;
-  --card:#FFFFFF;--accent:#2F6BFF;--clay:#C2784F;--radius:14px;
+  --card:#FFFFFF;--accent:#2563eb;--clay:#C2784F;--radius:14px;
   max-width:none;margin:0;padding:32px 0px 40px;
   font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
   color:var(--ink);background:var(--bg);

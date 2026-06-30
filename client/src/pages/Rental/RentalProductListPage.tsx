@@ -4,7 +4,7 @@ import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct }
 import './RentalPage.css';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
-const TEAL = '#008b8b';
+const TEAL = '#2563eb';
 
 const TITLES: Record<string, { title: string; desc: string }> = {
   best: { title: '베스트 렌탈', desc: '지금 가장 인기 있는 렌탈 상품' },

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { categoryApi } from '../../../api/constructionApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
+import ImageUploader from '../../../components/UI/ImageUploader';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
 
 const ConstructionCategoryDetail: React.FC = () => {
@@ -12,6 +13,7 @@ const ConstructionCategoryDetail: React.FC = () => {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -22,7 +24,7 @@ const ConstructionCategoryDetail: React.FC = () => {
     (async () => {
       const { data, error } = await categoryApi.get(id!);
       if (error) alert('불러오기 오류', error);
-      if (data) { setName(data.name || ''); setDescription(data.description || ''); setIsActive(data.is_active); }
+      if (data) { setName(data.name || ''); setDescription(data.description || ''); setImageUrl(data.image_url || ''); setIsActive(data.is_active); }
       setLoading(false);
     })();
   }, [id, isNew, alert]);
@@ -30,7 +32,7 @@ const ConstructionCategoryDetail: React.FC = () => {
   const save = async () => {
     if (!name.trim()) { alert('확인', '카테고리명을 입력해주세요.'); return; }
     setSaving(true);
-    const input = { name, description, is_active: isActive };
+    const input = { name, description, image_url: imageUrl, is_active: isActive };
     const { error } = isNew ? await categoryApi.create(input) : await categoryApi.update(id!, input);
     setSaving(false);
     if (error) alert('저장 오류', error);
@@ -52,6 +54,11 @@ const ConstructionCategoryDetail: React.FC = () => {
         <div style={{ marginBottom: '18px' }}>
           <label style={labelStyle}>카테고리명 *</label>
           <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 카페" />
+        </div>
+
+        <div style={{ marginBottom: '18px' }}>
+          <label style={labelStyle}>카테고리 이미지 <span style={{ fontWeight: 400, color: '#94a3b8' }}>(포트폴리오 탭 노출, 없으면 아이콘)</span></label>
+          <ImageUploader value={imageUrl ? [imageUrl] : []} onChange={(urls) => setImageUrl(urls[0] || '')} folder="construction-category" multiple={false} max={1} />
         </div>
 
         <div style={{ marginBottom: '18px' }}>

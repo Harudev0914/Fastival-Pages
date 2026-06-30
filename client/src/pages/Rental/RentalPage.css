@@ -46,7 +46,7 @@
   width: 100%; text-align: left; background: none; border: none; cursor: pointer;
   padding: 10px 8px; font-size: 0.9rem; color: #475569; border-radius: 8px; transition: background 0.12s, color 0.12s;
 }
-.rv-side__list li button:hover { background: #f1f5f9; color: #008b8b; font-weight: 700; }
+.rv-side__list li button:hover { background: #f1f5f9; color: #2563eb; font-weight: 700; }
 @media (max-width: 900px) { .rv-shop { display: block; } .rv-side { display: none; } }
 
 /* 섹션 공통 */

@@ -24,7 +24,7 @@ const coreName = (name: string) => name.replace(/[^가-힣A-Za-z()]/g, '').trim(
 const catImage = (name: string, seed: number) =>
   `https://loremflickr.com/280/280/${CAT_KEYWORD[coreName(name)] || 'interior'}?lock=${seed}`;
 
-interface CategoryTab { id: number; name: string; }
+interface CategoryTab { id: number; name: string; image_url?: string | null; }
 
 const PortfolioPage: React.FC = () => {
   const [categories, setCategories] = useState<CategoryTab[]>([]);
@@ -39,8 +39,8 @@ const PortfolioPage: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [catRes, pfRes] = await Promise.all([categoryApi.listActive(), portfolioApi.list()]);
-      setCategories(catRes.data || []);
+      const [catRes, pfRes] = await Promise.all([categoryApi.list(), portfolioApi.list()]);
+      setCategories((catRes.data || []).filter((c) => c.is_active).map((c) => ({ id: c.id, name: c.name, image_url: c.image_url })));
       setItems((pfRes.data || []).filter((p) => p.is_active));
       setLoading(false);
     })();
@@ -64,9 +64,11 @@ const PortfolioPage: React.FC = () => {
             </button>
             {categories.map((c) => (
               <button key={c.id} type="button" className={`pf-tab ${activeCat === c.id ? 'active' : ''}`} onClick={() => setActiveCat(c.id)}>
-                {catCore(c.name) === '기타'
-                  ? <span className="pf-tab__thumb pf-tab__all">ETC</span>
-                  : <span className="pf-tab__thumb pf-tab__icon">{categoryIcon(c.name)}</span>}
+                {c.image_url
+                  ? <span className="pf-tab__thumb"><img src={c.image_url} alt={c.name} loading="lazy" /></span>
+                  : catCore(c.name) === '기타'
+                    ? <span className="pf-tab__thumb pf-tab__all">ETC</span>
+                    : <span className="pf-tab__thumb pf-tab__icon">{categoryIcon(c.name)}</span>}
                 <span className="pf-tab__label">{c.name}</span>
               </button>
             ))}
