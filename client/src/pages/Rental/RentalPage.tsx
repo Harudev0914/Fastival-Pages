@@ -10,16 +10,16 @@ const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const RentalPage: React.FC = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<RentalProduct[]>([]);
-  const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
+  const [cats, setCats] = useState<{ id: number; name: string; image_url: string | null }[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
       const [{ data: pd }, { data: cd }] = [await productApi.list(), await rentalCategoryApi.list()];
       setProducts((pd || []).filter((p) => p.is_active));
-      // 활성 카테고리 이름 기준 중복 제거 후 상위 7개
-      const map = new Map<string, { id: number; name: string }>();
-      (cd || []).filter((c) => c.is_active).forEach((c) => { if (!map.has(c.name)) map.set(c.name, { id: c.id, name: c.name }); });
+      // 활성 1차 카테고리(parent_id 없음)만 노출
+      const map = new Map<string, { id: number; name: string; image_url: string | null }>();
+      (cd || []).filter((c) => c.is_active && !c.parent_id).forEach((c) => { if (!map.has(c.name)) map.set(c.name, { id: c.id, name: c.name, image_url: c.image_url }); });
       setCats([...map.values()]);
       setLoaded(true);
     })();
@@ -35,7 +35,9 @@ const RentalPage: React.FC = () => {
         <section className="rv-cats">
           {cats.slice(0, 7).map((c) => (
             <button type="button" className="rv-cat" key={c.id} onClick={() => navigate(`/rental/best?category=${c.id}`)}>
-              <span className="rv-cat__icon"><Package size={26} color="#64748b" /></span>
+              <span className="rv-cat__icon">
+                {c.image_url ? <img src={c.image_url} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : <Package size={26} color="#64748b" />}
+              </span>
               <span className="rv-cat__label">{c.name}</span>
             </button>
           ))}

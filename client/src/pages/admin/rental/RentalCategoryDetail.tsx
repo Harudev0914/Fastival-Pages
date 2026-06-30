@@ -4,6 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { rentalCategoryApi, brandApi } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
+import ImageUploader from '../../../components/UI/ImageUploader';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
 
 const RentalCategoryDetail: React.FC = () => {
@@ -17,6 +18,7 @@ const RentalCategoryDetail: React.FC = () => {
   const [parentId, setParentId] = useState<number | null>(params.get('parent') ? Number(params.get('parent')) : null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,7 +34,7 @@ const RentalCategoryDetail: React.FC = () => {
       if (!isNew) {
         const { data, error } = await rentalCategoryApi.get(id!);
         if (error) alert('불러오기 오류', error);
-        if (data) { setBrandId(data.brand_id ?? ''); setParentId(data.parent_id ?? null); setName(data.name); setDescription(data.description || ''); setIsActive(data.is_active); }
+        if (data) { setBrandId(data.brand_id ?? ''); setParentId(data.parent_id ?? null); setName(data.name); setDescription(data.description || ''); setImageUrl(data.image_url || ''); setIsActive(data.is_active); }
       } else {
         const bp = params.get('brand');
         if (bp) setBrandId(Number(bp));
@@ -44,7 +46,7 @@ const RentalCategoryDetail: React.FC = () => {
 
   const save = async () => {
     setSaving(true);
-    const input = { brand_id: brandId === '' ? null : Number(brandId), parent_id: parentId, name, description, is_active: isActive };
+    const input = { brand_id: brandId === '' ? null : Number(brandId), parent_id: parentId, name, description, image_url: imageUrl, is_active: isActive };
     const { error } = isNew ? await rentalCategoryApi.create(input) : await rentalCategoryApi.update(id!, input);
     setSaving(false);
     if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate(backUrl));
@@ -69,6 +71,10 @@ const RentalCategoryDetail: React.FC = () => {
         <div style={{ marginBottom: '18px' }}>
           <label style={labelStyle}>카테고리명 *</label>
           <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 소파 / 빈백" />
+        </div>
+        <div style={{ marginBottom: '18px' }}>
+          <label style={labelStyle}>카테고리 이미지 <span style={{ fontWeight: 400, color: '#94a3b8' }}>(쇼핑홈 퀵메뉴 노출)</span></label>
+          <ImageUploader value={imageUrl ? [imageUrl] : []} onChange={(urls) => setImageUrl(urls[0] || '')} folder="rental-category" multiple={false} max={1} />
         </div>
         <div style={{ marginBottom: '18px' }}>
           <label style={labelStyle}>설명</label>

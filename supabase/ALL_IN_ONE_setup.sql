@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS public.rental_categories (
   parent_id     BIGINT REFERENCES public.rental_categories(id) ON DELETE CASCADE,
   name          TEXT NOT NULL,
   description   TEXT,
+  image_url     TEXT,
   display_order INTEGER NOT NULL DEFAULT 0,
   is_active     BOOLEAN NOT NULL DEFAULT true,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()),

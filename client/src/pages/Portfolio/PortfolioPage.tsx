@@ -3,7 +3,7 @@ import CompanyCard from '../../components/ReviewDetail/CompanySidebar';
 import { FilterDropdown } from '../../components/ReviewDetail/FilterChipsRow';
 import { categoryApi, portfolioApi, type ConstructionPortfolio } from '../../api/constructionApi';
 import { EmptyState } from '../../components/admin/shared';
-import { categoryIcon } from './categoryIcons';
+import { categoryIcon, coreName as catCore } from './categoryIcons';
 import '../ReviewDetail/ReviewDetailPage.css';
 import './PortfolioPage.css';
 
@@ -64,7 +64,9 @@ const PortfolioPage: React.FC = () => {
             </button>
             {categories.map((c) => (
               <button key={c.id} type="button" className={`pf-tab ${activeCat === c.id ? 'active' : ''}`} onClick={() => setActiveCat(c.id)}>
-                <span className="pf-tab__thumb pf-tab__icon">{categoryIcon(c.name)}</span>
+                {catCore(c.name) === '기타'
+                  ? <span className="pf-tab__thumb pf-tab__all">ETC</span>
+                  : <span className="pf-tab__thumb pf-tab__icon">{categoryIcon(c.name)}</span>}
                 <span className="pf-tab__label">{c.name}</span>
               </button>
             ))}

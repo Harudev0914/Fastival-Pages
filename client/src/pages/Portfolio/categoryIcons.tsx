@@ -28,6 +28,6 @@ const ICONS: Record<string, React.ReactNode> = {
 
 const DEFAULT = <S d={<><path d="M3 9 12 3l9 6" /><path d="M5 10v10h14V10" /><path d="M9 21v-6h6v6" /></>} />;
 
-const coreName = (name: string) => name.replace(/[^가-힣A-Za-z()]/g, '').trim();
+export const coreName = (name: string) => name.replace(/[^가-힣A-Za-z()]/g, '').trim();
 
 export const categoryIcon = (name: string): React.ReactNode => ICONS[coreName(name)] || DEFAULT;
