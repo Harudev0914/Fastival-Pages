@@ -22,7 +22,16 @@ const Header: React.FC = () => {
         { label: '시공 후기', path: '/reviews' }
       ]
     },
-    '/rental': { top: '렌탈', sub: [] },
+    '/rental': {
+      top: '렌탈',
+      sub: [
+        { label: '쇼핑홈', path: '/rental' },
+        { label: '베스트', path: '/rental/best' },
+        { label: '단독상품', path: '/rental/exclusive' },
+        { label: '기획전', path: '/rental/event' },
+        { label: '입점문의', path: '/rental/inquiry' }
+      ]
+    },
     '/dj': { top: 'DJ', sub: [] }
   };
 

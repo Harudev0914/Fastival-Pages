@@ -36,6 +36,7 @@ import ClientLayout from './components/ClientLayout';
 import { InfoPage } from './pages/PlaceholderPages';
 import ReviewDetailPage from './pages/ReviewDetail/ReviewDetailPage';
 import PortfolioPage from './pages/Portfolio/PortfolioPage';
+import RentalPage from './pages/Rental/RentalPage';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -133,6 +134,8 @@ function App() {
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/info" element={<InfoPage />} />
           <Route path="/reviews" element={<ReviewDetailPage />} />
+          <Route path="/rental" element={<RentalPage />} />
+          <Route path="/rental/*" element={<RentalPage />} />
         </Route>
       </Routes>
     </Router>
