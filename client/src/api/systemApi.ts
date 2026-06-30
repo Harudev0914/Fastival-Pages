@@ -2,14 +2,48 @@
 import { supabase } from '../supabaseClient';
 import { run, mapError, type Result } from './core';
 
-// 어드민 메뉴 키(부서별 접근 권한 부여 대상)
-export const ADMIN_MENUS: { key: string; label: string }[] = [
-  { key: 'dashboard', label: '대시보드 홈' },
-  { key: 'main-visual', label: '메인 비주얼 관리' },
-  { key: 'construction', label: '시공 관리' },
-  { key: 'rental', label: '렌탈 관리' },
-  { key: 'system', label: '환경설정' },
+// 어드민 메뉴 트리(부서별 접근 권한 부여 대상) — 1Depth 그룹 + 2Depth 세부 메뉴
+export interface AdminMenuGroup {
+  key: string;          // 그룹/단일 메뉴 키
+  label: string;
+  items: { key: string; label: string }[]; // 2Depth (비어있으면 단일 메뉴)
+}
+
+export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
+  { key: 'dashboard', label: '대시보드 홈', items: [] },
+  { key: 'main-visuals', label: '메인 비주얼 관리', items: [] },
+  {
+    key: 'construction', label: '시공 관리', items: [
+      { key: 'construction/inquiries', label: '시공 문의 내역' },
+      { key: 'construction/categories', label: '카테고리 관리' },
+      { key: 'construction/reviews', label: '후기 관리' },
+      { key: 'construction/portfolio', label: '포트폴리오 관리' },
+      { key: 'construction/chatbot', label: '시공 문의 챗봇 관리' },
+    ],
+  },
+  {
+    key: 'rental', label: '렌탈 관리', items: [
+      { key: 'rental/brands', label: '브랜드 관리' },
+      { key: 'rental/categories', label: '카테고리 관리' },
+      { key: 'rental/products', label: '상품 관리' },
+      { key: 'rental/exclusive', label: '단독 상품' },
+      { key: 'rental/events', label: '기획전' },
+      { key: 'rental/orders', label: '렌탈 관리(주문)' },
+      { key: 'rental/purchases', label: '렌탈 입점 문의' },
+    ],
+  },
+  {
+    key: 'system', label: '환경설정', items: [
+      { key: 'system/admins', label: '관리자 목록' },
+      { key: 'system/departments', label: '부서 관리' },
+      { key: 'system/permissions', label: '부서별 접근 권한' },
+      { key: 'system/company', label: '회사 정보 관리' },
+    ],
+  },
 ];
+
+// 모든 권한 키(전체 선택용)
+export const ALL_MENU_KEYS: string[] = ADMIN_MENU_TREE.flatMap((g) => g.items.length ? g.items.map((i) => i.key) : [g.key]);
 
 export interface Department {
   id: number;

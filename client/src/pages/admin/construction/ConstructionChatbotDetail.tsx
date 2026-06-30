@@ -55,7 +55,7 @@ const ConstructionChatbotDetail: React.FC = () => {
     const { error } = isNew ? await chatbotApi.create(input) : await chatbotApi.update(id!, input);
     setSaving(false);
     if (error) alert('저장 오류', error);
-    else navigate('/admin/dashboard/construction/chatbot');
+    else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/construction/chatbot'));
   };
 
   if (loading) return <Spinner />;

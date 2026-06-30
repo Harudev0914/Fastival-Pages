@@ -86,7 +86,7 @@ const RentalProductDetail: React.FC = () => {
     };
     const { error } = isNew ? await productApi.create(input) : await productApi.update(id!, input);
     setSaving(false);
-    if (error) alert('저장 오류', error); else navigate('/admin/dashboard/rental/products');
+    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/rental/products'));
   };
 
   if (loading) return <Spinner />;

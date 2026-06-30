@@ -55,7 +55,7 @@ const ConstructionPortfolioDetail: React.FC = () => {
     const { error } = isNew ? await portfolioApi.create(input) : await portfolioApi.update(id!, input);
     setSaving(false);
     if (error) alert('저장 오류', error);
-    else navigate('/admin/dashboard/construction/portfolio');
+    else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/construction/portfolio'));
   };
 
   if (loading) return <Spinner />;

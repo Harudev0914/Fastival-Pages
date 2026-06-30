@@ -66,7 +66,7 @@ const MainVisualDetail: React.FC = () => {
     const { error } = isNew ? await mainVisualApi.create(input) : await mainVisualApi.update(id!, input);
     setSaving(false);
     if (error) alert('저장 오류', error);
-    else navigate('/admin/dashboard/main-visuals');
+    else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/main-visuals'));
   };
 
   if (loading) return <Spinner />;

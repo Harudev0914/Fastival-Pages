@@ -41,7 +41,7 @@ const RentalCategoryDetail: React.FC = () => {
     const input = { brand_id: brandId === '' ? null : Number(brandId), name, description, is_active: isActive };
     const { error } = isNew ? await rentalCategoryApi.create(input) : await rentalCategoryApi.update(id!, input);
     setSaving(false);
-    if (error) alert('저장 오류', error); else navigate('/admin/dashboard/rental/categories');
+    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/rental/categories'));
   };
 
   if (loading) return <Spinner />;

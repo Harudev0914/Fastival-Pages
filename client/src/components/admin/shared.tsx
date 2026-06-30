@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import Modal from '../Modal';
 
@@ -124,8 +124,16 @@ export interface ModalState {
 
 export function useAdminModal() {
   const [modal, setModal] = useState<ModalState>({ isOpen: false, title: '', message: '', type: 'alert' });
-  const close = useCallback(() => setModal((m) => ({ ...m, isOpen: false })), []);
-  const alert = useCallback((title: string, message: string) => setModal({ isOpen: true, title, message, type: 'alert' }), []);
+  const alertCb = useRef<null | (() => void)>(null);
+  // alert: 확인(닫기) 시 onDone 콜백 실행 → "저장 완료 → 목록으로" 용도
+  const close = useCallback(() => {
+    setModal((m) => ({ ...m, isOpen: false }));
+    const cb = alertCb.current; alertCb.current = null; if (cb) cb();
+  }, []);
+  const alert = useCallback((title: string, message: string, onDone?: () => void) => {
+    alertCb.current = onDone || null;
+    setModal({ isOpen: true, title, message, type: 'alert' });
+  }, []);
   const confirm = useCallback((title: string, message: string, onConfirm: () => void) =>
     setModal({ isOpen: true, title, message, type: 'confirm', onConfirm }), []);
 

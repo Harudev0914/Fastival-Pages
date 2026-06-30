@@ -38,7 +38,7 @@ const RentalOrderDetail: React.FC = () => {
     setSaving(true);
     const { error } = await orderApi.updateStatus(id!, { order_status: orderStatus, payment_status: payStatus, memo });
     setSaving(false);
-    if (error) alert('저장 오류', error); else navigate('/admin/dashboard/rental/orders');
+    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/rental/orders'));
   };
 
   if (loading) return <Spinner />;

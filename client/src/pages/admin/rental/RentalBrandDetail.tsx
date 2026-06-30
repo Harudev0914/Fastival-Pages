@@ -34,7 +34,7 @@ const RentalBrandDetail: React.FC = () => {
     const input = { name, logo_url: logoUrl, description, is_active: isActive };
     const { error } = isNew ? await brandApi.create(input) : await brandApi.update(id!, input);
     setSaving(false);
-    if (error) alert('저장 오류', error); else navigate('/admin/dashboard/rental/brands');
+    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/rental/brands'));
   };
 
   if (loading) return <Spinner />;

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import React from 'react';
 import { ScrollToTop } from './components/ScrollToTop';
+import RouteLoadingBar from './components/RouteLoadingBar';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminError from './pages/AdminError';
@@ -114,6 +115,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <RouteLoadingBar />
       <Routes>
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
         <Route path="/admin/login" element={<AdminLogin />} />
