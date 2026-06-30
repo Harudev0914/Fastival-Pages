@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
-import { mainVisualApi, type MvSection, type MvType } from '../../api/mainVisualApi';
-import { SELECT_STYLE } from '../../components/UI/StyledSelect';
-import ToggleButton from '../../components/UI/ToggleButton';
-import ImageUploader from '../../components/UI/ImageUploader';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../components/admin/shared';
+import { mainVisualApi, type MvSection, type MvType } from '../../../api/mainVisualApi';
+import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
+import ToggleButton from '../../../components/UI/ToggleButton';
+import ImageUploader from '../../../components/UI/ImageUploader';
+import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
 
 const MainVisualDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

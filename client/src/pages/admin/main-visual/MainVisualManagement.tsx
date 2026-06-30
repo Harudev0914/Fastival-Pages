@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, ImageOff } from 'lucide-react';
-import { mainVisualApi, SECTION_LABEL, type MainVisual, type MvSection } from '../../api/mainVisualApi';
-import { SELECT_STYLE } from '../../components/UI/StyledSelect';
-import ToggleButton from '../../components/UI/ToggleButton';
-import BoardTable, { type Column } from '../../components/admin/BoardTable';
-import BoardToolbar, { type SortOption } from '../../components/admin/BoardToolbar';
-import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../components/admin/shared';
+import { mainVisualApi, SECTION_LABEL, type MainVisual, type MvSection } from '../../../api/mainVisualApi';
+import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
+import ToggleButton from '../../../components/UI/ToggleButton';
+import BoardTable, { type Column } from '../../../components/admin/BoardTable';
+import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
+import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },

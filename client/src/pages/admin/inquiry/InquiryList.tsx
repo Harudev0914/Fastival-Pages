@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Trash2, Eye } from 'lucide-react';
-import { inquiryApi, type ConstructionInquiry, type InquiryStatus } from '../../api/constructionApi';
-import { card, th, td, EmptyState, Spinner, fmtDate, useAdminModal, PageHead } from '../../components/admin/shared';
+import { inquiryApi, type ConstructionInquiry, type InquiryStatus } from '../../../api/constructionApi';
+import { card, th, td, EmptyState, Spinner, fmtDate, useAdminModal, PageHead } from '../../../components/admin/shared';
 
 export const STATUS_MAP: Record<InquiryStatus, { label: string; bg: string; color: string; border: string }> = {
   pending: { label: '대기중', bg: '#fef2f2', color: '#dc2626', border: '#fca5a5' },
