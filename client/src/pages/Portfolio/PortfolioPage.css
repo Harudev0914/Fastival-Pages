@@ -105,4 +105,5 @@
   .pf-grid { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
   .pf-tabs { gap: 16px; }
   .pf-tab__thumb { width: 60px; height: 60px; }
+  .pf-tab-navs { display: none; } /* 모바일은 터치 스크롤 */
 }

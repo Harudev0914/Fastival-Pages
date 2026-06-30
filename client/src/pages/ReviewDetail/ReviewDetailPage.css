@@ -391,12 +391,10 @@
 
   .review-main { width: 100%; }
 
-  /* 상단 타이틀/요약 폰트 축소 + 필터와 간격 확보 */
+  /* 상단 타이틀 폰트 축소 + 평점 요약은 모바일에서 숨김 */
   .review-title { font-size: 1.2rem; }
-  .review-subtitle { font-size: 0.8rem; margin-top: 2px; }
-  .rating-summary { gap: 4px; margin: 10px 0 22px; }
-  .rating-summary .score { font-size: 1.25rem; }
-  .rating-summary .count { font-size: 0.85rem; }
+  .review-subtitle { font-size: 0.8rem; margin-top: 2px; margin-bottom: 16px; }
+  .rating-summary { display: none; }
 
   /* 필터 아래 구분선 — 가로 전체(full-bleed) */
   .filter-row { position: relative; padding-bottom: 16px; margin-bottom: 18px; }
