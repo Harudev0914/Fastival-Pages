@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, ArrowUpLeft, Hash, ImageOff } from 'lucide-react';
 import { searchAll, type SearchHit } from '../api/searchApi';
+import Seo from '../components/Seo';
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const SearchPage: React.FC = () => {
 
   return (
     <div style={wrap}>
+      <Seo title="통합검색" noindex />
       <div style={inner}>
         {/* 검색 입력 */}
         <div style={topRow}>

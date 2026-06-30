@@ -3,6 +3,7 @@ import './AdminDashboard.css';
 import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
+import Seo from '../components/Seo';
 
 const AdminDashboard: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState(() => localStorage.getItem('activeMenu') || '대시보드');
@@ -64,6 +65,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
+      <Seo title="관리자" noindex />
       <nav className="sidebar">
         <div className={`menu-item ${activeMenu === '대시보드' ? 'active' : ''}`} onClick={() => handleMenuClick('대시보드', '/admin/dashboard')}><LayoutDashboard size={18} /> <span>대시보드 홈</span></div>
 

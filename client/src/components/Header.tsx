@@ -25,7 +25,8 @@ const Header: React.FC = () => {
     '/rental': {
       top: '렌탈',
       sub: [
-        { label: '쇼핑홈', path: '/rental' },
+        { label: '렌탈홈', path: '/rental' },
+        { label: '카테고리', path: '/rental/categories' },
         { label: '베스트', path: '/rental/best' },
         { label: '단독상품', path: '/rental/exclusive' },
         { label: '기획전', path: '/rental/event' },

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
+import Seo from '../components/Seo';
 import './AdminLogin.css';
 
 const AdminLogin: React.FC = () => {
@@ -37,6 +38,7 @@ const AdminLogin: React.FC = () => {
 
   return (
     <div className="login-wrapper">
+      <Seo title="관리자 로그인" noindex />
       <div className="login-box">
         <div className="logo-area">
           <img src="/Klipse_Logo.png" alt="Klipse" style={{ height: '40px' }} />

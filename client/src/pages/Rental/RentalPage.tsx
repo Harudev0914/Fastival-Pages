@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, MoreHorizontal, ImageOff } from 'lucide-react';
 import MainVisualCarousel from '../../components/MainVisualCarousel';
+import Seo from '../../components/Seo';
 import { productApi, rentalCategoryApi, type RentalProduct } from '../../api/rentalApi';
 import './RentalPage.css';
 
@@ -27,6 +28,7 @@ const RentalPage: React.FC = () => {
 
   return (
     <div className="rental-page">
+      <Seo title="렌탈" description="클립스 렌탈 — 스피커·음향 장비, 빈백·가구 등 합리적 일일 렌탈. 베스트·단독상품·기획전." keywords="음향 렌탈,스피커 렌탈,빈백 렌탈,가구 렌탈,행사 음향,단독상품,기획전" />
       {/* 메인 비주얼 (DB 연동, 미등록 시 빈 상태) */}
       <MainVisualCarousel section="rental" />
 
@@ -48,52 +50,37 @@ const RentalPage: React.FC = () => {
         </section>
       )}
 
-      {/* 쇼핑홈: 상품 + 우측 카테고리 메뉴 */}
-      <div className="rv-shop">
-        <section className="rv-section rv-shop__main">
-          <div className="rv-section__head">
-            <h3>이번 주 베스트 렌탈</h3>
-            <button type="button" className="rv-more" onClick={() => navigate('/rental/best')}>전체보기</button>
+      {/* 베스트 렌탈 상품 */}
+      <section className="rv-section">
+        <div className="rv-section__head">
+          <h3>이번 주 베스트 렌탈</h3>
+          <button type="button" className="rv-more" onClick={() => navigate('/rental/best')}>전체보기</button>
+        </div>
+
+        {loaded && products.length === 0 ? (
+          <div className="rv-empty-grid">
+            <ImageOff size={34} strokeWidth={1.5} />
+            <p>아직 등록된 렌탈 상품이 없습니다.</p>
           </div>
-
-          {loaded && products.length === 0 ? (
-            <div className="rv-empty-grid">
-              <ImageOff size={34} strokeWidth={1.5} />
-              <p>아직 등록된 렌탈 상품이 없습니다.</p>
-            </div>
-          ) : (
-            <div className="rv-grid">
-              {products.map((p) => (
-                <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
-                  <div className="rv-prod__media">
-                    {p.thumbnail_url || (p.images && p.images[0])
-                      ? <img src={p.thumbnail_url || p.images[0]} alt={p.name} loading="lazy" />
-                      : <div className="rv-prod__noimg"><ImageOff size={24} color="#cbd5e1" /></div>}
-                  </div>
-                  <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>
-                  <p className="rv-prod__name">{p.name}</p>
-                  <div className="rv-prod__price">
-                    <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* 우측 카테고리 메뉴 */}
-        {cats.length > 0 && (
-          <aside className="rv-side">
-            <h4 className="rv-side__title">카테고리</h4>
-            <ul className="rv-side__list">
-              <li><button onClick={() => navigate('/rental/best')}>전체 상품</button></li>
-              {cats.map((c) => (
-                <li key={c.id}><button onClick={() => navigate(`/rental/best?category=${c.id}`)}>{c.name}</button></li>
-              ))}
-            </ul>
-          </aside>
+        ) : (
+          <div className="rv-grid">
+            {products.map((p) => (
+              <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
+                <div className="rv-prod__media">
+                  {p.thumbnail_url || (p.images && p.images[0])
+                    ? <img src={p.thumbnail_url || p.images[0]} alt={p.name} loading="lazy" />
+                    : <div className="rv-prod__noimg"><ImageOff size={24} color="#cbd5e1" /></div>}
+                </div>
+                <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>
+                <p className="rv-prod__name">{p.name}</p>
+                <div className="rv-prod__price">
+                  <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
+                </div>
+              </article>
+            ))}
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

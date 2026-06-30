@@ -4,6 +4,7 @@ import { FilterDropdown } from '../../components/ReviewDetail/FilterChipsRow';
 import { categoryApi, portfolioApi, type ConstructionPortfolio } from '../../api/constructionApi';
 import { EmptyState } from '../../components/admin/shared';
 import { categoryIcon, coreName as catCore } from './categoryIcons';
+import Seo from '../../components/Seo';
 import '../ReviewDetail/ReviewDetailPage.css';
 import './PortfolioPage.css';
 
@@ -50,6 +51,7 @@ const PortfolioPage: React.FC = () => {
 
   return (
     <div className="review-page">
+      <Seo title="포트폴리오" description="클립스 시공 포트폴리오 — 카페·와인바·바·라운지·클럽·레스토랑 등 공간별 인테리어·음향 시공 사례." keywords="시공 포트폴리오,카페 시공,와인바 인테리어,클럽 시공,레스토랑 인테리어,상업공간 시공 사례" />
       <aside className="review-sidebar">
         <CompanyCard />
       </aside>

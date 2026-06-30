@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct } from '../../api/rentalApi';
+import Seo from '../../components/Seo';
 import './RentalPage.css';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
@@ -68,6 +69,7 @@ const RentalProductListPage: React.FC = () => {
 
   return (
     <div className="rental-page">
+      <Seo title={meta.title} description={`클립스 렌탈 ${meta.title} — ${meta.desc || '음향·가구 렌탈 상품'}`} keywords="렌탈,음향 렌탈,가구 렌탈,베스트,단독상품,기획전" />
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{meta.title}</h1>
         {meta.desc && <p style={{ color: '#64748b', marginTop: '6px' }}>{meta.desc}</p>}

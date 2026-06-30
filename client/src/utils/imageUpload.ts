@@ -67,11 +67,15 @@ export async function compressImage(
 
 export interface UploadResult { url: string | null; error: string | null; }
 
+// 보안: 허용 이미지 형식 화이트리스트 + 용량 제한
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+
 /** 이미지 1장: 최적화 후 Supabase Storage 업로드 → 공개 URL 반환 */
 export async function uploadImage(file: File, folder: string): Promise<UploadResult> {
   try {
-    if (!file.type.startsWith('image/')) return { url: null, error: '이미지 파일만 업로드할 수 있습니다.' };
-    if (file.size > 20 * 1024 * 1024) return { url: null, error: '20MB 이하 이미지만 업로드할 수 있습니다.' };
+    if (!ALLOWED_TYPES.includes(file.type)) return { url: null, error: '허용되지 않는 형식입니다. (JPG/PNG/WEBP/GIF/AVIF만 업로드 가능)' };
+    if (file.size > MAX_BYTES) return { url: null, error: '10MB 이하 이미지만 업로드할 수 있습니다.' };
 
     const { blob, ext, contentType } = await compressImage(file);
     const rand = Math.random().toString(36).slice(2, 9);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { purchaseApi, GRADES, type Grade } from '../../api/rentalApi';
 import ImageUploader from '../../components/UI/ImageUploader';
+import Seo from '../../components/Seo';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const TEAL = '#2563eb';
@@ -72,6 +73,7 @@ const RentalInquiryPage: React.FC = () => {
 
   return (
     <div className="rental-page">
+      <Seo title="렌탈 입점·중고 매입 문의" description="클립스 렌탈 입점/중고 매입 문의 — 보유 상품의 컨디션·희망가를 남기면 검토 후 안내드립니다." keywords="중고 매입,렌탈 입점,음향 장비 매입,중고 가구 매입" />
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#1e293b', marginBottom: '8px' }}>렌탈 입점 / 중고 매입 문의</h1>
         <p style={{ color: '#64748b', marginBottom: '32px' }}>보유하신 상품의 정보·컨디션·희망가를 남겨주시면 검토 후 매입(입점) 여부를 안내드립니다.</p>
