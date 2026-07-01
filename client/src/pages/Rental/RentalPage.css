@@ -1,7 +1,6 @@
 /* ===== 렌탈 쇼핑홈 ===== */
+/* 헤더(.header-padding)·푸터(.footer-inner)와 동일하게 전체 폭 + 18vw(≤1024: 4vw) 좌우 패딩으로 정렬 */
 .rental-page {
-  max-width: 1440px;
-  margin: 0 auto;
   padding: 28px 18vw 60px;
 }
 

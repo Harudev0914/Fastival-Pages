@@ -116,7 +116,7 @@ const ClientLayout: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
       <div id="inquiry-header-portal" /> {/* Portal target */}
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, background: '#fff' }}>
         <Outlet />
       </main>
       <Footer />

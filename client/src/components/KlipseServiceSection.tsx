@@ -175,11 +175,14 @@ export const KlipseServiceSection: React.FC = () => {
         </div>
       )}
 
-      {/* 시공 서비스 (실제 등록 포트폴리오 캡션 카드) */}
+      {/* 포트폴리오 (실제 등록 포트폴리오 캡션 카드) */}
       <div className="ksection-head ksection-head--gap">
-        <h2 className="ktitle">Klipse가 직접하는 시공 서비스</h2>
+        <div>
+          <h2 className="ktitle">Klipse 시공 포트폴리오</h2>
+          <p className="ksub">직접 시공한 실제 현장들을 포트폴리오로 만나보세요.</p>
+        </div>
         <button type="button" className="kshortcut-btn" onClick={() => navigate("/portfolio")}>
-          <span className="kbtn-full">전체 시공 서비스 보기</span><span className="kbtn-short">더보기</span>
+          <span className="kbtn-full">포트폴리오 전체보기</span><span className="kbtn-short">더보기</span>
           <ArrowIcon />
         </button>
       </div>

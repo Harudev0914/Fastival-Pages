@@ -89,7 +89,7 @@ const MainVisualCarousel: React.FC<{ section: MvSection; autoPlayMs?: number }> 
   // 등록된 메인 비주얼이 없을 때: 빈 상태(이미지 + 안내)
   if (banners.length === 0) {
     return (
-      <section className="rv-hero">
+      <section className={`rv-hero rv-hero--${section}`}>
         <div className="rv-empty">
           <ImageOff size={40} strokeWidth={1.5} />
           <p className="rv-empty__title">등록된 메인 비주얼이 없습니다</p>
@@ -100,7 +100,7 @@ const MainVisualCarousel: React.FC<{ section: MvSection; autoPlayMs?: number }> 
   }
 
   return (
-    <section className="rv-hero">
+    <section className={`rv-hero rv-hero--${section}`}>
       <div
         className="rv-track"
         ref={trackRef}
