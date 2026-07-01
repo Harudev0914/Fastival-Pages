@@ -46,6 +46,12 @@ import PaymentFail from './pages/Rental/PaymentFail';
 import SearchPage from './pages/SearchPage';
 import DjPage from './pages/Dj/DjPage';
 import DjApplyPage from './pages/Dj/DjApplyPage';
+import DjArtistsPage from './pages/Dj/DjArtistsPage';
+import DjCalendarPage from './pages/Dj/DjCalendarPage';
+import DjReviewsPage from './pages/Dj/DjReviewsPage';
+import LoginPage from './pages/Auth/LoginPage';
+import SignupPage from './pages/Auth/SignupPage';
+import CustomerCenterPage from './pages/CustomerCenter/CustomerCenterPage';
 import DjArtistManagement from './pages/admin/dj/DjArtistManagement';
 import DjArtistDetail from './pages/admin/dj/DjArtistDetail';
 import AdminUserManagement from './pages/admin/system/AdminUserManagement';
@@ -163,6 +169,12 @@ function App() {
           <Route path="/rental/*" element={<RentalPage />} />
           <Route path="/dj" element={<DjPage />} />
           <Route path="/dj/apply" element={<DjApplyPage />} />
+          <Route path="/dj/artists" element={<DjArtistsPage />} />
+          <Route path="/dj/calendar" element={<DjCalendarPage />} />
+          <Route path="/dj/reviews" element={<DjReviewsPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/cs" element={<CustomerCenterPage />} />
         </Route>
       </Routes>
     </Router>

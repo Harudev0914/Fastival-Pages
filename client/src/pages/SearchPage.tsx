@@ -101,7 +101,7 @@ const SearchPage: React.FC = () => {
 const wrap: React.CSSProperties = { position: 'fixed', inset: 0, background: '#fff', zIndex: 3000, overflowY: 'auto' };
 const inner: React.CSSProperties = { maxWidth: '1060px', margin: '0 auto', padding: '48px 24px 80px' };
 const topRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '12px' };
-const inputStyle: React.CSSProperties = { flex: 1, border: 'none', outline: 'none', fontSize: '1.8rem', fontWeight: 700, color: '#111', background: 'transparent', padding: '4px 0' };
+const inputStyle: React.CSSProperties = { flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: 'clamp(1.05rem, 4.6vw, 1.8rem)', fontWeight: 700, color: '#111', background: 'transparent', padding: '4px 0' };
 const clearBtn: React.CSSProperties = { width: '28px', height: '28px', borderRadius: '50%', background: '#f1f5f9', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 };
 const underline: React.CSSProperties = { height: '2px', background: '#111', marginTop: '8px' };
 const row: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 4px', cursor: 'pointer', borderRadius: '8px' };

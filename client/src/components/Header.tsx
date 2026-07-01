@@ -37,7 +37,9 @@ const Header: React.FC = () => {
       top: 'DJ',
       sub: [
         { label: '홈', path: '/dj' },
-        { label: '아티스트 등록', path: '/dj/apply' }
+        { label: '아티스트', path: '/dj/artists' },
+        { label: '행사 캘린더', path: '/dj/calendar' },
+        { label: '행사 대행 후기', path: '/dj/reviews' }
       ]
     }
   };
