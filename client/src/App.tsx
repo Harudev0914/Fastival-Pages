@@ -50,7 +50,9 @@ import DjArtistsPage from './pages/Dj/DjArtistsPage';
 import DjCalendarPage from './pages/Dj/DjCalendarPage';
 import DjReviewsPage from './pages/Dj/DjReviewsPage';
 import LoginPage from './pages/Auth/LoginPage';
+import EmailLoginPage from './pages/Auth/EmailLoginPage';
 import SignupPage from './pages/Auth/SignupPage';
+import GeneralSignupPage from './pages/Auth/GeneralSignupPage';
 import CustomerCenterPage from './pages/CustomerCenter/CustomerCenterPage';
 import DjArtistManagement from './pages/admin/dj/DjArtistManagement';
 import DjArtistDetail from './pages/admin/dj/DjArtistDetail';
@@ -173,7 +175,9 @@ function App() {
           <Route path="/dj/calendar" element={<DjCalendarPage />} />
           <Route path="/dj/reviews" element={<DjReviewsPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/email" element={<EmailLoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/signup/general" element={<GeneralSignupPage />} />
           <Route path="/cs" element={<CustomerCenterPage />} />
         </Route>
       </Routes>

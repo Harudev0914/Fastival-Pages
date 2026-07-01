@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Disc3, User } from 'lucide-react';
 import Seo from '../../components/Seo';
+import SocialAuthButtons from '../../components/SocialAuthButtons';
 import '../Rental/RentalPage.css';
 
 const BLUE = '#2563eb';
-const input: React.CSSProperties = { width: '100%', padding: '13px', border: '1px solid #e2e8f0', borderRadius: '9px', fontSize: '0.95rem', boxSizing: 'border-box' };
 
 type Tab = 'general' | 'artist';
 
@@ -38,34 +38,22 @@ const SignupPage: React.FC = () => {
 
         {tab === 'general' ? (
           <>
-            {/* 소셜 로그인 (우선 카카오만) */}
-            <div style={{ marginTop: '20px' }}>
-              <button
-                type="button"
-                onClick={() => alert('카카오 로그인은 준비 중입니다.')}
-                style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#FEE500', color: 'rgba(0,0,0,0.85)', border: 'none', borderRadius: '10px', padding: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.77 1.86 5.2 4.66 6.58-.15.53-.97 3.35-1 3.57 0 0-.02.17.09.24.11.06.24.01.24.01.31-.04 3.6-2.36 4.17-2.76.6.08 1.21.13 1.84.13 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
-                카카오로 시작하기
-              </button>
+            {/* 소셜 회원가입 (카카오/구글/네이버) */}
+            <div style={{ marginTop: '22px' }}>
+              <SocialAuthButtons verb="시작하기" />
             </div>
 
             {/* 구분선 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0 4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '22px 0' }}>
               <span style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
-              <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>또는 일반 회원가입</span>
+              <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>또는</span>
               <span style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
             </div>
 
-            <p style={{ color: '#94a3b8', textAlign: 'center', marginTop: '10px', fontSize: '0.82rem' }}>준비 중 · 일반 회원 기능은 곧 오픈됩니다</p>
-            <form style={{ marginTop: '12px', display: 'grid', gap: '12px' }} onSubmit={(e) => e.preventDefault()}>
-              <input style={input} placeholder="이름" />
-              <input style={input} type="email" placeholder="이메일" />
-              <input style={input} placeholder="연락처" />
-              <input style={input} type="password" placeholder="비밀번호" />
-              <input style={input} type="password" placeholder="비밀번호 확인" />
-              <button type="submit" disabled style={{ background: BLUE, color: '#fff', border: 'none', borderRadius: '10px', padding: '14px', fontWeight: 700, cursor: 'not-allowed', opacity: 0.6 }}>가입하기</button>
-            </form>
+            {/* 일반 회원가입 → 별도 페이지 */}
+            <button type="button" onClick={() => navigate('/signup/general')} style={{ width: '100%', background: '#fff', color: BLUE, border: `1.5px solid ${BLUE}`, borderRadius: '10px', padding: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}>
+              일반 회원가입
+            </button>
           </>
         ) : (
           <div style={{ marginTop: '18px', textAlign: 'center', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '28px 20px' }}>
