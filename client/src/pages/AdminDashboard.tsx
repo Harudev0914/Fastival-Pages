@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3 } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
@@ -17,6 +17,7 @@ const AdminDashboard: React.FC = () => {
   const CON_KEYS = ['construction/inquiries', 'construction/categories', 'construction/reviews', 'construction/portfolio', 'construction/chatbot'];
   const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events', 'rental/orders', 'rental/purchases'];
   const DJ_KEYS = ['dj/artists'];
+  const TERMS_KEYS = ['terms/service', 'terms/privacy'];
   const SYS_KEYS = ['system/admins', 'system/departments', 'system/permissions', 'system/company'];
 
   React.useEffect(() => {
@@ -124,6 +125,20 @@ const AdminDashboard: React.FC = () => {
         {expandedMenus['DJ 관리'] && (
             <div className="sub-menu">
                 {can('dj/artists') && <span className={activeMenu === 'DJ 아티스트' ? 'active' : ''} onClick={() => handleMenuClick('DJ 아티스트', '/admin/dashboard/dj/artists')}>DJ 아티스트(입점)</span>}
+            </div>
+        )}
+        </>)}
+
+        {/* 약관 관리 */}
+        {canGroup(TERMS_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('약관 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> <span>약관 관리</span></div>
+            {expandedMenus['약관 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['약관 관리'] && (
+            <div className="sub-menu">
+                {can('terms/service') && <span className={activeMenu === '서비스 이용약관' ? 'active' : ''} onClick={() => handleMenuClick('서비스 이용약관', '/admin/dashboard/terms/service')}>서비스 이용약관</span>}
+                {can('terms/privacy') && <span className={activeMenu === '개인정보 처리방침' ? 'active' : ''} onClick={() => handleMenuClick('개인정보 처리방침', '/admin/dashboard/terms/privacy')}>개인정보 처리방침</span>}
             </div>
         )}
         </>)}

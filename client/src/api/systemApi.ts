@@ -34,6 +34,12 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
   },
   { key: 'dj', label: 'DJ 관리', items: [{ key: 'dj/artists', label: 'DJ 아티스트(입점)' }] },
   {
+    key: 'terms', label: '약관 관리', items: [
+      { key: 'terms/service', label: '서비스 이용약관' },
+      { key: 'terms/privacy', label: '개인정보 처리방침' },
+    ],
+  },
+  {
     key: 'system', label: '환경설정', items: [
       { key: 'system/admins', label: '관리자 목록' },
       { key: 'system/departments', label: '부서 관리' },

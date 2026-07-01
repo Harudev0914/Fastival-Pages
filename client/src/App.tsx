@@ -56,6 +56,8 @@ import GeneralSignupPage from './pages/Auth/GeneralSignupPage';
 import CustomerCenterPage from './pages/CustomerCenter/CustomerCenterPage';
 import DjArtistManagement from './pages/admin/dj/DjArtistManagement';
 import DjArtistDetail from './pages/admin/dj/DjArtistDetail';
+import TermsManagement from './pages/admin/terms/TermsManagement';
+import TermsDetail from './pages/admin/terms/TermsDetail';
 import AdminUserManagement from './pages/admin/system/AdminUserManagement';
 import DepartmentManagement from './pages/admin/system/DepartmentManagement';
 import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
@@ -115,6 +117,12 @@ function AdminContent() {
       {/* DJ 관리 */}
       <Route path="dj/artists" element={<DjArtistManagement />} />
       <Route path="dj/artists/detail/:id" element={<DjArtistDetail />} />
+
+      {/* 약관 관리 */}
+      <Route path="terms/service" element={<TermsManagement type="service" />} />
+      <Route path="terms/service/detail/:id" element={<TermsDetail type="service" />} />
+      <Route path="terms/privacy" element={<TermsManagement type="privacy" />} />
+      <Route path="terms/privacy/detail/:id" element={<TermsDetail type="privacy" />} />
 
       {/* 환경설정 */}
       <Route path="system/admins" element={<AdminUserManagement />} />
