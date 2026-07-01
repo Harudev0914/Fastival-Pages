@@ -36,7 +36,7 @@ const DjArtistManagement: React.FC = () => {
 
   return (
     <div>
-      <PageHead title="DJ 아티스트 (입점)" desc="DJ 입점(아티스트 등록) 신청을 검토하고 승인/보류/반려 처리합니다." />
+      <PageHead title="DJ 입점 관리" desc="DJ 입점(아티스트 등록) 신청을 검토하고 승인/보류/반려 처리합니다." />
 
       <div style={{ ...card, marginBottom: '16px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={status} onChange={(e) => setStatus(e.target.value as any)}>

@@ -19,6 +19,8 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'construction/reviews', label: '후기 관리' },
       { key: 'construction/portfolio', label: '포트폴리오 관리' },
       { key: 'construction/chatbot', label: '시공 문의 챗봇 관리' },
+      { key: 'construction/calendar', label: '시공 내역 캘린더' },
+      { key: 'construction/stats', label: '시공 내역 통계' },
     ],
   },
   {
@@ -30,9 +32,19 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'rental/events', label: '기획전' },
       { key: 'rental/orders', label: '렌탈 관리(주문)' },
       { key: 'rental/purchases', label: '렌탈 입점 문의' },
+      { key: 'rental/calendar', label: '렌탈 내역 캘린더' },
+      { key: 'rental/stats', label: '렌탈 내역 통계' },
     ],
   },
-  { key: 'dj', label: 'DJ 관리', items: [{ key: 'dj/artists', label: 'DJ 아티스트(입점)' }] },
+  {
+    key: 'dj', label: 'DJ 관리', items: [
+      { key: 'dj/list', label: 'DJ 목록' },
+      { key: 'dj/artists', label: 'DJ 입점 관리' },
+      { key: 'dj/event-inquiries', label: 'DJ 행사 문의 관리' },
+      { key: 'dj/calendar', label: 'DJ 행사 캘린더' },
+      { key: 'dj/stats', label: 'DJ 행사 통계' },
+    ],
+  },
   {
     key: 'terms', label: '약관 관리', items: [
       { key: 'terms/service', label: '서비스 이용약관' },
