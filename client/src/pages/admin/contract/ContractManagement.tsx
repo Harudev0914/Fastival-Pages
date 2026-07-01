@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, FileText, X } from 'lucide-react';
 import { contractApi, CONTRACT_STATUS_LABEL, type Contract, type ContractStatus } from '../../../api/contractApi';
-import { TEMPLATES, TEMPLATE_LIST } from './contractTemplates';
+import { TEMPLATES, TEMPLATE_LIST, CATEGORY_TEMPLATES, CATEGORY_LABEL, type ContractCategory } from './contractTemplates';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import { PageHead, btnPrimary, inputStyle, card, fmtDate, useAdminModal } from '../../../components/admin/shared';
@@ -14,7 +14,8 @@ const statusBadge = (s: ContractStatus) => {
   return <span style={{ background: `${color}1a`, color, fontSize: '0.74rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>{CONTRACT_STATUS_LABEL[s]}</span>;
 };
 
-const ContractManagement: React.FC = () => {
+// category 지정 시 해당 용도(시공/렌탈/DJ)의 양식만 노출·작성
+const ContractManagement: React.FC<{ category?: ContractCategory }> = ({ category }) => {
   const navigate = useNavigate();
   const { can } = useAdminPermissions();
   const [items, setItems] = useState<Contract[]>([]);
@@ -24,6 +25,9 @@ const ContractManagement: React.FC = () => {
   const [pickOpen, setPickOpen] = useState(false);
   const { element: modal, alert, confirm } = useAdminModal();
 
+  const catTemplates = category ? CATEGORY_TEMPLATES[category] : null;
+  const templateOptions = catTemplates ? TEMPLATE_LIST.filter((t) => catTemplates.includes(t.key)) : TEMPLATE_LIST;
+
   const fetchItems = useCallback(async () => {
     const { data, error } = await contractApi.list();
     if (error) alert('불러오기 오류', error);
@@ -32,10 +36,11 @@ const ContractManagement: React.FC = () => {
   useEffect(() => { (async () => { setLoading(true); await fetchItems(); setLoading(false); })(); }, [fetchItems]);
 
   const view = useMemo(() => items.filter((it) => {
+    if (catTemplates && !catTemplates.includes(it.template)) return false;   // 용도별 탭 필터
     if (tpl !== 'all' && it.template !== tpl) return false;
     if (search.trim() && !`${it.title} ${it.customer_name || ''}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
     return true;
-  }), [items, search, tpl]);
+  }), [items, search, tpl, catTemplates]);
 
   const removeItem = (item: Contract) => confirm('삭제 확인', `'${item.title}' 계약서를 삭제하시겠습니까?`, async () => {
     const { error } = await contractApi.remove(item.id);
@@ -61,7 +66,7 @@ const ContractManagement: React.FC = () => {
   return (
     <div>
       <PageHead
-        title="계약서 관리"
+        title={category ? `${CATEGORY_LABEL[category]} 계약서` : '계약서 관리'}
         desc="양식을 선택해 계약서를 작성하고, 워드형 미리보기로 확인 후 PDF로 다운로드합니다."
         right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => setPickOpen(true)}><Plus size={18} /> 작성하기</button> : undefined}
       />
@@ -69,7 +74,7 @@ const ContractManagement: React.FC = () => {
       <div style={{ ...card, marginBottom: '16px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={tpl} onChange={(e) => setTpl(e.target.value)}>
           <option value="all">전체 양식</option>
-          {TEMPLATE_LIST.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
+          {templateOptions.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
         </select>
         <input style={{ ...inputStyle, flex: 1, minWidth: '200px' }} placeholder="제목·상대방 검색" value={search} onChange={(e) => setSearch(e.target.value)} />
         <span style={{ fontSize: '0.85rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{view.length}건</span>
@@ -86,7 +91,7 @@ const ContractManagement: React.FC = () => {
               <button onClick={() => setPickOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} color="#64748b" /></button>
             </div>
             <div style={{ display: 'grid', gap: '10px' }}>
-              {TEMPLATE_LIST.map((t) => (
+              {templateOptions.map((t) => (
                 <button key={t.key} onClick={() => navigate(`/admin/dashboard/contracts/new/${t.key}`)}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px 16px', background: '#fff', cursor: 'pointer' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#e0f2f1', color: '#008b8b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><FileText size={20} /></div>

@@ -204,3 +204,12 @@ export const TEMPLATES: Record<ContractTemplate, TemplateDef> = {
 };
 
 export const TEMPLATE_LIST = Object.values(TEMPLATES);
+
+// 계약서 용도(시공/렌탈/DJ) 분류 — 계약서 관리 탭 구성용
+export type ContractCategory = 'construction' | 'rental' | 'dj';
+export const CATEGORY_LABEL: Record<ContractCategory, string> = { construction: '시공', rental: '렌탈', dj: 'DJ' };
+export const CATEGORY_TEMPLATES: Record<ContractCategory, ContractTemplate[]> = {
+  construction: ['construction_order'],
+  rental: ['rental_handover', 'rental'],
+  dj: ['freelancer', 'event_order'],
+};

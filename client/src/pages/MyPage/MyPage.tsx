@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { approvalApi, REF_TYPE_LABEL, DOC_TYPE_LABEL, APPROVAL_STATUS_LABEL, APPROVAL_STATUS_COLOR, type ApprovalRequest } from '../../api/approvalApi';
+import { approvalApi, REF_TYPE_LABEL, APPROVAL_STATUS_LABEL, APPROVAL_STATUS_COLOR, type ApprovalRequest } from '../../api/approvalApi';
 import { shipmentApi, SHIPMENT_STATUS_LABEL, SHIPMENT_STATUS_COLOR, type RentalShipment } from '../../api/rentalApi';
 import { estimateApi, ESTIMATE_TYPE_LABEL } from '../../api/opsApi';
 import { companyApi } from '../../api/companyApi';

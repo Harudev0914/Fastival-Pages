@@ -23,7 +23,7 @@ const AdminDashboard: React.FC = () => {
   const DJ_KEYS = ['dj/list', 'dj/artists'];
   const DJOPS_KEYS = ['dj/event-inquiries', 'dj/calendar', 'dj/stats'];
   const SUB_KEYS = ['subscriptions/members', 'subscriptions/tiers', 'subscriptions/stats'];
-  const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj', 'contracts'];
+  const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj'];
   const TERMS_KEYS = ['terms/service', 'terms/privacy'];
   const SYS_KEYS = ['system/admins', 'system/departments', 'system/permissions', 'system/company'];
 
@@ -208,21 +208,11 @@ const AdminDashboard: React.FC = () => {
         )}
         </>)}
 
-        {/* 견적서 관리 */}
-        {canGroup(EST_KEYS) && (<>
-        <div className={`menu-item`} onClick={() => toggleMenu('견적서 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Receipt size={18} /> <span>견적서/계약서 관리</span></div>
-            {expandedMenus['견적서 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['견적서 관리'] && (
-            <div className="sub-menu">
-                {can('estimates/construction') && <span className={activeMenu === '시공 견적서' ? 'active' : ''} onClick={() => handleMenuClick('시공 견적서', '/admin/dashboard/estimates/construction')}>시공 견적서</span>}
-                {can('estimates/rental') && <span className={activeMenu === '렌탈 견적서' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 견적서', '/admin/dashboard/estimates/rental')}>렌탈 견적서</span>}
-                {can('estimates/dj') && <span className={activeMenu === 'DJ 프리랜서 견적서' ? 'active' : ''} onClick={() => handleMenuClick('DJ 프리랜서 견적서', '/admin/dashboard/estimates/dj')}>DJ 프리랜서 견적서</span>}
-                {can('contracts') && <span className={activeMenu === '계약서 관리' ? 'active' : ''} onClick={() => handleMenuClick('계약서 관리', '/admin/dashboard/contracts')}>계약서 관리</span>}
-            </div>
-        )}
-        </>)}
+        {/* 견적서 관리 (1Depth · 페이지 내 시공/렌탈/DJ 탭) */}
+        {canGroup(EST_KEYS) && <div className={`menu-item ${activeMenu === '견적서 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('견적서 관리', '/admin/dashboard/estimates')}><Receipt size={18} /> <span>견적서 관리</span></div>}
+
+        {/* 계약서 관리 (1Depth · 페이지 내 시공/렌탈/DJ 탭) */}
+        {can('contracts') && <div className={`menu-item ${activeMenu === '계약서 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('계약서 관리', '/admin/dashboard/contracts')}><FileText size={18} /> <span>계약서 관리</span></div>}
 
         {/* 메인 비주얼 관리 (1Depth) */}
         {can('main-visuals') && <div className={`menu-item ${activeMenu === '메인 비주얼 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('메인 비주얼 관리', '/admin/dashboard/main-visuals')}><ImageIcon size={18} /> <span>메인 비주얼 관리</span></div>}
