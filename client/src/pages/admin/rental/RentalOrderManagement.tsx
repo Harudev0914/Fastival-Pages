@@ -54,7 +54,7 @@ const RentalOrderManagement: React.FC = () => {
 
   return (
     <div>
-      <PageHead title="렌탈 관리" desc="결제(PG) 완료된 렌탈 주문 내역을 조회하고 대여 상태를 관리합니다." />
+      <PageHead title="렌탈 주문 관리" desc="결제(PG) 완료된 렌탈 주문 내역을 조회하고 대여 상태를 관리합니다." />
 
       <div style={{ ...card, marginBottom: '16px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={orderStatus} onChange={(e) => setOrderStatus(e.target.value as any)}>

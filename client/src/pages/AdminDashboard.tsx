@@ -18,8 +18,8 @@ const AdminDashboard: React.FC = () => {
 
   const CON_KEYS = ['construction/categories', 'construction/portfolio', 'construction/chatbot'];
   const WORK_KEYS = ['construction/inquiries', 'construction/works', 'construction/companies', 'construction/reviews', 'construction/calendar', 'construction/stats'];
-  const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events', 'rental/orders'];
-  const RENTOPS_KEYS = ['rental/shipments', 'rental/purchases', 'rental/calendar', 'rental/stats'];
+  const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events'];
+  const RENTOPS_KEYS = ['rental/orders', 'rental/shipments', 'rental/purchases', 'rental/calendar', 'rental/stats'];
   const DJ_KEYS = ['dj/list', 'dj/artists', 'dj/event-inquiries', 'dj/calendar', 'dj/stats'];
   const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj', 'contracts'];
   const TERMS_KEYS = ['terms/service', 'terms/privacy'];
@@ -141,7 +141,6 @@ const AdminDashboard: React.FC = () => {
                 {can('rental/products') && <span className={activeMenu === '상품 관리' ? 'active' : ''} onClick={() => handleMenuClick('상품 관리', '/admin/dashboard/rental/products')}>상품 관리</span>}
                 {can('rental/exclusive') && <span className={activeMenu === '단독 상품' ? 'active' : ''} onClick={() => handleMenuClick('단독 상품', '/admin/dashboard/rental/exclusive')}>단독 상품</span>}
                 {can('rental/events') && <span className={activeMenu === '기획전' ? 'active' : ''} onClick={() => handleMenuClick('기획전', '/admin/dashboard/rental/events')}>기획전</span>}
-                {can('rental/orders') && <span className={activeMenu === '렌탈 주문 관리' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 주문 관리', '/admin/dashboard/rental/orders')}>렌탈 관리(주문)</span>}
             </div>
         )}
         </>)}
@@ -154,6 +153,7 @@ const AdminDashboard: React.FC = () => {
         </div>
         {expandedMenus['렌탈 업무 관리'] && (
             <div className="sub-menu">
+                {can('rental/orders') && <span className={activeMenu === '렌탈 주문 관리' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 주문 관리', '/admin/dashboard/rental/orders')}>렌탈 주문 관리</span>}
                 {can('rental/shipments') && <span className={activeMenu === '렌탈 출고 현황' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 출고 현황', '/admin/dashboard/rental/shipments')}>렌탈 출고 현황</span>}
                 {can('rental/purchases') && <span className={activeMenu === '렌탈 입점 문의' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 입점 문의', '/admin/dashboard/rental/purchases')}>렌탈 입점 문의</span>}
                 {can('rental/calendar') && <span className={activeMenu === '렌탈 내역 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 내역 캘린더', '/admin/dashboard/rental/calendar')}>렌탈 내역 캘린더</span>}

@@ -70,7 +70,7 @@ export const mainVisualApi = {
   get: (id: number | string) => run<MainVisual>(() => supabase.from(T).select('*').eq('id', id).single() as any),
 
   async create(input: MainVisualInput): Promise<Result<MainVisual>> {
-    if (!input.title?.trim()) return { data: null, error: '제목을 입력해주세요.' };
+    // 제목은 선택(문구 미사용 배너 허용). 비면 빈 문자열로 저장
     const by = await currentAdminName();
     const display_order = await nextOrder();
     const isB = input.type === 'type_b';
@@ -81,7 +81,7 @@ export const mainVisualApi = {
       image_url: input.image_url?.trim() || null,
       image_mobile_url: input.image_mobile_url?.trim() || null,
       badge: isB ? (input.badge?.trim() || null) : null,
-      title: input.title.trim(),
+      title: (input.title || '').trim(),
       subtitle: input.subtitle?.trim() || null,
       cta_text: isB ? (input.cta_text?.trim() || null) : null,
       link_url: input.link_url?.trim() || null,
@@ -93,7 +93,7 @@ export const mainVisualApi = {
   },
 
   async update(id: number | string, input: MainVisualInput): Promise<Result<MainVisual>> {
-    if (!input.title?.trim()) return { data: null, error: '제목을 입력해주세요.' };
+    // 제목은 선택(문구 미사용 배너 허용). 비면 빈 문자열로 저장
     const by = await currentAdminName();
     const isB = input.type === 'type_b';
     return run<MainVisual>(() => supabase.from(T).update({
@@ -103,7 +103,7 @@ export const mainVisualApi = {
       image_url: input.image_url?.trim() || null,
       image_mobile_url: input.image_mobile_url?.trim() || null,
       badge: isB ? (input.badge?.trim() || null) : null,
-      title: input.title.trim(),
+      title: (input.title || '').trim(),
       subtitle: input.subtitle?.trim() || null,
       cta_text: isB ? (input.cta_text?.trim() || null) : null,
       link_url: input.link_url?.trim() || null,

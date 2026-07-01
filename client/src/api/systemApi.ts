@@ -36,11 +36,11 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'rental/products', label: '상품 관리' },
       { key: 'rental/exclusive', label: '단독 상품' },
       { key: 'rental/events', label: '기획전' },
-      { key: 'rental/orders', label: '렌탈 관리(주문)' },
     ],
   },
   {
     key: 'rental-ops', label: '렌탈 업무 관리', items: [
+      { key: 'rental/orders', label: '렌탈 주문 관리' },
       { key: 'rental/shipments', label: '렌탈 출고 현황' },
       { key: 'rental/purchases', label: '렌탈 입점 문의' },
       { key: 'rental/calendar', label: '렌탈 내역 캘린더' },

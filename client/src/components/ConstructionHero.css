@@ -59,10 +59,12 @@
   .ch-slide__title { font-size: 1.25rem; }
   /* AD가 등록된 경우 모바일에서는 메인 슬라이더를 숨김 */
   .ch-hero--hasad .ch-main { display: none; }
-  /* AD 배너: 모바일에서 가로 배너 비율로 전체 폭 노출 */
-  .ch-ad { aspect-ratio: 16 / 6; }
+  /* AD 배너: 모바일에서 가로 배너 비율로 전체 폭 노출
+     (컬럼 플렉스에서 flex:1 1 0 은 높이가 0으로 붕괴되므로 flex 해제 + 폭/비율로 높이 확보) */
+  .ch-ad { flex: 0 0 auto; width: 100%; aspect-ratio: 16 / 6; min-height: 120px; }
   .ch-ad__title { font-size: 0.95rem; }
-  /* 모바일 가로 이미지가 있으면 그것을 노출 */
+  /* 모바일 가로 이미지가 있으면: 등록 이미지 실제 비율에 맞춰 크롭 없이 꽉 채움 */
+  .ch-ad--hasmo { aspect-ratio: auto; min-height: 0; }
   .ch-ad--hasmo .ch-ad__img--pc { display: none; }
-  .ch-ad--hasmo .ch-ad__img--mo { display: block; }
+  .ch-ad--hasmo .ch-ad__img--mo { display: block; position: static; inset: auto; width: 100%; height: auto; object-fit: fill; }
 }

@@ -19,6 +19,7 @@ const MainVisualDetail: React.FC = () => {
   const [badge, setBadge] = useState('');
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
+  const [useText, setUseText] = useState(true);   // 문구(제목·부제목) 사용 여부
   const [ctaText, setCtaText] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [authorName, setAuthorName] = useState('');
@@ -42,6 +43,7 @@ const MainVisualDetail: React.FC = () => {
         setBadge(data.badge || '');
         setTitle(data.title || '');
         setSubtitle(data.subtitle || '');
+        setUseText(!!(data.title || '').trim());   // 저장된 제목이 없으면 '문구 미사용'으로 로드
         setCtaText(data.cta_text || '');
         setLinkUrl(data.link_url || '');
         setAuthorName(data.author_name || '');
@@ -55,10 +57,11 @@ const MainVisualDetail: React.FC = () => {
   const isConstruction = section === 'construction';
 
   const save = async () => {
+    if (useText && !title.trim()) return alert('입력 필요', '제목을 입력하거나 "문구 사용"을 꺼주세요.');
     const input = {
       section, type, is_ad: isConstruction ? isAd : false,
       image_url: imageUrl, image_mobile_url: imageMobileUrl,
-      badge, title, subtitle, cta_text: ctaText, link_url: linkUrl,
+      badge, title: useText ? title : '', subtitle: useText ? subtitle : '', cta_text: ctaText, link_url: linkUrl,
       author_name: authorName, author_avatar: authorAvatar, is_active: isActive,
     };
     setSaving(true);
@@ -116,13 +119,21 @@ const MainVisualDetail: React.FC = () => {
       </FormSection>
 
       <FormSection title="문구 · 콘텐츠">
-        <TextareaField label="제목" required minHeight="70px" value={title} onChange={setTitle} placeholder={'애니메이션 속 아늑한 방을 꿈꾸는 청춘 소녀방'} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: useText ? '18px' : '0', paddingBottom: '14px', borderBottom: '1px dashed #e2e8f0', flexWrap: 'wrap' }}>
+          <label style={{ ...labelStyle, marginBottom: 0 }}>문구 사용</label>
+          <ToggleButton isOn={useText} onToggle={() => setUseText((v) => !v)} />
+          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{useText ? '배너에 제목·부제목을 표시합니다.' : '문구 미사용 — 배너에 텍스트를 표시하지 않습니다.'}</span>
+        </div>
 
-        {!(isConstruction && isAd) && (
-          <div style={{ marginTop: '18px' }}>
-            <Row><TextField label="부제목" minWidth="100%" value={subtitle} onChange={setSubtitle} placeholder="부가 설명" /></Row>
-          </div>
-        )}
+        {useText && (<>
+          <TextareaField label="제목" required minHeight="70px" value={title} onChange={setTitle} placeholder={'애니메이션 속 아늑한 방을 꿈꾸는 청춘 소녀방'} />
+
+          {!(isConstruction && isAd) && (
+            <div style={{ marginTop: '18px' }}>
+              <Row><TextField label="부제목" minWidth="100%" value={subtitle} onChange={setSubtitle} placeholder="부가 설명" /></Row>
+            </div>
+          )}
+        </>)}
 
         {/* 시공 일반 배너: 등록자 정보(클라이언트 표시) */}
         {isConstruction && !isAd && (
