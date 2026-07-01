@@ -52,13 +52,13 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
     ],
   },
   {
-    key: 'estimates', label: '견적서 관리', items: [
+    key: 'estimates', label: '견적서/계약서 관리', items: [
       { key: 'estimates/construction', label: '시공 견적서' },
       { key: 'estimates/rental', label: '렌탈 견적서' },
       { key: 'estimates/dj', label: 'DJ 프리랜서 견적서' },
+      { key: 'contracts', label: '계약서 관리' },
     ],
   },
-  { key: 'contracts', label: '계약서 관리', items: [] },
   {
     key: 'terms', label: '약관 관리', items: [
       { key: 'terms/service', label: '서비스 이용약관' },

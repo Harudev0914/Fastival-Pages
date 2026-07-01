@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt, FileSignature } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
@@ -18,7 +18,7 @@ const AdminDashboard: React.FC = () => {
   const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events', 'rental/orders', 'rental/purchases', 'rental/calendar', 'rental/stats'];
   const WORK_KEYS = ['construction/works', 'construction/companies'];
   const DJ_KEYS = ['dj/list', 'dj/artists', 'dj/event-inquiries', 'dj/calendar', 'dj/stats'];
-  const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj'];
+  const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj', 'contracts'];
   const TERMS_KEYS = ['terms/service', 'terms/privacy'];
   const SYS_KEYS = ['system/admins', 'system/departments', 'system/permissions', 'system/company'];
 
@@ -156,7 +156,7 @@ const AdminDashboard: React.FC = () => {
         {/* 견적서 관리 */}
         {canGroup(EST_KEYS) && (<>
         <div className={`menu-item`} onClick={() => toggleMenu('견적서 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Receipt size={18} /> <span>견적서 관리</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Receipt size={18} /> <span>견적서/계약서 관리</span></div>
             {expandedMenus['견적서 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
         </div>
         {expandedMenus['견적서 관리'] && (
@@ -164,12 +164,10 @@ const AdminDashboard: React.FC = () => {
                 {can('estimates/construction') && <span className={activeMenu === '시공 견적서' ? 'active' : ''} onClick={() => handleMenuClick('시공 견적서', '/admin/dashboard/estimates/construction')}>시공 견적서</span>}
                 {can('estimates/rental') && <span className={activeMenu === '렌탈 견적서' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 견적서', '/admin/dashboard/estimates/rental')}>렌탈 견적서</span>}
                 {can('estimates/dj') && <span className={activeMenu === 'DJ 프리랜서 견적서' ? 'active' : ''} onClick={() => handleMenuClick('DJ 프리랜서 견적서', '/admin/dashboard/estimates/dj')}>DJ 프리랜서 견적서</span>}
+                {can('contracts') && <span className={activeMenu === '계약서 관리' ? 'active' : ''} onClick={() => handleMenuClick('계약서 관리', '/admin/dashboard/contracts')}>계약서 관리</span>}
             </div>
         )}
         </>)}
-
-        {/* 계약서 관리 (단일) */}
-        {can('contracts') && <div className={`menu-item ${activeMenu === '계약서 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('계약서 관리', '/admin/dashboard/contracts')}><FileSignature size={18} /> <span>계약서 관리</span></div>}
 
         {/* 약관 관리 */}
         {canGroup(TERMS_KEYS) && (<>

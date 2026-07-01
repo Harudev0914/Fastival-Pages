@@ -2,10 +2,10 @@ import React, { useCallback, useState } from 'react';
 import { Download, Trash2, X } from 'lucide-react';
 
 // ===== 행 선택 상태 훅 (BoardTable selectable 연동) =====
-export function useRowSelection<Id extends string | number = number>() {
+export function useRowSelection<Id extends string | number = string | number>() {
   const [selected, setSelected] = useState<Set<Id>>(new Set());
   const toggle = useCallback((id: Id) => setSelected((s) => {
-    const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n;
+    const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n;
   }), []);
   const toggleAll = useCallback((ids: Id[], checked: boolean) => setSelected((s) => {
     const n = new Set(s);

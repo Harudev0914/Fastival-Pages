@@ -107,7 +107,19 @@ export const constructionWorkApi = {
       status: input.status, memo: input.memo || null, updated_by: by,
     }).eq('id', id).select().single() as any);
   },
+  // 칸반 보드 드래그 등 상태만 빠르게 변경
+  async setStatus(id: number | string, status: WorkStatus): Promise<Result<true>> {
+    const by = await currentAdminName();
+    return run<true>(async () => {
+      const { error } = await supabase.from(WORK).update({ status, updated_by: by }).eq('id', id);
+      return { data: error ? null : (true as const), error };
+    });
+  },
   remove: removeFn(WORK),
+  removeMany: (ids: (number | string)[]) => run<true>(async () => {
+    const { error } = await supabase.from(WORK).delete().in('id', ids);
+    return { data: error ? null : (true as const), error };
+  }),
 };
 
 // ==================== 견적서 ====================
@@ -118,10 +130,10 @@ export const ESTIMATE_STATUS_LABEL: Record<EstimateStatus, string> = { draft: '�
 export const ESTIMATE_STATUS_COLOR: Record<EstimateStatus, string> = { draft: '#64748b', sent: '#2563eb', accepted: '#059669', rejected: '#dc2626' };
 export interface EstimateItem { name: string; qty: number; unit_price: number; amount: number; }
 export interface Estimate {
-  id: number; type: EstimateType; title: string;
+  id: number; type: EstimateType; estimate_no: string | null; title: string;
   customer_name: string | null; customer_phone: string | null; customer_email: string | null;
   items: EstimateItem[]; subtotal: number; discount: number; tax: number; total: number;
-  valid_until: string | null; status: EstimateStatus; memo: string | null;
+  issue_date: string | null; valid_until: string | null; status: EstimateStatus; memo: string | null;
   created_at: string; updated_at: string | null; created_by: string | null; updated_by: string | null;
 }
 const EST = 'estimates';
@@ -131,10 +143,11 @@ export const estimateApi = {
   async create(input: Partial<Estimate>): Promise<Result<Estimate>> {
     if (!input.title?.trim()) return { data: null, error: '견적서 제목을 입력해주세요.' };
     const by = await currentAdminName();
+    // estimate_no 는 DB 트리거가 자동 채번(EST-YYYY-####)
     return run<Estimate>(() => supabase.from(EST).insert({
       type: input.type, title: input.title!.trim(), customer_name: input.customer_name || null, customer_phone: input.customer_phone || null, customer_email: input.customer_email || null,
       items: input.items || [], subtotal: input.subtotal ?? 0, discount: input.discount ?? 0, tax: input.tax ?? 0, total: input.total ?? 0,
-      valid_until: input.valid_until || null, status: input.status || 'draft', memo: input.memo || null, created_by: by, updated_by: by,
+      issue_date: input.issue_date || null, valid_until: input.valid_until || null, status: input.status || 'draft', memo: input.memo || null, created_by: by, updated_by: by,
     }).select().single() as any);
   },
   async update(id: number | string, input: Partial<Estimate>): Promise<Result<Estimate>> {
@@ -143,8 +156,30 @@ export const estimateApi = {
     return run<Estimate>(() => supabase.from(EST).update({
       type: input.type, title: input.title!.trim(), customer_name: input.customer_name || null, customer_phone: input.customer_phone || null, customer_email: input.customer_email || null,
       items: input.items || [], subtotal: input.subtotal ?? 0, discount: input.discount ?? 0, tax: input.tax ?? 0, total: input.total ?? 0,
-      valid_until: input.valid_until || null, status: input.status, memo: input.memo || null, updated_by: by,
+      issue_date: input.issue_date || null, valid_until: input.valid_until || null, status: input.status, memo: input.memo || null, updated_by: by,
     }).eq('id', id).select().single() as any);
   },
+  // 목록에서 상태만 즉시 변경
+  async setStatus(id: number | string, status: EstimateStatus): Promise<Result<true>> {
+    const by = await currentAdminName();
+    return run<true>(async () => {
+      const { error } = await supabase.from(EST).update({ status, updated_by: by }).eq('id', id);
+      return { data: error ? null : (true as const), error };
+    });
+  },
+  // 견적서 복제 (상태 draft·새 채번으로 사본 생성)
+  async duplicate(id: number | string): Promise<Result<Estimate>> {
+    const { data: src, error } = await this.get(id);
+    if (error || !src) return { data: null, error: error || '원본 견적서를 찾을 수 없습니다.' };
+    return this.create({
+      type: src.type, title: `${src.title} (사본)`, customer_name: src.customer_name, customer_phone: src.customer_phone, customer_email: src.customer_email,
+      items: src.items, subtotal: src.subtotal, discount: src.discount, tax: src.tax, total: src.total,
+      valid_until: src.valid_until, status: 'draft', memo: src.memo,
+    });
+  },
   remove: removeFn(EST),
+  removeMany: (ids: (number | string)[]) => run<true>(async () => {
+    const { error } = await supabase.from(EST).delete().in('id', ids);
+    return { data: error ? null : (true as const), error };
+  }),
 };

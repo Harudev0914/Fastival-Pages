@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, X } from 'lucide-react';
-import { estimateApi, ESTIMATE_TYPE_LABEL, ESTIMATE_STATUS_LABEL, type EstimateItem, type EstimateType, type EstimateStatus } from '../../../api/opsApi';
+import { ArrowLeft, Save, Plus, X, Printer, Percent } from 'lucide-react';
+import { estimateApi, ESTIMATE_TYPE_LABEL, ESTIMATE_STATUS_LABEL, type Estimate, type EstimateItem, type EstimateType, type EstimateStatus } from '../../../api/opsApi';
+import { companyApi, type CompanyInfo } from '../../../api/companyApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
+import { printEstimate } from '../../../utils/estimatePrint';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const sel = SELECT_STYLE as React.CSSProperties;
@@ -23,14 +25,19 @@ const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
   const [items, setItems] = useState<EstimateItem[]>([emptyRow()]);
   const [discount, setDiscount] = useState('0');
   const [tax, setTax] = useState('0');
+  const [issueDate, setIssueDate] = useState('');
   const [validUntil, setValidUntil] = useState('');
   const [status, setStatus] = useState<EstimateStatus>('draft');
   const [memo, setMemo] = useState('');
+  const [estimateNo, setEstimateNo] = useState<string | null>(null);
+  const [createdAt, setCreatedAt] = useState('');
+  const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const { element: modal, alert } = useAdminModal();
 
   useEffect(() => {
+    companyApi.get().then(({ data }) => setCompany(data));
     if (isNew) return;
     (async () => {
       const { data, error } = await estimateApi.get(id!);
@@ -38,7 +45,8 @@ const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
       if (data) {
         setTitle(data.title); setCName(data.customer_name || ''); setCPhone(data.customer_phone || ''); setCEmail(data.customer_email || '');
         setItems(data.items?.length ? data.items : [emptyRow()]); setDiscount(String(data.discount || 0)); setTax(String(data.tax || 0));
-        setValidUntil(data.valid_until || ''); setStatus(data.status); setMemo(data.memo || '');
+        setIssueDate(data.issue_date || ''); setValidUntil(data.valid_until || ''); setStatus(data.status); setMemo(data.memo || '');
+        setEstimateNo(data.estimate_no); setCreatedAt(data.created_at || '');
       }
       setLoading(false);
     })();
@@ -53,6 +61,16 @@ const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
 
   const subtotal = useMemo(() => items.reduce((s, r) => s + (Number(r.amount) || 0), 0), [items]);
   const total = Math.max(0, subtotal - (Number(discount) || 0) + (Number(tax) || 0));
+  // 공급가(소계-할인)의 10%를 부가세로 자동 계산
+  const autoVat = () => setTax(String(Math.round((subtotal - (Number(discount) || 0)) * 0.1)));
+
+  const buildEstimate = (): Estimate => ({
+    id: Number(isNew ? 0 : id), type, estimate_no: estimateNo, title,
+    customer_name: cName, customer_phone: cPhone, customer_email: cEmail,
+    items: items.filter((r) => r.name.trim() || r.amount), subtotal, discount: Number(discount) || 0, tax: Number(tax) || 0, total,
+    issue_date: issueDate || null, valid_until: validUntil || null, status, memo,
+    created_at: createdAt, updated_at: null, created_by: null, updated_by: null,
+  });
 
   const save = async () => {
     if (!title.trim()) return alert('입력 필요', '견적서 제목을 입력해주세요.');
@@ -61,7 +79,7 @@ const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
     const input = {
       type, title, customer_name: cName, customer_phone: cPhone, customer_email: cEmail,
       items: cleanItems, subtotal, discount: Number(discount) || 0, tax: Number(tax) || 0, total,
-      valid_until: validUntil || null, status, memo,
+      issue_date: issueDate || null, valid_until: validUntil || null, status, memo,
     };
     const { error } = isNew ? await estimateApi.create(input) : await estimateApi.update(id!, input);
     setSaving(false);
@@ -73,9 +91,15 @@ const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
 
   return (
     <div style={{ maxWidth: '860px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate(LIST)}><ArrowLeft size={16} /> 목록으로</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '10px', flexWrap: 'wrap' }}>
+        <button style={btnGhost} onClick={() => navigate(LIST)}><ArrowLeft size={16} /> 목록으로</button>
+        {!isNew && <button style={btnGhost} onClick={() => printEstimate(buildEstimate(), label, company)}><Printer size={16} /> 인쇄 / PDF</button>}
+      </div>
       <div style={card}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '24px' }}>{isNew ? `${label} 작성` : `${label} 수정`}</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '24px', gap: '10px', flexWrap: 'wrap' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{isNew ? `${label} 작성` : `${label} 수정`}</h2>
+          {estimateNo && <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#008b8b', background: '#e0f2f1', padding: '4px 12px', borderRadius: '999px' }}>견적번호 {estimateNo}</span>}
+        </div>
 
         <div style={{ marginBottom: '18px' }}>
           <label style={labelStyle}>제목 *</label>
@@ -110,14 +134,18 @@ const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
           <div style={{ width: '320px', display: 'grid', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#475569' }}><span>소계</span><span style={{ fontWeight: 700 }}>{won(subtotal)}</span></div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem', color: '#475569' }}><span>할인</span><input type="number" min={0} style={{ ...cell, width: '140px', textAlign: 'right' }} value={discount} onChange={(e) => setDiscount(e.target.value)} /></div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem', color: '#475569' }}><span>부가세/기타</span><input type="number" min={0} style={{ ...cell, width: '140px', textAlign: 'right' }} value={tax} onChange={(e) => setTax(e.target.value)} /></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem', color: '#475569' }}>
+              <button type="button" onClick={autoVat} title="공급가의 10%를 부가세로 계산" style={{ ...btnGhost, padding: '5px 10px', fontSize: '0.78rem', gap: '4px' }}><Percent size={13} /> VAT 10%</button>
+              <input type="number" min={0} style={{ ...cell, width: '140px', textAlign: 'right' }} value={tax} onChange={(e) => setTax(e.target.value)} />
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.05rem', fontWeight: 800, color: '#008b8b', borderTop: '1px solid #e2e8f0', paddingTop: '8px' }}><span>총액</span><span>{won(total)}</span></div>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '14px', marginBottom: '18px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '160px' }}><label style={labelStyle}>유효기간</label><input type="date" style={inputStyle} value={validUntil} onChange={(e) => setValidUntil(e.target.value)} /></div>
-          <div style={{ flex: 1, minWidth: '160px' }}>
+          <div style={{ flex: 1, minWidth: '150px' }}><label style={labelStyle}>발행일</label><input type="date" style={inputStyle} value={issueDate} onChange={(e) => setIssueDate(e.target.value)} /></div>
+          <div style={{ flex: 1, minWidth: '150px' }}><label style={labelStyle}>유효기간</label><input type="date" style={inputStyle} value={validUntil} onChange={(e) => setValidUntil(e.target.value)} /></div>
+          <div style={{ flex: 1, minWidth: '150px' }}>
             <label style={labelStyle}>상태</label>
             <select style={{ ...sel, width: '100%' }} value={status} onChange={(e) => setStatus(e.target.value as EstimateStatus)}>
               {(Object.keys(ESTIMATE_STATUS_LABEL) as EstimateStatus[]).map((k) => <option key={k} value={k}>{ESTIMATE_STATUS_LABEL[k]}</option>)}
