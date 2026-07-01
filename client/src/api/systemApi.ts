@@ -37,12 +37,25 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
     ],
   },
   {
+    key: 'construction-ops', label: '시공 업무 관리', items: [
+      { key: 'construction/works', label: '시공 업무 현황' },
+      { key: 'construction/companies', label: '시공 업체 관리' },
+    ],
+  },
+  {
     key: 'dj', label: 'DJ 관리', items: [
       { key: 'dj/list', label: 'DJ 목록' },
       { key: 'dj/artists', label: 'DJ 입점 관리' },
       { key: 'dj/event-inquiries', label: 'DJ 행사 문의 관리' },
       { key: 'dj/calendar', label: 'DJ 행사 캘린더' },
       { key: 'dj/stats', label: 'DJ 행사 통계' },
+    ],
+  },
+  {
+    key: 'estimates', label: '견적서 관리', items: [
+      { key: 'estimates/construction', label: '시공 견적서' },
+      { key: 'estimates/rental', label: '렌탈 견적서' },
+      { key: 'estimates/dj', label: 'DJ 프리랜서 견적서' },
     ],
   },
   {

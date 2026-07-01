@@ -15,7 +15,7 @@ interface Props<T> {
   items: T[];
   getId: (item: T) => string | number;
   columns: Column<T>[];
-  onReorder: (reordered: T[]) => void;
+  onReorder?: (reordered: T[]) => void; // 없으면 순서변경 비활성(정적 테이블)
   loading?: boolean;
   emptyMessage: string;
 }
@@ -34,17 +34,24 @@ const toMinPx = (w?: string) => {
 
 // 순번(드래그앤드랍) + 컬럼 렌더 + 빈상태를 공통 처리하는 게시판 테이블
 function BoardTable<T>({ items, getId, columns, onReorder, loading, emptyMessage }: Props<T>) {
-  const template = `${HANDLE_W}px ${ORDER_W}px ${columns.map((c) => toTrack(c.width)).join(' ')}`;
+  const draggable = !!onReorder;
+  const template = `${draggable ? `${HANDLE_W}px ${ORDER_W}px ` : ''}${columns.map((c) => toTrack(c.width)).join(' ')}`;
   // 모든 컬럼 최소폭 합 → 좁아지면 가로 스크롤(컬럼 찌그러짐/밀림 방지)
-  const minWidth = HANDLE_W + ORDER_W + columns.reduce((sum, c) => sum + toMinPx(c.width), 0);
+  const minWidth = (draggable ? HANDLE_W + ORDER_W : 0) + columns.reduce((sum, c) => sum + toMinPx(c.width), 0);
 
   const onDragEnd = (r: DropResult) => {
-    if (!r.destination) return;
+    if (!r.destination || !onReorder) return;
     const next = Array.from(items);
     const [moved] = next.splice(r.source.index, 1);
     next.splice(r.destination.index, 0, moved);
     onReorder(next);
   };
+
+  const cells = (item: T, index: number) => columns.map((c) => (
+    <div key={c.key} style={{ ...td, textAlign: c.align || 'center', fontSize: '0.82rem', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      {c.render(item, index)}
+    </div>
+  ));
 
   return (
     <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
@@ -52,8 +59,8 @@ function BoardTable<T>({ items, getId, columns, onReorder, loading, emptyMessage
         <div style={{ minWidth: `${minWidth}px` }}>
           {/* 헤더 */}
           <div style={{ display: 'grid', gridTemplateColumns: template, background: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
-            <div style={th} />
-            <div style={th}>순번</div>
+            {draggable && <div style={th} />}
+            {draggable && <div style={th}>순번</div>}
             {columns.map((c) => (
               <div key={c.key} style={{ ...th, textAlign: c.align || 'center' }}>{c.label}</div>
             ))}
@@ -63,6 +70,14 @@ function BoardTable<T>({ items, getId, columns, onReorder, loading, emptyMessage
             <Spinner />
           ) : items.length === 0 ? (
             <EmptyState message={emptyMessage} />
+          ) : !draggable ? (
+            <div>
+              {items.map((item, index) => (
+                <div key={getId(item)} style={{ display: 'grid', gridTemplateColumns: template, borderBottom: '1px solid #f1f5f9', background: '#fff', alignItems: 'center' }}>
+                  {cells(item, index)}
+                </div>
+              ))}
+            </div>
           ) : (
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="board">

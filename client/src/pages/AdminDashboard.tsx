@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
@@ -16,7 +16,9 @@ const AdminDashboard: React.FC = () => {
 
   const CON_KEYS = ['construction/inquiries', 'construction/categories', 'construction/reviews', 'construction/portfolio', 'construction/chatbot', 'construction/calendar', 'construction/stats'];
   const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events', 'rental/orders', 'rental/purchases', 'rental/calendar', 'rental/stats'];
+  const WORK_KEYS = ['construction/works', 'construction/companies'];
   const DJ_KEYS = ['dj/list', 'dj/artists', 'dj/event-inquiries', 'dj/calendar', 'dj/stats'];
+  const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj'];
   const TERMS_KEYS = ['terms/service', 'terms/privacy'];
   const SYS_KEYS = ['system/admins', 'system/departments', 'system/permissions', 'system/company'];
 
@@ -120,6 +122,20 @@ const AdminDashboard: React.FC = () => {
         )}
         </>)}
 
+        {/* 시공 업무 관리 */}
+        {canGroup(WORK_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('시공 업무 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Briefcase size={18} /> <span>시공 업무 관리</span></div>
+            {expandedMenus['시공 업무 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['시공 업무 관리'] && (
+            <div className="sub-menu">
+                {can('construction/works') && <span className={activeMenu === '시공 업무 현황' ? 'active' : ''} onClick={() => handleMenuClick('시공 업무 현황', '/admin/dashboard/construction/works')}>시공 업무 현황</span>}
+                {can('construction/companies') && <span className={activeMenu === '시공 업체 관리' ? 'active' : ''} onClick={() => handleMenuClick('시공 업체 관리', '/admin/dashboard/construction/companies')}>시공 업체 관리</span>}
+            </div>
+        )}
+        </>)}
+
         {/* DJ 관리 */}
         {canGroup(DJ_KEYS) && (<>
         <div className={`menu-item`} onClick={() => toggleMenu('DJ 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -133,6 +149,21 @@ const AdminDashboard: React.FC = () => {
                 {can('dj/event-inquiries') && <span className={activeMenu === 'DJ 행사 문의 관리' ? 'active' : ''} onClick={() => handleMenuClick('DJ 행사 문의 관리', '/admin/dashboard/dj/event-inquiries')}>DJ 행사 문의 관리</span>}
                 {can('dj/calendar') && <span className={activeMenu === 'DJ 행사 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('DJ 행사 캘린더', '/admin/dashboard/dj/calendar')}>DJ 행사 캘린더</span>}
                 {can('dj/stats') && <span className={activeMenu === 'DJ 행사 통계' ? 'active' : ''} onClick={() => handleMenuClick('DJ 행사 통계', '/admin/dashboard/dj/stats')}>DJ 행사 통계</span>}
+            </div>
+        )}
+        </>)}
+
+        {/* 견적서 관리 */}
+        {canGroup(EST_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('견적서 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Receipt size={18} /> <span>견적서 관리</span></div>
+            {expandedMenus['견적서 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['견적서 관리'] && (
+            <div className="sub-menu">
+                {can('estimates/construction') && <span className={activeMenu === '시공 견적서' ? 'active' : ''} onClick={() => handleMenuClick('시공 견적서', '/admin/dashboard/estimates/construction')}>시공 견적서</span>}
+                {can('estimates/rental') && <span className={activeMenu === '렌탈 견적서' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 견적서', '/admin/dashboard/estimates/rental')}>렌탈 견적서</span>}
+                {can('estimates/dj') && <span className={activeMenu === 'DJ 프리랜서 견적서' ? 'active' : ''} onClick={() => handleMenuClick('DJ 프리랜서 견적서', '/admin/dashboard/estimates/dj')}>DJ 프리랜서 견적서</span>}
             </div>
         )}
         </>)}
