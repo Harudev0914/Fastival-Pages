@@ -43,9 +43,6 @@ const Footer: React.FC = () => {
             <Link to="/rental/inquiry">입점신청</Link>
             <Link to="/partnership">제휴/광고 문의</Link>
             <Link to="/partner-guide">시공 파트너 안내</Link>
-            <Link to="/terms/service">이용 약관</Link>
-            <Link to="/terms/privacy">개인정보 처리방침</Link>
-            <Link to="/terms/partner-privacy">파트너 개인정보 처리방침</Link>
           </nav>
         </div>
 
@@ -77,9 +74,11 @@ const Footer: React.FC = () => {
 
         <div className="footer-bottom">
           <nav className="footer-policy">
+            <Link to="/terms/service">서비스 이용약관</Link>
+            <Sep />
             <Link to="/terms/privacy">개인정보처리방침</Link>
             <Sep />
-            <Link to="/terms/service">서비스 이용약관</Link>
+            <Link to="/terms/partner-privacy">파트너 개인정보 처리방침</Link>
           </nav>
           <p className="footer-copy">Copyright {g('biz_name')} {year} All rights reserved.</p>
         </div>

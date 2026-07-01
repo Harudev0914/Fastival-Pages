@@ -69,7 +69,7 @@ import ConstructionCompanyManagement from './pages/admin/construction/Constructi
 import ConstructionCompanyDetail from './pages/admin/construction/ConstructionCompanyDetail';
 import ConstructionWorkManagement from './pages/admin/construction/ConstructionWorkManagement';
 import ConstructionWorkDetail from './pages/admin/construction/ConstructionWorkDetail';
-import EstimateManagement from './pages/admin/estimate/EstimateManagement';
+import EstimateHub from './pages/admin/estimate/EstimateHub';
 import EstimateDetail from './pages/admin/estimate/EstimateDetail';
 import DjList from './pages/admin/dj/DjList';
 import DjEventInquiryManagement from './pages/admin/dj/DjEventInquiryManagement';
@@ -79,7 +79,7 @@ import DjEventCalendar from './pages/admin/dj/DjEventCalendar';
 const DjStats = React.lazy(() => import('./pages/admin/dj/DjStats'));
 const ConstructionStats = React.lazy(() => import('./pages/admin/construction/ConstructionStats'));
 const RentalStats = React.lazy(() => import('./pages/admin/rental/RentalStats'));
-import ContractManagement from './pages/admin/contract/ContractManagement';
+import ContractHub from './pages/admin/contract/ContractHub';
 import ContractBuilder from './pages/admin/contract/ContractBuilder';
 import SubscriptionMembers from './pages/admin/subscription/SubscriptionMembers';
 import SubscriptionTiers from './pages/admin/subscription/SubscriptionTiers';
@@ -169,16 +169,14 @@ function AdminContent() {
       <Route path="rental/calendar" element={<RentalCalendar />} />
       <Route path="rental/stats" element={<RentalStats />} />
 
-      {/* 견적서 관리 (시공/렌탈/DJ) */}
-      <Route path="estimates/construction" element={<EstimateManagement type="construction" />} />
+      {/* 견적서 관리 (페이지 내 시공/렌탈/DJ 탭) */}
+      <Route path="estimates" element={<EstimateHub />} />
       <Route path="estimates/construction/detail/:id" element={<EstimateDetail type="construction" />} />
-      <Route path="estimates/rental" element={<EstimateManagement type="rental" />} />
       <Route path="estimates/rental/detail/:id" element={<EstimateDetail type="rental" />} />
-      <Route path="estimates/dj" element={<EstimateManagement type="dj" />} />
       <Route path="estimates/dj/detail/:id" element={<EstimateDetail type="dj" />} />
 
-      {/* 계약서 관리 */}
-      <Route path="contracts" element={<ContractManagement />} />
+      {/* 계약서 관리 (페이지 내 시공/렌탈/DJ 탭) */}
+      <Route path="contracts" element={<ContractHub />} />
       <Route path="contracts/new/:template" element={<ContractBuilder />} />
       <Route path="contracts/detail/:id" element={<ContractBuilder />} />
 

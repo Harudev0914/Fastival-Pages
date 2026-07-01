@@ -21,7 +21,7 @@ const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
   const navigate = useNavigate();
   const isNew = id === 'new';
   const label = ESTIMATE_TYPE_LABEL[type];
-  const LIST = `/admin/dashboard/estimates/${type}`;
+  const LIST = `/admin/dashboard/estimates?type=${type}`;
 
   const [title, setTitle] = useState('');
   const [cName, setCName] = useState('');
