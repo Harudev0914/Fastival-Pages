@@ -7,6 +7,7 @@ import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
 import { PageHead, btnPrimary, btnGhost, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { useAdminPermissions } from '../../../hooks/useAdminPermissions';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },
@@ -16,6 +17,8 @@ const SORTS: SortOption[] = [
 
 const RentalCategoryManagement: React.FC = () => {
   const navigate = useNavigate();
+  const { can } = useAdminPermissions();
+  const PK = 'rental/categories';
   const { parentId } = useParams<{ parentId: string }>();
   const pid = parentId ? Number(parentId) : null;
 
@@ -100,8 +103,8 @@ const RentalCategoryManagement: React.FC = () => {
     {
       key: 'manage', label: '관리', width: '90px', render: (it) => (
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/admin/dashboard/rental/categories/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>
-          <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>
+          {can(PK, 'u') && <button onClick={() => navigate(`/admin/dashboard/rental/categories/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>}
+          {can(PK, 'd') && <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>}
         </div>
       ),
     },
@@ -115,7 +118,7 @@ const RentalCategoryManagement: React.FC = () => {
       <PageHead
         title={pid ? `${parent?.name || ''} · 하위 카테고리` : '카테고리 관리'}
         desc={pid ? '선택한 1Depth 카테고리의 2Depth 세부 카테고리를 관리합니다.' : '1Depth 카테고리를 등록하고, 각 카테고리의 하위(2Depth)를 설정합니다.'}
-        right={<button style={btnPrimary} onClick={() => navigate(addUrl)} disabled={brands.length === 0}><Plus size={18} /> {pid ? '하위 카테고리 등록' : '카테고리 등록'}</button>}
+        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate(addUrl)} disabled={brands.length === 0}><Plus size={18} /> {pid ? '하위 카테고리 등록' : '카테고리 등록'}</button> : undefined}
       />
       <BoardToolbar search={search} onSearch={setSearch} searchPlaceholder="카테고리명·설명 검색" sort={sort} onSort={setSort} sortOptions={SORTS} active={active} onActive={setActive} count={view.length}>
         {!pid && (

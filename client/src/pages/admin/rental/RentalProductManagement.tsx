@@ -7,6 +7,7 @@ import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { useAdminPermissions } from '../../../hooks/useAdminPermissions';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },
@@ -26,6 +27,8 @@ const MODE_META: Record<Mode, { title: string; desc: string }> = {
 
 const RentalProductManagement: React.FC<{ mode?: Mode }> = ({ mode = 'all' }) => {
   const navigate = useNavigate();
+  const { can } = useAdminPermissions();
+  const PK = 'rental/products';
   const [items, setItems] = useState<RentalProduct[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const [cats, setCats] = useState<{ id: number; name: string; brand_id: number | null }[]>([]);
@@ -117,8 +120,8 @@ const RentalProductManagement: React.FC<{ mode?: Mode }> = ({ mode = 'all' }) =>
     {
       key: 'manage', label: '관리', width: '90px', render: (it) => (
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/admin/dashboard/rental/products/detail/${it.id}`)} title="수정/현황" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>
-          <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>
+          {can(PK, 'u') && <button onClick={() => navigate(`/admin/dashboard/rental/products/detail/${it.id}`)} title="수정/현황" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>}
+          {can(PK, 'd') && <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>}
         </div>
       ),
     },
@@ -129,7 +132,7 @@ const RentalProductManagement: React.FC<{ mode?: Mode }> = ({ mode = 'all' }) =>
       <PageHead
         title={MODE_META[mode].title}
         desc={MODE_META[mode].desc}
-        right={<button style={btnPrimary} onClick={() => navigate(`/admin/dashboard/rental/products/detail/new${mode !== 'all' ? `?mode=${mode}` : ''}`)} disabled={brands.length === 0}><Plus size={18} /> 상품 등록</button>}
+        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate(`/admin/dashboard/rental/products/detail/new${mode !== 'all' ? `?mode=${mode}` : ''}`)} disabled={brands.length === 0}><Plus size={18} /> 상품 등록</button> : undefined}
       />
       <BoardToolbar search={search} onSearch={setSearch} searchPlaceholder="상품명·설명 검색" sort={sort} onSort={setSort} sortOptions={SORTS} active={active} onActive={setActive} count={view.length}>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={brandFilter} onChange={(e) => { setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value)); setCatFilter('all'); }}>

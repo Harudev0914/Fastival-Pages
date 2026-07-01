@@ -7,6 +7,7 @@ import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { useAdminPermissions } from '../../../hooks/useAdminPermissions';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },
@@ -17,6 +18,8 @@ const SORTS: SortOption[] = [
 
 const ConstructionReviewManagement: React.FC = () => {
   const navigate = useNavigate();
+  const { can } = useAdminPermissions();
+  const PK = 'construction/reviews';
   const [items, setItems] = useState<ConstructionReview[]>([]);
   const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,8 +105,8 @@ const ConstructionReviewManagement: React.FC = () => {
     {
       key: 'manage', label: '관리', width: '90px', render: (it) => (
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/admin/dashboard/construction/reviews/detail/${it.id}`)} title="조회/수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>
-          <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>
+          {can(PK, 'u') && <button onClick={() => navigate(`/admin/dashboard/construction/reviews/detail/${it.id}`)} title="조회/수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>}
+          {can(PK, 'd') && <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>}
         </div>
       ),
     },
@@ -114,7 +117,7 @@ const ConstructionReviewManagement: React.FC = () => {
       <PageHead
         title="후기 관리"
         desc="사용자가 등록한 시공 후기를 조회·추가·삭제하고 순번/활성화를 관리합니다."
-        right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/reviews/detail/new')}><Plus size={18} /> 후기 추가</button>}
+        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/reviews/detail/new')}><Plus size={18} /> 후기 추가</button> : undefined}
       />
       <BoardToolbar
         search={search} onSearch={setSearch} searchPlaceholder="작성자·제목·내용 검색"

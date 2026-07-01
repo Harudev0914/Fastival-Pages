@@ -7,6 +7,7 @@ import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { useAdminPermissions } from '../../../hooks/useAdminPermissions';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },
@@ -16,6 +17,8 @@ const SORTS: SortOption[] = [
 
 const ConstructionPortfolioManagement: React.FC = () => {
   const navigate = useNavigate();
+  const { can } = useAdminPermissions();
+  const PK = 'construction/portfolio';
   const [items, setItems] = useState<ConstructionPortfolio[]>([]);
   const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,8 +98,8 @@ const ConstructionPortfolioManagement: React.FC = () => {
     {
       key: 'manage', label: '관리', width: '90px', render: (it) => (
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/admin/dashboard/construction/portfolio/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>
-          <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>
+          {can(PK, 'u') && <button onClick={() => navigate(`/admin/dashboard/construction/portfolio/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>}
+          {can(PK, 'd') && <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>}
         </div>
       ),
     },
@@ -107,7 +110,7 @@ const ConstructionPortfolioManagement: React.FC = () => {
       <PageHead
         title="포트폴리오 관리"
         desc="시공 내역(이미지·제목·상세·링크)을 등록·수정·삭제하고 순번/활성화를 관리합니다."
-        right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/portfolio/detail/new')}><Plus size={18} /> 포트폴리오 등록</button>}
+        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/portfolio/detail/new')}><Plus size={18} /> 포트폴리오 등록</button> : undefined}
       />
       <BoardToolbar
         search={search} onSearch={setSearch} searchPlaceholder="제목 검색"

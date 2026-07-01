@@ -7,6 +7,7 @@ import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { useAdminPermissions } from '../../../hooks/useAdminPermissions';
 
 const SORTS: SortOption[] = [
   { value: 'order', label: '순번순' },
@@ -22,6 +23,8 @@ const SECTION_COLOR: Record<string, { bg: string; color: string }> = {
 
 const MainVisualManagement: React.FC = () => {
   const navigate = useNavigate();
+  const { can } = useAdminPermissions();
+  const PK = 'main-visuals';
   const [items, setItems] = useState<MainVisual[]>([]);
   const [loading, setLoading] = useState(true);
   const [sectionFilter, setSectionFilter] = useState<MvSection | 'all'>('all');
@@ -106,8 +109,8 @@ const MainVisualManagement: React.FC = () => {
     {
       key: 'manage', label: '관리', width: '90px', render: (it) => (
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/admin/dashboard/main-visuals/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>
-          <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>
+          {can(PK, 'u') && <button onClick={() => navigate(`/admin/dashboard/main-visuals/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>}
+          {can(PK, 'd') && <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>}
         </div>
       ),
     },
@@ -118,7 +121,7 @@ const MainVisualManagement: React.FC = () => {
       <PageHead
         title="메인 비주얼 관리"
         desc="시공·렌탈·DJ 메인 비주얼 배너를 통합 관리합니다. (타입/순번/활성화/검색)"
-        right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/main-visuals/detail/new')}><Plus size={18} /> 메인 비주얼 등록</button>}
+        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate('/admin/dashboard/main-visuals/detail/new')}><Plus size={18} /> 메인 비주얼 등록</button> : undefined}
       />
       <BoardToolbar
         search={search} onSearch={setSearch} searchPlaceholder="제목·문구 검색"

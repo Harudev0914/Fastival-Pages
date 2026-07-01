@@ -7,6 +7,7 @@ import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
 import { PageHead, btnPrimary, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { useAdminPermissions } from '../../../hooks/useAdminPermissions';
 
 const TYPE_LABEL: Record<string, string> = {
   radio: '라디오', checkbox: '체크박스', select: '드롭다운', text: '텍스트', file: '파일업로드', application: '신청 폼',
@@ -32,6 +33,8 @@ const SORTS: SortOption[] = [
 
 const ConstructionChatbotManagement: React.FC = () => {
   const navigate = useNavigate();
+  const { can } = useAdminPermissions();
+  const PK = 'construction/chatbot';
   const [items, setItems] = useState<ChatbotQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -101,8 +104,8 @@ const ConstructionChatbotManagement: React.FC = () => {
     {
       key: 'manage', label: '관리', width: '90px', render: (it) => (
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-          <button onClick={() => navigate(`/admin/dashboard/construction/chatbot/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>
-          <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>
+          {can(PK, 'u') && <button onClick={() => navigate(`/admin/dashboard/construction/chatbot/detail/${it.id}`)} title="수정" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Edit2 size={16} color="#475569" /></button>}
+          {can(PK, 'd') && <button onClick={() => removeItem(it)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}><Trash2 size={16} color="#dc2626" /></button>}
         </div>
       ),
     },
@@ -113,7 +116,7 @@ const ConstructionChatbotManagement: React.FC = () => {
       <PageHead
         title="시공 문의 챗봇 관리"
         desc="시공 문의 챗봇의 룰베이스(질문)를 등록·수정·삭제하고 순번/활성화를 관리합니다."
-        right={<button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/chatbot/detail/new')}><Plus size={18} /> 룰 등록</button>}
+        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate('/admin/dashboard/construction/chatbot/detail/new')}><Plus size={18} /> 룰 등록</button> : undefined}
       />
       <BoardToolbar
         search={search} onSearch={setSearch} searchPlaceholder="질문 검색"
