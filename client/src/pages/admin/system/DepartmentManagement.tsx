@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Plus, Trash2, Save } from 'lucide-react';
-import { departmentApi, type Department } from '../../../api/systemApi';
+import { departmentApi, SUPER_DEPT_NAME, type Department } from '../../../api/systemApi';
 import { card, inputStyle, btnPrimary, th, td, EmptyState, Spinner, PageHead, fmtDate, useAdminModal } from '../../../components/admin/shared';
 
 const DepartmentManagement: React.FC = () => {
@@ -13,7 +13,8 @@ const DepartmentManagement: React.FC = () => {
   const fetchAll = useCallback(async () => {
     const { data, error } = await departmentApi.list();
     if (error) alert('불러오기 오류', error);
-    setItems(data || []);
+    // 최상위 관리자 부서는 부서 관리에서 숨김
+    setItems((data || []).filter((d) => d.name !== SUPER_DEPT_NAME));
   }, [alert]);
   useEffect(() => { (async () => { setLoading(true); await fetchAll(); setLoading(false); })(); }, [fetchAll]);
 
