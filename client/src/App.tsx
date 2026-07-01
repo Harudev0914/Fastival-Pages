@@ -84,6 +84,7 @@ import DepartmentManagement from './pages/admin/system/DepartmentManagement';
 import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
 import CompanyInfoManagement from './pages/admin/system/CompanyInfoManagement';
 import NoticeManagement from './pages/admin/system/NoticeManagement';
+import NoticeDetail from './pages/admin/system/NoticeDetail';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -179,6 +180,7 @@ function AdminContent() {
 
       {/* 사내 공지 */}
       <Route path="notices" element={<NoticeManagement />} />
+      <Route path="notices/detail/:id" element={<NoticeDetail />} />
 
       {/* 환경설정 */}
       <Route path="system/admins" element={<AdminUserManagement />} />

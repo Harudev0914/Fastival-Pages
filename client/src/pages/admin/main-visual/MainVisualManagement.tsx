@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, ImageOff } from 'lucide-react';
 import { mainVisualApi, SECTION_LABEL, type MainVisual, type MvSection } from '../../../api/mainVisualApi';
-import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import BoardToolbar, { type SortOption } from '../../../components/admin/BoardToolbar';
@@ -27,7 +26,7 @@ const MainVisualManagement: React.FC = () => {
   const PK = 'main-visuals';
   const [items, setItems] = useState<MainVisual[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sectionFilter, setSectionFilter] = useState<MvSection | 'all'>('all');
+  const [tab, setTab] = useState<MvSection>('construction');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('order');
   const [active, setActive] = useState('all');
@@ -45,7 +44,7 @@ const MainVisualManagement: React.FC = () => {
 
   const view = useMemo(() => {
     let v = items.filter((it) => {
-      if (sectionFilter !== 'all' && it.section !== sectionFilter) return false;
+      if (it.section !== tab) return false;
       if (active === 'active' && !it.is_active) return false;
       if (active === 'inactive' && it.is_active) return false;
       if (search.trim() && !`${it.title} ${it.subtitle || ''} ${it.badge || ''}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
@@ -55,7 +54,7 @@ const MainVisualManagement: React.FC = () => {
     else if (sort === 'title') v = [...v].sort((a, b) => a.title.localeCompare(b.title));
     else v = [...v].sort((a, b) => a.display_order - b.display_order);
     return v;
-  }, [items, sectionFilter, search, sort, active]);
+  }, [items, tab, search, sort, active]);
 
   const persistOrder = async (reordered: MainVisual[]) => {
     const { error } = await mainVisualApi.reorder(reordered.map((r) => r.id));
@@ -88,19 +87,15 @@ const MainVisualManagement: React.FC = () => {
       ),
     },
     {
-      key: 'section', label: '섹션', width: '80px', render: (it) => {
-        const c = SECTION_COLOR[it.section];
-        return <span style={{ background: c.bg, color: c.color, fontSize: '0.74rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>{SECTION_LABEL[it.section]}</span>;
-      },
-    },
-    {
       key: 'type', label: '타입', width: '90px', render: (it) => (
         <span style={{ background: it.type === 'type_b' ? '#fef2f2' : '#f1f5f9', color: it.type === 'type_b' ? '#dc2626' : '#475569', fontSize: '0.72rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
           {it.type === 'type_b' ? 'B·쿠폰' : 'A·기본'}
         </span>
       ),
     },
-    { key: 'title', label: '제목', width: '1.6fr', align: 'left', render: (it) => <span style={{ fontWeight: 700, color: '#1e293b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.title}</span> },
+    { key: 'title', label: '제목', width: '1.6fr', align: 'left', render: (it) => (it.title && it.title.trim())
+      ? <span style={{ fontWeight: 700, color: '#1e293b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.title}</span>
+      : <span style={{ color: '#cbd5e1', fontWeight: 600 }}>-</span> },
     { key: 'created_at', label: '등록일', width: '140px', render: (it) => fmtDate(it.created_at) },
     { key: 'updated_at', label: '수정일', width: '140px', render: (it) => fmtDate(it.updated_at) },
     { key: 'created_by', label: '등록자', width: '90px', render: (it) => it.created_by || '-' },
@@ -120,28 +115,37 @@ const MainVisualManagement: React.FC = () => {
     <div>
       <PageHead
         title="메인 비주얼 관리"
-        desc="시공·렌탈·DJ 메인 비주얼 배너를 통합 관리합니다. (타입/순번/활성화/검색)"
-        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate('/admin/dashboard/main-visuals/detail/new')}><Plus size={18} /> 메인 비주얼 등록</button> : undefined}
+        desc={`섹션 탭을 선택하면 해당 섹션의 메인 비주얼만 표기·등록됩니다. (현재: ${SECTION_LABEL[tab]})`}
+        right={can(PK, 'c') ? <button style={btnPrimary} onClick={() => navigate(`/admin/dashboard/main-visuals/detail/new?section=${tab}`)}><Plus size={18} /> {SECTION_LABEL[tab]} 메인 비주얼 등록</button> : undefined}
       />
+
+      {/* 섹션 탭 */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {(['construction', 'rental', 'dj'] as MvSection[]).map((s) => {
+          const on = tab === s; const c = SECTION_COLOR[s];
+          const cnt = items.filter((it) => it.section === s).length;
+          return (
+            <button key={s} onClick={() => setTab(s)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '10px 20px', border: `1px solid ${on ? c.color : '#e2e8f0'}`, background: on ? c.color : '#fff', color: on ? '#fff' : '#64748b', borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all .15s' }}>
+              {SECTION_LABEL[s]}
+              <span style={{ fontSize: '0.74rem', fontWeight: 700, background: on ? 'rgba(255,255,255,0.25)' : '#f1f5f9', color: on ? '#fff' : '#94a3b8', padding: '1px 8px', borderRadius: '999px' }}>{cnt}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <BoardToolbar
         search={search} onSearch={setSearch} searchPlaceholder="제목·문구 검색"
         sort={sort} onSort={setSort} sortOptions={SORTS}
         active={active} onActive={setActive} count={view.length}
-      >
-        <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value as MvSection | 'all')}>
-          <option value="all">전체 섹션</option>
-          <option value="construction">시공</option>
-          <option value="rental">렌탈</option>
-          <option value="dj">DJ</option>
-        </select>
-      </BoardToolbar>
+      />
       <BoardTable
         items={view}
         getId={(it) => it.id}
         columns={columns}
         onReorder={persistOrder}
         loading={loading}
-        emptyMessage="등록된 메인 비주얼이 없습니다."
+        emptyMessage={`${SECTION_LABEL[tab]} 섹션에 등록된 메인 비주얼이 없습니다.`}
       />
       {modal}
     </div>

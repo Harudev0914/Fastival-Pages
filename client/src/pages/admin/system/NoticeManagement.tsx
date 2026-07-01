@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, Pin, PinOff } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Plus, Edit2, Trash2, Pin, PinOff, ChevronRight } from 'lucide-react';
 import { adminNoticeApi, type AdminNotice } from '../../../api/systemApi';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import { PageHead, card, btnPrimary, btnGhost, fmtDate, useAdminModal, FormSection, TextField, TextareaField, FormActions } from '../../../components/admin/shared';
@@ -8,6 +9,8 @@ import { useAdminPermissions } from '../../../hooks/useAdminPermissions';
 const PK = 'notices';
 
 const NoticeManagement: React.FC = () => {
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const { can } = useAdminPermissions();
   const [items, setItems] = useState<AdminNotice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +31,15 @@ const NoticeManagement: React.FC = () => {
   const openNew = () => { setEditing('new'); setTitle(''); setContent(''); setPinned(false); };
   const openEdit = (n: AdminNotice) => { setEditing(n); setTitle(n.title); setContent(n.content || ''); setPinned(n.pinned); };
   const close = () => setEditing(null);
+
+  // 상세 페이지의 '수정' 진입(?edit=id) 처리
+  useEffect(() => {
+    const eid = params.get('edit');
+    if (eid && items.length) {
+      const found = items.find((n) => String(n.id) === eid);
+      if (found) { openEdit(found); params.delete('edit'); setParams(params, { replace: true }); }
+    }
+  }, [items, params, setParams]);
 
   const save = async () => {
     if (!title.trim()) return alert('입력 필요', '공지 제목을 입력해주세요.');
@@ -52,7 +64,11 @@ const NoticeManagement: React.FC = () => {
       ? <button onClick={() => togglePin(n)} title={n.pinned ? '고정 해제' : '상단 고정'} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>{n.pinned ? <Pin size={16} color="#f59e0b" /> : <PinOff size={16} color="#cbd5e1" />}</button>
       : (n.pinned ? <Pin size={16} color="#f59e0b" /> : '-') },
     { key: 'title', label: '제목', width: '1.6fr', align: 'left', render: (n) => (
-      <span style={{ fontWeight: 700, color: '#1e293b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.pinned && <span style={{ color: '#f59e0b', marginRight: '5px' }}>[고정]</span>}{n.title}</span>
+      <button onClick={() => navigate(`/admin/dashboard/notices/detail/${n.id}`)} title="상세 보기"
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%', display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
+        <span style={{ fontWeight: 700, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.pinned && <span style={{ color: '#f59e0b', marginRight: '5px' }}>[고정]</span>}{n.title}</span>
+        <ChevronRight size={14} color="#cbd5e1" style={{ flexShrink: 0 }} />
+      </button>
     ) },
     { key: 'by', label: '작성자', width: '120px', render: (n) => n.created_by || '-' },
     { key: 'at', label: '작성일', width: '150px', render: (n) => fmtDate(n.created_at) },

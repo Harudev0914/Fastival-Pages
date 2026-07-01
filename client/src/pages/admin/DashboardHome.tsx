@@ -214,13 +214,14 @@ const DashboardHome: React.FC = () => {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', maxHeight: '220px' }}>
               {notices.map((n) => (
-                <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', padding: '10px 2px', borderBottom: '1px solid #f1f5f9' }}>
-                  {n.pinned ? <Pin size={14} color="#f59e0b" style={{ marginTop: '3px', flexShrink: 0 }} /> : <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#cbd5e1', marginTop: '7px', flexShrink: 0 }} />}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#334155' }}>{n.title}</div>
-                    {n.content && <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px', whiteSpace: 'pre-wrap' }}>{n.content}</div>}
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '3px' }}>{n.created_by || ''} · {fmtDate(n.created_at)}</div>
-                  </div>
+                <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: '9px', padding: '11px 2px', borderBottom: '1px solid #f1f5f9' }}>
+                  {n.pinned ? <Pin size={14} color="#f59e0b" style={{ flexShrink: 0 }} /> : <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#cbd5e1', flexShrink: 0 }} />}
+                  <button onClick={() => navigate(`/admin/dashboard/notices/detail/${n.id}`)} title="상세 보기"
+                    style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '2px' }}>{n.created_by || ''} · {fmtDate(n.created_at)}</div>
+                  </button>
+                  <ChevronRight size={15} color="#cbd5e1" style={{ flexShrink: 0 }} />
                   {canPost && <button onClick={() => removeNotice(n)} title="삭제" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}><Trash2 size={14} color="#cbd5e1" /></button>}
                 </div>
               ))}
