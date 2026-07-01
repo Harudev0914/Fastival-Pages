@@ -40,9 +40,8 @@ const Footer: React.FC = () => {
           <img src="/Klipse_Logo.png" alt="Klipse" className="footer-logo" />
           <nav className="footer-links">
             <Link to="/company">회사 소개</Link>
-            <Link to="/rental/inquiry">입점신청</Link>
-            <Link to="/partnership">제휴/광고 문의</Link>
-            <Link to="/partner-guide">시공 파트너 안내</Link>
+            <Link to="/partnership">광고 문의</Link>
+            <Link to="/partner-guide">파트너 센터</Link>
           </nav>
         </div>
 

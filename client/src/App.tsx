@@ -260,8 +260,8 @@ function App() {
 
           {/* 푸터 메뉴 */}
           <Route path="/company" element={<Placeholder title="회사 소개" desc="클립스(Klipse) 회사 소개 페이지입니다. 곧 오픈됩니다." seoKeywords="클립스,회사소개,Klipse" />} />
-          <Route path="/partnership" element={<Placeholder title="제휴/광고 문의" desc="제휴 및 광고 문의 페이지입니다. 곧 오픈됩니다." seoKeywords="제휴 문의,광고 문의,클립스 제휴" />} />
-          <Route path="/partner-guide" element={<Placeholder title="시공 파트너 안내" desc="시공 파트너(협력 업체) 안내 페이지입니다. 곧 오픈됩니다." seoKeywords="시공 파트너,협력 업체,시공 제휴" />} />
+          <Route path="/partnership" element={<Placeholder title="광고 문의" desc="광고 및 제휴 문의 페이지입니다. 곧 오픈됩니다." seoKeywords="광고 문의,제휴 문의,클립스 광고" />} />
+          <Route path="/partner-guide" element={<Placeholder title="파트너 센터" desc="파트너(협력 업체) 센터입니다. 곧 오픈됩니다." seoKeywords="파트너 센터,협력 업체,시공 파트너" />} />
           <Route path="/terms/service" element={<TermsViewPage type="service" />} />
           <Route path="/terms/privacy" element={<TermsViewPage type="privacy" />} />
           <Route path="/terms/partner-privacy" element={<Placeholder title="파트너 개인정보 처리방침" desc="파트너 개인정보 처리방침 페이지입니다. 곧 오픈됩니다." seoKeywords="파트너 개인정보 처리방침" />} />
