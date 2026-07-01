@@ -58,7 +58,6 @@ import DjArtistManagement from './pages/admin/dj/DjArtistManagement';
 import DjArtistDetail from './pages/admin/dj/DjArtistDetail';
 import TermsManagement from './pages/admin/terms/TermsManagement';
 import TermsDetail from './pages/admin/terms/TermsDetail';
-import AdminPlaceholder from './pages/admin/common/AdminPlaceholder';
 import RentalCalendar from './pages/admin/rental/RentalCalendar';
 import ConstructionCalendar from './pages/admin/construction/ConstructionCalendar';
 import ConstructionCompanyManagement from './pages/admin/construction/ConstructionCompanyManagement';
@@ -67,6 +66,13 @@ import ConstructionWorkManagement from './pages/admin/construction/ConstructionW
 import ConstructionWorkDetail from './pages/admin/construction/ConstructionWorkDetail';
 import EstimateManagement from './pages/admin/estimate/EstimateManagement';
 import EstimateDetail from './pages/admin/estimate/EstimateDetail';
+import DjList from './pages/admin/dj/DjList';
+import DjEventInquiryManagement from './pages/admin/dj/DjEventInquiryManagement';
+import DjEventInquiryDetail from './pages/admin/dj/DjEventInquiryDetail';
+import DjEventCalendar from './pages/admin/dj/DjEventCalendar';
+import DjStats from './pages/admin/dj/DjStats';
+import ConstructionStats from './pages/admin/construction/ConstructionStats';
+import RentalStats from './pages/admin/rental/RentalStats';
 import AdminUserManagement from './pages/admin/system/AdminUserManagement';
 import DepartmentManagement from './pages/admin/system/DepartmentManagement';
 import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
@@ -124,12 +130,13 @@ function AdminContent() {
       <Route path="rental/events" element={<RentalProductManagement mode="event" />} />
 
       {/* DJ 관리 */}
-      <Route path="dj/list" element={<AdminPlaceholder title="DJ 목록" desc="등록·승인된 DJ 아티스트를 조회·관리합니다." />} />
+      <Route path="dj/list" element={<DjList />} />
       <Route path="dj/artists" element={<DjArtistManagement />} />
       <Route path="dj/artists/detail/:id" element={<DjArtistDetail />} />
-      <Route path="dj/event-inquiries" element={<AdminPlaceholder title="DJ 행사 문의 관리" desc="DJ 섭외/행사 대행 문의를 접수·관리합니다." />} />
-      <Route path="dj/calendar" element={<AdminPlaceholder title="DJ 행사 캘린더" desc="예정된 DJ 행사 일정을 캘린더로 관리합니다." />} />
-      <Route path="dj/stats" element={<AdminPlaceholder title="DJ 행사 통계" desc="DJ 행사/섭외 실적을 통계로 확인합니다." />} />
+      <Route path="dj/event-inquiries" element={<DjEventInquiryManagement />} />
+      <Route path="dj/event-inquiries/detail/:id" element={<DjEventInquiryDetail />} />
+      <Route path="dj/calendar" element={<DjEventCalendar />} />
+      <Route path="dj/stats" element={<DjStats />} />
 
       {/* 시공 - 업무/업체/캘린더/통계 */}
       <Route path="construction/works" element={<ConstructionWorkManagement />} />
@@ -137,11 +144,11 @@ function AdminContent() {
       <Route path="construction/companies" element={<ConstructionCompanyManagement />} />
       <Route path="construction/companies/detail/:id" element={<ConstructionCompanyDetail />} />
       <Route path="construction/calendar" element={<ConstructionCalendar />} />
-      <Route path="construction/stats" element={<AdminPlaceholder title="시공 내역 통계" desc="시공 문의/진행 실적을 통계로 확인합니다." />} />
+      <Route path="construction/stats" element={<ConstructionStats />} />
 
       {/* 렌탈 - 내역 캘린더 / 통계 */}
       <Route path="rental/calendar" element={<RentalCalendar />} />
-      <Route path="rental/stats" element={<AdminPlaceholder title="렌탈 내역 통계" desc="렌탈 주문/매출 실적을 통계로 확인합니다." />} />
+      <Route path="rental/stats" element={<RentalStats />} />
 
       {/* 견적서 관리 (시공/렌탈/DJ) */}
       <Route path="estimates/construction" element={<EstimateManagement type="construction" />} />

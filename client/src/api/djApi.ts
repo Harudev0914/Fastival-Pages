@@ -56,3 +56,34 @@ export const djApi = {
     return { data: error ? null : (true as const), error };
   }),
 };
+
+// ==================== DJ 행사(섭외) 문의 ====================
+export type DjEventStatus = 'pending' | 'consulting' | 'confirmed' | 'done' | 'cancelled';
+export const DJ_EVENT_STATUS_LABEL: Record<DjEventStatus, string> = { pending: '접수', consulting: '상담중', confirmed: '확정', done: '완료', cancelled: '취소' };
+export const DJ_EVENT_STATUS_COLOR: Record<DjEventStatus, string> = { pending: '#64748b', consulting: '#d97706', confirmed: '#2563eb', done: '#059669', cancelled: '#94a3b8' };
+
+export interface DjEventInquiry {
+  id: number;
+  title: string;
+  customer_name: string | null; customer_phone: string | null; customer_email: string | null;
+  event_date: string | null; event_time: string | null;
+  region: string | null; venue: string | null; budget: number | null;
+  artist_id: number | null; artist_name: string | null; guests: number | null;
+  message: string | null; status: DjEventStatus; admin_memo: string | null;
+  created_at: string; updated_at: string | null; updated_by: string | null;
+}
+
+export const djEventApi = {
+  list: () => run<DjEventInquiry[]>(() => supabase.from('dj_event_inquiries').select('*').order('created_at', { ascending: false }) as any),
+  scheduled: () => run<DjEventInquiry[]>(() => supabase.from('dj_event_inquiries').select('*').not('event_date', 'is', null).neq('status', 'cancelled') as any),
+  get: (id: number | string) => run<DjEventInquiry>(() => supabase.from('dj_event_inquiries').select('*').eq('id', id).single() as any),
+  create: (input: Partial<DjEventInquiry>) => run<DjEventInquiry>(() => supabase.from('dj_event_inquiries').insert(input as any).select().single() as any),
+  async update(id: number | string, input: Partial<DjEventInquiry>): Promise<Result<DjEventInquiry>> {
+    const by = await currentAdminName();
+    return run<DjEventInquiry>(() => supabase.from('dj_event_inquiries').update({ ...input, updated_by: by } as any).eq('id', id).select().single() as any);
+  },
+  remove: (id: number | string) => run<true>(async () => {
+    const { error } = await supabase.from('dj_event_inquiries').delete().eq('id', id);
+    return { data: error ? null : (true as const), error };
+  }),
+};
