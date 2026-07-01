@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt, Megaphone } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
 import { useAdminPermissions } from '../hooks/useAdminPermissions';
+import { companyApi } from '../api/companyApi';
 
 const AdminDashboard: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState(() => localStorage.getItem('activeMenu') || '대시보드');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [companyName, setCompanyName] = useState<string>('');
   const menuRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { can, canGroup } = useAdminPermissions();
@@ -34,6 +36,7 @@ const AdminDashboard: React.FC = () => {
       }
     };
     fetchUser();
+    companyApi.get().then(({ data }) => { if (data?.site_name) setCompanyName(data.site_name); });
 
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -72,15 +75,24 @@ const AdminDashboard: React.FC = () => {
   };
 
   const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : '?';
+  const brandName = companyName || 'KLIPSE';
+  const brandInitial = (brandName.trim().charAt(0) || 'K').toUpperCase();
+  const now = new Date();
+  const WD = ['일', '월', '화', '수', '목', '금', '토'];
+  const todayLabel = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()} (${WD[now.getDay()]})`;
 
   return (
     <div className="dashboard-container">
       <Seo title="관리자" noindex />
       <nav className="sidebar">
+        <div className="brand">
+          <div className="brand-logo">{brandInitial}</div>
+          <span className="brand-name">{brandName}</span>
+        </div>
         {can('dashboard') && <div className={`menu-item ${activeMenu === '대시보드' ? 'active' : ''}`} onClick={() => handleMenuClick('대시보드', '/admin/dashboard')}><LayoutDashboard size={18} /> <span>대시보드 홈</span></div>}
 
-        {/* 메인 비주얼 관리 (1Depth) */}
-        {can('main-visuals') && <div className={`menu-item ${activeMenu === '메인 비주얼 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('메인 비주얼 관리', '/admin/dashboard/main-visuals')}><ImageIcon size={18} /> <span>메인 비주얼 관리</span></div>}
+        {/* 사내 공지 (1Depth) */}
+        {can('notices') && <div className={`menu-item ${activeMenu === '사내 공지' ? 'active' : ''}`} onClick={() => handleMenuClick('사내 공지', '/admin/dashboard/notices')}><Megaphone size={18} /> <span>사내 공지</span></div>}
 
         {/* 시공 관리 */}
         {canGroup(CON_KEYS) && (<>
@@ -97,6 +109,20 @@ const AdminDashboard: React.FC = () => {
                 {can('construction/chatbot') && <span className={activeMenu === '시공 문의 챗봇 관리' ? 'active' : ''} onClick={() => handleMenuClick('시공 문의 챗봇 관리', '/admin/dashboard/construction/chatbot')}>시공 문의 챗봇 관리</span>}
                 {can('construction/calendar') && <span className={activeMenu === '시공 내역 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('시공 내역 캘린더', '/admin/dashboard/construction/calendar')}>시공 내역 캘린더</span>}
                 {can('construction/stats') && <span className={activeMenu === '시공 내역 통계' ? 'active' : ''} onClick={() => handleMenuClick('시공 내역 통계', '/admin/dashboard/construction/stats')}>시공 내역 통계</span>}
+            </div>
+        )}
+        </>)}
+
+        {/* 시공 업무 관리 */}
+        {canGroup(WORK_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('시공 업무 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Briefcase size={18} /> <span>시공 업무 관리</span></div>
+            {expandedMenus['시공 업무 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['시공 업무 관리'] && (
+            <div className="sub-menu">
+                {can('construction/works') && <span className={activeMenu === '시공 업무 현황' ? 'active' : ''} onClick={() => handleMenuClick('시공 업무 현황', '/admin/dashboard/construction/works')}>시공 업무 현황</span>}
+                {can('construction/companies') && <span className={activeMenu === '시공 업체 관리' ? 'active' : ''} onClick={() => handleMenuClick('시공 업체 관리', '/admin/dashboard/construction/companies')}>시공 업체 관리</span>}
             </div>
         )}
         </>)}
@@ -118,20 +144,6 @@ const AdminDashboard: React.FC = () => {
                 {can('rental/purchases') && <span className={activeMenu === '렌탈 입점 문의' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 입점 문의', '/admin/dashboard/rental/purchases')}>렌탈 입점 문의</span>}
                 {can('rental/calendar') && <span className={activeMenu === '렌탈 내역 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 내역 캘린더', '/admin/dashboard/rental/calendar')}>렌탈 내역 캘린더</span>}
                 {can('rental/stats') && <span className={activeMenu === '렌탈 내역 통계' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 내역 통계', '/admin/dashboard/rental/stats')}>렌탈 내역 통계</span>}
-            </div>
-        )}
-        </>)}
-
-        {/* 시공 업무 관리 */}
-        {canGroup(WORK_KEYS) && (<>
-        <div className={`menu-item`} onClick={() => toggleMenu('시공 업무 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Briefcase size={18} /> <span>시공 업무 관리</span></div>
-            {expandedMenus['시공 업무 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
-        </div>
-        {expandedMenus['시공 업무 관리'] && (
-            <div className="sub-menu">
-                {can('construction/works') && <span className={activeMenu === '시공 업무 현황' ? 'active' : ''} onClick={() => handleMenuClick('시공 업무 현황', '/admin/dashboard/construction/works')}>시공 업무 현황</span>}
-                {can('construction/companies') && <span className={activeMenu === '시공 업체 관리' ? 'active' : ''} onClick={() => handleMenuClick('시공 업체 관리', '/admin/dashboard/construction/companies')}>시공 업체 관리</span>}
             </div>
         )}
         </>)}
@@ -169,6 +181,9 @@ const AdminDashboard: React.FC = () => {
         )}
         </>)}
 
+        {/* 메인 비주얼 관리 (1Depth) */}
+        {can('main-visuals') && <div className={`menu-item ${activeMenu === '메인 비주얼 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('메인 비주얼 관리', '/admin/dashboard/main-visuals')}><ImageIcon size={18} /> <span>메인 비주얼 관리</span></div>}
+
         {/* 약관 관리 */}
         {canGroup(TERMS_KEYS) && (<>
         <div className={`menu-item`} onClick={() => toggleMenu('약관 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -203,9 +218,18 @@ const AdminDashboard: React.FC = () => {
 
       <main className="main-content">
         <header className="header">
-          <div className="header-title">{activeMenu}</div>
+          <div>
+            <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.04em', marginBottom: '3px' }}>{brandName} · 관리자</div>
+            <div className="header-title">{activeMenu}</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+            <div style={{ textAlign: 'right', lineHeight: 1.3 }}>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>{todayLabel}</div>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userEmail || ' '}</div>
+            </div>
+            <div style={{ width: '1px', height: '28px', background: '#e2e8f0' }} />
           <div style={{ position: 'relative' }} ref={menuRef}>
-            <div onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#008b8b', color: 'white', fontWeight: 'bold' }}>
+            <div onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#008b8b', color: 'white', fontWeight: 'bold', boxShadow: '0 2px 6px rgba(0,139,139,0.3)' }}>
               {userInitial}
             </div>
             {isUserMenuOpen && (
@@ -214,6 +238,7 @@ const AdminDashboard: React.FC = () => {
                 <div onClick={handleLogout} style={{ padding: '8px', cursor: 'pointer', fontSize: '0.9rem', color: '#ef4444' }}>로그아웃</div>
               </div>
             )}
+          </div>
           </div>
         </header>
 

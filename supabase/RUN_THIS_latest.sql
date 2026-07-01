@@ -27,12 +27,15 @@ CREATE TABLE IF NOT EXISTS public.dj_artists (
   social_links JSONB NOT NULL DEFAULT '[]'::jsonb,
   regions JSONB NOT NULL DEFAULT '[]'::jsonb,
   guarantee_seoul NUMERIC, guarantee_gyeonggi NUMERIC, guarantee_daejeon NUMERIC,
+  guarantees JSONB NOT NULL DEFAULT '{}'::jsonb,
   intro TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','hold','rejected')),
   admin_memo TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc'::text, NOW()), updated_by TEXT
 );
+-- 기존 테이블에도 전국 지역별 게런티 맵 컬럼 보강
+ALTER TABLE public.dj_artists ADD COLUMN IF NOT EXISTS guarantees JSONB NOT NULL DEFAULT '{}'::jsonb;
 CREATE INDEX IF NOT EXISTS idx_dj_artists_status ON public.dj_artists (status, created_at DESC);
 DROP TRIGGER IF EXISTS trg_dj_artists_updated ON public.dj_artists;
 CREATE TRIGGER trg_dj_artists_updated BEFORE UPDATE ON public.dj_artists FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();

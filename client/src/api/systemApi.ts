@@ -1,6 +1,6 @@
 // 환경설정: 부서 / 부서별 권한 / 관리자
 import { supabase } from '../supabaseClient';
-import { run, mapError, type Result } from './core';
+import { run, mapError, currentAdminName, type Result } from './core';
 
 // 어드민 메뉴 트리(부서별 접근 권한 부여 대상) — 1Depth 그룹 + 2Depth 세부 메뉴
 export interface AdminMenuGroup {
@@ -11,7 +11,7 @@ export interface AdminMenuGroup {
 
 export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
   { key: 'dashboard', label: '대시보드 홈', items: [] },
-  { key: 'main-visuals', label: '메인 비주얼 관리', items: [] },
+  { key: 'notices', label: '사내 공지', items: [] },
   {
     key: 'construction', label: '시공 관리', items: [
       { key: 'construction/inquiries', label: '시공 문의 내역' },
@@ -21,6 +21,12 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'construction/chatbot', label: '시공 문의 챗봇 관리' },
       { key: 'construction/calendar', label: '시공 내역 캘린더' },
       { key: 'construction/stats', label: '시공 내역 통계' },
+    ],
+  },
+  {
+    key: 'construction-ops', label: '시공 업무 관리', items: [
+      { key: 'construction/works', label: '시공 업무 현황' },
+      { key: 'construction/companies', label: '시공 업체 관리' },
     ],
   },
   {
@@ -34,12 +40,6 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'rental/purchases', label: '렌탈 입점 문의' },
       { key: 'rental/calendar', label: '렌탈 내역 캘린더' },
       { key: 'rental/stats', label: '렌탈 내역 통계' },
-    ],
-  },
-  {
-    key: 'construction-ops', label: '시공 업무 관리', items: [
-      { key: 'construction/works', label: '시공 업무 현황' },
-      { key: 'construction/companies', label: '시공 업체 관리' },
     ],
   },
   {
@@ -59,6 +59,7 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'contracts', label: '계약서 관리' },
     ],
   },
+  { key: 'main-visuals', label: '메인 비주얼 관리', items: [] },
   {
     key: 'terms', label: '약관 관리', items: [
       { key: 'terms/service', label: '서비스 이용약관' },
@@ -124,6 +125,46 @@ export async function getMyPermissions(): Promise<MyPermissions> {
     return { isSuper: false, perms: {} };
   }
 }
+
+// 현재 로그인 관리자 프로필(대시보드 상단 표기용)
+export interface MyProfile { name: string; email: string; deptName: string; isSuper: boolean; }
+export async function getMyProfile(): Promise<MyProfile> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    const email = user?.email || '';
+    if (email === SUPER_ADMIN_EMAIL) return { name: user?.user_metadata?.name || '최상위 관리자', email, deptName: SUPER_DEPT_NAME, isSuper: true };
+    const { data } = await supabase.from('admins').select('name, email, departments(name)').eq('email', email).maybeSingle();
+    const nm = (data as any)?.name || user?.user_metadata?.name || email || '관리자';
+    const dept = (data as any)?.departments?.name || '부서 미지정';
+    return { name: nm, email, deptName: dept, isSuper: dept === SUPER_DEPT_NAME };
+  } catch {
+    return { name: '관리자', email: '', deptName: '-', isSuper: false };
+  }
+}
+
+// 사내 공지사항 (관리자 전용)
+export interface AdminNotice { id: number; title: string; content: string | null; pinned: boolean; created_by: string | null; created_at: string; }
+export const adminNoticeApi = {
+  list: () => run<AdminNotice[]>(() => supabase.from('admin_notices').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false }) as any),
+  get: (id: number | string) => run<AdminNotice>(() => supabase.from('admin_notices').select('*').eq('id', id).single() as any),
+  async create(input: { title: string; content?: string; pinned?: boolean }): Promise<Result<AdminNotice>> {
+    if (!input.title?.trim()) return { data: null, error: '공지 제목을 입력해주세요.' };
+    const by = await currentAdminName();
+    return run<AdminNotice>(() => supabase.from('admin_notices').insert({ title: input.title.trim(), content: input.content || null, pinned: input.pinned ?? false, created_by: by }).select().single() as any);
+  },
+  async update(id: number | string, input: { title: string; content?: string; pinned?: boolean }): Promise<Result<AdminNotice>> {
+    if (!input.title?.trim()) return { data: null, error: '공지 제목을 입력해주세요.' };
+    return run<AdminNotice>(() => supabase.from('admin_notices').update({ title: input.title.trim(), content: input.content || null, pinned: input.pinned ?? false }).eq('id', id).select().single() as any);
+  },
+  setPinned: (id: number | string, pinned: boolean) => run<true>(async () => {
+    const { error } = await supabase.from('admin_notices').update({ pinned }).eq('id', id);
+    return { data: error ? null : (true as const), error };
+  }),
+  remove: (id: number | string) => run<true>(async () => {
+    const { error } = await supabase.from('admin_notices').delete().eq('id', id);
+    return { data: error ? null : (true as const), error };
+  }),
+};
 
 export const departmentApi = {
   list: () => run<Department[]>(() => supabase.from('departments').select('*').order('name') as any),

@@ -105,7 +105,7 @@ function BoardTable<T>({ items, getId, columns, onReorder, loading, emptyMessage
                 const id = getId(item);
                 const checked = selectable && selectedIds!.has(id);
                 return (
-                  <div key={id} style={{ display: 'grid', gridTemplateColumns: template, borderBottom: '1px solid #f1f5f9', background: checked ? '#f0fdfa' : '#fff', alignItems: 'center' }}>
+                  <div key={id} className={checked ? undefined : 'bt-row'} style={{ display: 'grid', gridTemplateColumns: template, borderBottom: '1px solid #f1f5f9', alignItems: 'center', ...(checked ? { background: '#f0fdfa' } : {}) }}>
                     {selectable && checkCell(id)}
                     {cells(item, pageSize ? page * pageSize + index : index)}
                   </div>

@@ -68,7 +68,13 @@ const DjArtistDetail: React.FC = () => {
         <Row label="유튜브">{item.youtube_url ? <a href={item.youtube_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{item.youtube_url}</a> : '-'}</Row>
         <Row label="소셜">{item.social_links?.length ? item.social_links.map((s, i) => <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', marginRight: '10px' }}>{s.label || s.url}</a>) : '-'}</Row>
         <Row label="섭외 지역">{(item.regions || []).join(', ') || '-'}</Row>
-        <Row label="게런티">서울 {won(item.guarantee_seoul)} · 경기 {won(item.guarantee_gyeonggi)} · 대전 {won(item.guarantee_daejeon)}</Row>
+        <Row label="게런티">{(() => {
+          const gm = item.guarantees && Object.keys(item.guarantees).length
+            ? item.guarantees
+            : { 서울: item.guarantee_seoul, 경기: item.guarantee_gyeonggi, 대전: item.guarantee_daejeon };
+          const entries = Object.entries(gm).filter(([, v]) => v != null);
+          return entries.length ? entries.map(([r, v]) => `${r} ${won(v as number)}`).join(' · ') : '-';
+        })()}</Row>
         <Row label="소개">{item.intro || '-'}</Row>
         <Row label="접수일">{fmtDate(item.created_at)}</Row>
       </div>

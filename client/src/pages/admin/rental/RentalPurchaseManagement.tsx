@@ -4,6 +4,8 @@ import { Search, ChevronRight } from 'lucide-react';
 import { purchaseApi, PURCHASE_STATUS_LABEL, GRADES, type PurchaseInquiry, type PurchaseStatus, type Grade } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { ExportBtn } from '../../../components/admin/listTools';
+import { exportToCsv } from '../../../utils/exportCsv';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const STATUS_COLOR: Record<PurchaseStatus, string> = { pending: '#2563eb', approved: '#059669', hold: '#d97706', rejected: '#dc2626' };
@@ -34,6 +36,17 @@ const RentalPurchaseManagement: React.FC = () => {
     return true;
   }), [items, search, status, grade]);
 
+  const doExport = () => exportToCsv('렌탈입점문의', [
+    { header: '접수일', value: (it: PurchaseInquiry) => fmtDate(it.created_at) },
+    { header: '품목', value: (it) => it.product_name },
+    { header: '브랜드', value: (it) => it.brand_name },
+    { header: '등급', value: (it) => `${it.condition_grade}급` },
+    { header: '희망가', value: (it) => it.desired_price },
+    { header: '신청자', value: (it) => it.applicant_name },
+    { header: '연락처', value: (it) => it.applicant_phone },
+    { header: '상태', value: (it) => PURCHASE_STATUS_LABEL[it.status] },
+  ], view);
+
   const th: React.CSSProperties = { padding: '12px 14px', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 700, background: '#f8fafc', whiteSpace: 'nowrap' };
   const td: React.CSSProperties = { padding: '12px 14px', fontSize: '0.86rem', color: '#334155', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' };
 
@@ -57,6 +70,7 @@ const RentalPurchaseManagement: React.FC = () => {
           <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
           <input style={{ ...inputStyle, paddingLeft: '36px' }} placeholder="품목·브랜드·신청자 검색" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <ExportBtn onClick={doExport} disabled={view.length === 0} />
         <span style={{ fontSize: '0.85rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{view.length}건</span>
       </div>
 

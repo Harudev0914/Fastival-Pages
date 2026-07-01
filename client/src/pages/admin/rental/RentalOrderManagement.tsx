@@ -4,6 +4,8 @@ import { Search, ChevronRight } from 'lucide-react';
 import { orderApi, PAYMENT_LABEL, ORDER_LABEL, type RentalOrder, type OrderStatus, type PaymentStatus } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { ExportBtn } from '../../../components/admin/listTools';
+import { exportToCsv } from '../../../utils/exportCsv';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const ORDER_COLOR: Record<OrderStatus, string> = { reserved: '#2563eb', renting: '#d97706', returned: '#059669', cancelled: '#94a3b8' };
@@ -34,6 +36,19 @@ const RentalOrderManagement: React.FC = () => {
     return true;
   }), [items, search, orderStatus, payStatus]);
 
+  const doExport = () => exportToCsv('렌탈주문', [
+    { header: '주문일', value: (o: RentalOrder) => fmtDate(o.created_at) },
+    { header: '상품', value: (o) => o.product_name },
+    { header: '옵션', value: (o) => o.option_name },
+    { header: '고객', value: (o) => o.customer_name },
+    { header: '연락처', value: (o) => o.customer_phone },
+    { header: '대여시작', value: (o) => o.rental_start },
+    { header: '일수', value: (o) => o.rental_days },
+    { header: '결제액', value: (o) => o.total_amount },
+    { header: '결제상태', value: (o) => PAYMENT_LABEL[o.payment_status] },
+    { header: '대여상태', value: (o) => ORDER_LABEL[o.order_status] },
+  ], view);
+
   const th: React.CSSProperties = { padding: '12px 14px', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 700, background: '#f8fafc', whiteSpace: 'nowrap' };
   const td: React.CSSProperties = { padding: '12px 14px', fontSize: '0.86rem', color: '#334155', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' };
 
@@ -60,6 +75,7 @@ const RentalOrderManagement: React.FC = () => {
           <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
           <input style={{ ...inputStyle, paddingLeft: '36px' }} placeholder="상품명·고객명·연락처 검색" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <ExportBtn onClick={doExport} disabled={view.length === 0} />
         <span style={{ fontSize: '0.85rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{view.length}건</span>
       </div>
 

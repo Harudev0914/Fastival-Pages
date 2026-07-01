@@ -79,7 +79,8 @@ const ContractBuilder: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', gap: '20px', alignItems: 'start' }}>
+      <style>{`@media (max-width: 1080px){ .doc-editor{ grid-template-columns: 1fr !important; } .doc-preview{ position: static !important; max-height: none !important; } }`}</style>
+      <div className="doc-editor" style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', gap: '20px', alignItems: 'start' }}>
         {/* 좌: 입력 폼 */}
         <div style={{ display: 'grid', gap: '16px' }}>
           <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
@@ -117,8 +118,8 @@ const ContractBuilder: React.FC = () => {
           ))}
         </div>
 
-        {/* 우: 워드형 문서 프리뷰 */}
-        <div style={{ background: '#eef2f7', borderRadius: '12px', padding: '24px', overflowX: 'auto', minHeight: '600px' }}>
+        {/* 우: 워드형 문서 프리뷰 (스크롤 시 고정) */}
+        <div className="doc-preview" style={{ position: 'sticky', top: '8px', background: '#eef2f7', borderRadius: '12px', padding: '24px', overflow: 'auto', maxHeight: 'calc(100vh - 40px)' }}>
           <div style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.12)' }}>
             <ContractDocument ref={paperRef} template={template} title={title} data={data} />
           </div>

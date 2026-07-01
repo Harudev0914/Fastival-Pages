@@ -128,12 +128,12 @@ export const ESTIMATE_TYPE_LABEL: Record<EstimateType, string> = { construction:
 export type EstimateStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
 export const ESTIMATE_STATUS_LABEL: Record<EstimateStatus, string> = { draft: '작성중', sent: '발송', accepted: '수락', rejected: '반려' };
 export const ESTIMATE_STATUS_COLOR: Record<EstimateStatus, string> = { draft: '#64748b', sent: '#2563eb', accepted: '#059669', rejected: '#dc2626' };
-export interface EstimateItem { name: string; qty: number; unit_price: number; amount: number; }
+export interface EstimateItem { name: string; spec?: string; unit?: string; qty: number; unit_price: number; amount: number; }
 export interface Estimate {
   id: number; type: EstimateType; estimate_no: string | null; title: string;
   customer_name: string | null; customer_phone: string | null; customer_email: string | null;
   items: EstimateItem[]; subtotal: number; discount: number; tax: number; total: number;
-  issue_date: string | null; valid_until: string | null; status: EstimateStatus; memo: string | null;
+  issue_date: string | null; valid_until: string | null; status: EstimateStatus; memo: string | null; terms: string | null;
   created_at: string; updated_at: string | null; created_by: string | null; updated_by: string | null;
 }
 const EST = 'estimates';
@@ -147,7 +147,7 @@ export const estimateApi = {
     return run<Estimate>(() => supabase.from(EST).insert({
       type: input.type, title: input.title!.trim(), customer_name: input.customer_name || null, customer_phone: input.customer_phone || null, customer_email: input.customer_email || null,
       items: input.items || [], subtotal: input.subtotal ?? 0, discount: input.discount ?? 0, tax: input.tax ?? 0, total: input.total ?? 0,
-      issue_date: input.issue_date || null, valid_until: input.valid_until || null, status: input.status || 'draft', memo: input.memo || null, created_by: by, updated_by: by,
+      issue_date: input.issue_date || null, valid_until: input.valid_until || null, status: input.status || 'draft', memo: input.memo || null, terms: input.terms || null, created_by: by, updated_by: by,
     }).select().single() as any);
   },
   async update(id: number | string, input: Partial<Estimate>): Promise<Result<Estimate>> {
@@ -156,7 +156,7 @@ export const estimateApi = {
     return run<Estimate>(() => supabase.from(EST).update({
       type: input.type, title: input.title!.trim(), customer_name: input.customer_name || null, customer_phone: input.customer_phone || null, customer_email: input.customer_email || null,
       items: input.items || [], subtotal: input.subtotal ?? 0, discount: input.discount ?? 0, tax: input.tax ?? 0, total: input.total ?? 0,
-      issue_date: input.issue_date || null, valid_until: input.valid_until || null, status: input.status, memo: input.memo || null, updated_by: by,
+      issue_date: input.issue_date || null, valid_until: input.valid_until || null, status: input.status, memo: input.memo || null, terms: input.terms || null, updated_by: by,
     }).eq('id', id).select().single() as any);
   },
   // 목록에서 상태만 즉시 변경
@@ -174,7 +174,7 @@ export const estimateApi = {
     return this.create({
       type: src.type, title: `${src.title} (사본)`, customer_name: src.customer_name, customer_phone: src.customer_phone, customer_email: src.customer_email,
       items: src.items, subtotal: src.subtotal, discount: src.discount, tax: src.tax, total: src.total,
-      valid_until: src.valid_until, status: 'draft', memo: src.memo,
+      valid_until: src.valid_until, status: 'draft', memo: src.memo, terms: src.terms,
     });
   },
   remove: removeFn(EST),

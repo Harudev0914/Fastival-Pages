@@ -70,15 +70,17 @@ import DjList from './pages/admin/dj/DjList';
 import DjEventInquiryManagement from './pages/admin/dj/DjEventInquiryManagement';
 import DjEventInquiryDetail from './pages/admin/dj/DjEventInquiryDetail';
 import DjEventCalendar from './pages/admin/dj/DjEventCalendar';
-import DjStats from './pages/admin/dj/DjStats';
-import ConstructionStats from './pages/admin/construction/ConstructionStats';
-import RentalStats from './pages/admin/rental/RentalStats';
+// 차트(Recharts) 사용 페이지 — 코드 스플리팅으로 초기 번들에서 분리
+const DjStats = React.lazy(() => import('./pages/admin/dj/DjStats'));
+const ConstructionStats = React.lazy(() => import('./pages/admin/construction/ConstructionStats'));
+const RentalStats = React.lazy(() => import('./pages/admin/rental/RentalStats'));
 import ContractManagement from './pages/admin/contract/ContractManagement';
 import ContractBuilder from './pages/admin/contract/ContractBuilder';
 import AdminUserManagement from './pages/admin/system/AdminUserManagement';
 import DepartmentManagement from './pages/admin/system/DepartmentManagement';
 import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
 import CompanyInfoManagement from './pages/admin/system/CompanyInfoManagement';
+import NoticeManagement from './pages/admin/system/NoticeManagement';
 
 function AdminRouteWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -95,11 +97,12 @@ function InquiryDetailWrapper() {
   return <InquiryDetail id={Number(id)} onBack={() => navigate('/admin/dashboard/inquiries')} />;
 }
 
-import DashboardHome from './pages/admin/DashboardHome';
+const DashboardHome = React.lazy(() => import('./pages/admin/DashboardHome'));
 
 function AdminContent() {
   const navigate = useNavigate();
   return (
+    <React.Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}><span style={{ width: '34px', height: '34px', borderRadius: '50%', border: '3px solid #e2e8f0', borderTopColor: '#008b8b', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
     <Routes>
       <Route path="/" element={<DashboardHome />} />
       <Route path="inquiries" element={<InquiryList onViewDetail={(id) => navigate(`/admin/dashboard/inquiries/detail/${id}`)} />} />
@@ -171,6 +174,9 @@ function AdminContent() {
       <Route path="terms/privacy" element={<TermsManagement type="privacy" />} />
       <Route path="terms/privacy/detail/:id" element={<TermsDetail type="privacy" />} />
 
+      {/* 사내 공지 */}
+      <Route path="notices" element={<NoticeManagement />} />
+
       {/* 환경설정 */}
       <Route path="system/admins" element={<AdminUserManagement />} />
       <Route path="system/departments" element={<DepartmentManagement />} />
@@ -181,6 +187,7 @@ function AdminContent() {
       <Route path="rental/purchases" element={<RentalPurchaseManagement />} />
       <Route path="rental/purchases/detail/:id" element={<RentalPurchaseDetail />} />
     </Routes>
+    </React.Suspense>
   );
 }
 

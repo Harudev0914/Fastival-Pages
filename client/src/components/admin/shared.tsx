@@ -6,9 +6,9 @@ import Modal from '../Modal';
 export const card: React.CSSProperties = {
   padding: '24px',
   backgroundColor: 'white',
-  border: '1px solid #e2e8f0',
-  borderRadius: '16px',
-  boxShadow: 'rgba(0,0,0,0.02) 0px 4px 12px',
+  border: '1px solid #eef2f6',
+  borderRadius: '14px',
+  boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03)',
 };
 
 export const inputStyle: React.CSSProperties = {
@@ -35,12 +35,13 @@ export const btnPrimary: React.CSSProperties = {
   backgroundColor: '#008b8b',
   color: 'white',
   border: 'none',
-  borderRadius: '8px',
+  borderRadius: '9px',
   cursor: 'pointer',
   fontWeight: 600,
   display: 'inline-flex',
   alignItems: 'center',
   gap: '8px',
+  boxShadow: '0 1px 2px rgba(0,139,139,0.28)',
 };
 
 export const btnGhost: React.CSSProperties = {
@@ -160,4 +161,84 @@ export const PageHead: React.FC<{ title: string; desc?: string; right?: React.Re
     </div>
     {right}
   </div>
+);
+
+// ===== 상세/폼 페이지 디자인 키트 (메뉴 공통) =====
+// 상단 뒤로가기 헤더 + 제목 + 상태배지 + 우측 액션
+export const DetailHead: React.FC<{ title: string; onBack: () => void; badge?: React.ReactNode; right?: React.ReactNode }> = ({ title, onBack, badge, right }) => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', gap: '12px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+      <button style={btnGhost} onClick={onBack}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+        목록으로
+      </button>
+      <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>{title}</h2>
+      {badge}
+    </div>
+    {right && <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>{right}</div>}
+  </div>
+);
+
+// 상태 알약 배지
+export const StatusPill: React.FC<{ label: string; color: string }> = ({ label, color }) => (
+  <span style={{ background: `${color}16`, color, fontSize: '0.76rem', fontWeight: 700, padding: '5px 12px', borderRadius: '999px', border: `1px solid ${color}33` }}>{label}</span>
+);
+
+// 제목이 있는 폼 섹션 카드
+export const FormSection: React.FC<{ title: string; desc?: string; children: React.ReactNode; style?: React.CSSProperties }> = ({ title, desc, children, style }) => (
+  <div style={{ ...card, marginBottom: '16px', ...style }}>
+    <div style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+      <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>{title}</h3>
+      {desc && <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#94a3b8' }}>{desc}</p>}
+    </div>
+    {children}
+  </div>
+);
+
+// 라벨+필드 (Row 안에서 flex 배치)
+export const Field: React.FC<{ label: string; required?: boolean; children: React.ReactNode; flex?: number; minWidth?: string }> = ({ label, required, children, flex = 1, minWidth = '160px' }) => (
+  <div style={{ flex, minWidth }}>
+    <label style={labelStyle}>{label}{required && <span style={{ color: '#ef4444' }}> *</span>}</label>
+    {children}
+  </div>
+);
+
+// 필드 가로 배치 래퍼
+export const Row: React.FC<{ children: React.ReactNode; gap?: string }> = ({ children, gap = '14px' }) => (
+  <div style={{ display: 'flex', gap, flexWrap: 'wrap', marginBottom: '4px' }}>{children}</div>
+);
+
+// 라벨+인풋 편의 컴포넌트
+export const TextField: React.FC<{
+  label: string; value: string; onChange: (v: string) => void;
+  placeholder?: string; type?: string; required?: boolean; flex?: number; minWidth?: string; disabled?: boolean;
+}> = ({ label, value, onChange, placeholder, type = 'text', required, flex, minWidth, disabled }) => (
+  <Field label={label} required={required} flex={flex} minWidth={minWidth}>
+    <input type={type} style={{ ...inputStyle, ...(disabled ? { background: '#f8fafc', color: '#94a3b8' } : {}) }} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} disabled={disabled} />
+  </Field>
+);
+
+// 라벨+텍스트영역
+export const TextareaField: React.FC<{
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean; minHeight?: string;
+}> = ({ label, value, onChange, placeholder, required, minHeight = '90px' }) => (
+  <Field label={label} required={required} minWidth="100%">
+    <textarea style={{ ...inputStyle, minHeight, resize: 'vertical', lineHeight: 1.6 }} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
+  </Field>
+);
+
+// 라벨+셀렉트
+export const SelectField: React.FC<{
+  label: string; value: string | number; onChange: (v: string) => void; required?: boolean; flex?: number; minWidth?: string; children: React.ReactNode;
+}> = ({ label, value, onChange, required, flex, minWidth, children }) => (
+  <Field label={label} required={required} flex={flex} minWidth={minWidth}>
+    <select style={{ ...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'3\' stroke-linecap=\'round\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: '34px' }} value={value} onChange={(e) => onChange(e.target.value)}>
+      {children}
+    </select>
+  </Field>
+);
+
+// 폼 하단 액션 바 (구분선 + 우측 정렬)
+export const FormActions: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '4px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>{children}</div>
 );

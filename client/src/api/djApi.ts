@@ -5,6 +5,8 @@ import { run, currentAdminName, type Result } from './core';
 export type DjStatus = 'pending' | 'approved' | 'hold' | 'rejected';
 export const DJ_STATUS_LABEL: Record<DjStatus, string> = { pending: '접수', approved: '승인', hold: '보류', rejected: '반려' };
 export const DJ_REGIONS = ['서울', '경기도', '대전'] as const;
+// 전국 17개 시·도 (섭외 가능 지역 선택용)
+export const KR_REGIONS = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'] as const;
 
 export interface SocialLink { label: string; url: string; }
 
@@ -27,6 +29,7 @@ export interface DjArtist {
   guarantee_seoul: number | null;
   guarantee_gyeonggi: number | null;
   guarantee_daejeon: number | null;
+  guarantees: Record<string, number> | null;  // { 지역명: 게런티 } 전국 지역 지원
   intro: string | null;
   status: DjStatus;
   admin_memo: string | null;
@@ -82,8 +85,19 @@ export const djEventApi = {
     const by = await currentAdminName();
     return run<DjEventInquiry>(() => supabase.from('dj_event_inquiries').update({ ...input, updated_by: by } as any).eq('id', id).select().single() as any);
   },
+  async setStatus(id: number | string, status: DjEventStatus): Promise<Result<true>> {
+    const by = await currentAdminName();
+    return run<true>(async () => {
+      const { error } = await supabase.from('dj_event_inquiries').update({ status, updated_by: by }).eq('id', id);
+      return { data: error ? null : (true as const), error };
+    });
+  },
   remove: (id: number | string) => run<true>(async () => {
     const { error } = await supabase.from('dj_event_inquiries').delete().eq('id', id);
+    return { data: error ? null : (true as const), error };
+  }),
+  removeMany: (ids: (number | string)[]) => run<true>(async () => {
+    const { error } = await supabase.from('dj_event_inquiries').delete().in('id', ids);
     return { data: error ? null : (true as const), error };
   }),
 };

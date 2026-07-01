@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { constructionCompanyApi } from '../../../api/opsApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
+import { btnPrimary, btnGhost, labelStyle, useAdminModal, Spinner, DetailHead, StatusPill, FormSection, Row, TextField, TextareaField, FormActions } from '../../../components/admin/shared';
 
 const LIST = '/admin/dashboard/construction/companies';
 
@@ -34,6 +34,7 @@ const ConstructionCompanyDetail: React.FC = () => {
   }, [id, isNew, alert]);
 
   const save = async () => {
+    if (!name.trim()) return alert('입력 필요', '업체명을 입력해주세요.');
     setSaving(true);
     const input = { name, manager, phone, email, region, memo, is_active: isActive };
     const { error } = isNew ? await constructionCompanyApi.create(input) : await constructionCompanyApi.update(id!, input);
@@ -44,36 +45,37 @@ const ConstructionCompanyDetail: React.FC = () => {
   if (loading) return <Spinner />;
 
   return (
-    <div style={{ maxWidth: '680px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate(LIST)}><ArrowLeft size={16} /> 목록으로</button>
-      <div style={card}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '24px' }}>{isNew ? '시공 업체 등록' : '시공 업체 수정'}</h2>
+    <div style={{ maxWidth: '720px' }}>
+      <DetailHead
+        title={isNew ? '시공 업체 등록' : '시공 업체 수정'}
+        onBack={() => navigate(LIST)}
+        badge={!isNew ? <StatusPill label={isActive ? '활성' : '비활성'} color={isActive ? '#059669' : '#94a3b8'} /> : undefined}
+        right={<button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>}
+      />
 
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>업체명 *</label>
-          <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="예: OO인테리어" />
-        </div>
-        <div style={{ display: 'flex', gap: '14px', marginBottom: '18px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '180px' }}><label style={labelStyle}>담당자</label><input style={inputStyle} value={manager} onChange={(e) => setManager(e.target.value)} /></div>
-          <div style={{ flex: 1, minWidth: '180px' }}><label style={labelStyle}>연락처</label><input style={inputStyle} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000" /></div>
-        </div>
-        <div style={{ display: 'flex', gap: '14px', marginBottom: '18px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '180px' }}><label style={labelStyle}>이메일</label><input style={inputStyle} value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div style={{ flex: 1, minWidth: '180px' }}><label style={labelStyle}>지역</label><input style={inputStyle} value={region} onChange={(e) => setRegion(e.target.value)} placeholder="예: 서울" /></div>
-        </div>
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>메모</label>
-          <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="협력 조건, 전문 분야 등" />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
+      <FormSection title="업체 정보">
+        <Row><TextField label="업체명" required minWidth="100%" value={name} onChange={setName} placeholder="예: OO인테리어" /></Row>
+        <Row>
+          <TextField label="담당자" value={manager} onChange={setManager} />
+          <TextField label="연락처" value={phone} onChange={setPhone} placeholder="010-0000-0000" />
+        </Row>
+        <Row>
+          <TextField label="이메일" value={email} onChange={setEmail} />
+          <TextField label="지역" value={region} onChange={setRegion} placeholder="예: 서울" />
+        </Row>
+      </FormSection>
+
+      <FormSection title="상세 · 상태">
+        <TextareaField label="메모" value={memo} onChange={setMemo} placeholder="협력 조건, 전문 분야 등" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
           <label style={{ ...labelStyle, marginBottom: 0 }}>활성화</label>
           <ToggleButton isOn={isActive} onToggle={() => setIsActive((v) => !v)} />
         </div>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <FormActions>
           <button style={btnGhost} onClick={() => navigate(LIST)}>취소</button>
           <button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>
-        </div>
-      </div>
+        </FormActions>
+      </FormSection>
       {modal}
     </div>
   );

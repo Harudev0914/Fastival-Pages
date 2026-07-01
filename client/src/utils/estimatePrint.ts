@@ -10,6 +10,8 @@ export function printEstimate(est: Estimate, typeLabel: string, company?: Compan
     <tr>
       <td class="c">${i + 1}</td>
       <td>${esc(it.name)}</td>
+      <td>${esc(it.spec || '-')}</td>
+      <td class="c">${esc(it.unit || '-')}</td>
       <td class="r">${Number(it.qty || 0).toLocaleString()}</td>
       <td class="r">${won(it.unit_price)}</td>
       <td class="r">${won(it.amount)}</td>
@@ -43,7 +45,8 @@ export function printEstimate(est: Estimate, typeLabel: string, company?: Compan
     .totals { margin-top: 16px; margin-left: auto; width: 300px; font-size: 13px; }
     .totals div { display: flex; justify-content: space-between; padding: 6px 2px; }
     .totals .grand { border-top: 2px solid #008b8b; margin-top: 6px; padding-top: 10px; font-size: 17px; font-weight: 800; color: #008b8b; }
-    .memo { margin-top: 24px; font-size: 12px; color: #475569; white-space: pre-wrap; background: #f8fafc; border-radius: 8px; padding: 14px; }
+    .memo { margin-top: 12px; font-size: 12px; color: #475569; white-space: pre-wrap; background: #f8fafc; border-radius: 8px; padding: 14px; }
+    .terms { margin-top: 24px; } .terms-h { font-weight: 800; font-size: 13px; color: #1e293b; border-left: 3px solid #008b8b; padding-left: 8px; margin-bottom: 6px; }
     .foot { margin-top: 30px; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 4px; color: #1e293b; }
     @media print { body { padding: 0; } @page { margin: 16mm; } }
   </style></head><body><div class="wrap">
@@ -65,8 +68,8 @@ export function printEstimate(est: Estimate, typeLabel: string, company?: Compan
       </div>
     </div>
     <table>
-      <thead><tr><th style="width:44px">No</th><th style="text-align:left">품목</th><th style="width:70px">수량</th><th style="width:120px">단가</th><th style="width:130px">금액</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="5" class="c" style="color:#94a3b8;padding:24px">품목이 없습니다</td></tr>'}</tbody>
+      <thead><tr><th style="width:40px">No</th><th style="text-align:left">품목</th><th style="width:80px">규격</th><th style="width:50px">단위</th><th style="width:60px">수량</th><th style="width:110px">단가</th><th style="width:120px">금액</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="7" class="c" style="color:#94a3b8;padding:24px">품목이 없습니다</td></tr>'}</tbody>
     </table>
     <div class="totals">
       <div><span>소계</span><span>${won(est.subtotal)}</span></div>
@@ -74,8 +77,9 @@ export function printEstimate(est: Estimate, typeLabel: string, company?: Compan
       <div><span>부가세/기타</span><span>${won(est.tax)}</span></div>
       <div class="grand"><span>합계</span><span>${won(est.total)}</span></div>
     </div>
-    ${est.memo ? `<div class="memo">${esc(est.memo)}</div>` : ''}
-    <div class="foot">${esc(compName)}</div>
+    ${est.terms ? `<div class="terms"><div class="terms-h">계약 조건 / 특약사항</div><div class="memo">${esc(est.terms)}</div></div>` : ''}
+    ${est.memo ? `<div class="memo"><b>비고 </b>${esc(est.memo)}</div>` : ''}
+    <div class="foot">${esc(compName)} <span style="font-size:13px;font-weight:400;color:#64748b">(직인)</span></div>
   </div>
   <script>window.onload=function(){window.print();}</script>
   </body></html>`;

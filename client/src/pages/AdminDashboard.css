@@ -29,6 +29,45 @@
   width: 240px;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 16px 18px;
+  margin-bottom: 8px;
+  min-width: 200px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #008b8b;
+  font-weight: 800;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.brand-name {
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.sidebar:hover .brand-name {
+  opacity: 1;
+}
+
 .menu-item {
   padding: 12px 20px;
   display: flex;
@@ -122,6 +161,55 @@
 
 .user-initial-icon:hover {
   transform: scale(1.05);
+}
+
+/* ===== 어드민 콘텐츠 전역 디자인 폴리시 (다우오피스풍) ===== */
+/* 폼 요소 포커스 링 (티알 테마) */
+.content-area input:not([type="checkbox"]):not([type="radio"]),
+.content-area select,
+.content-area textarea {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.content-area input:not([type="checkbox"]):not([type="radio"]):focus,
+.content-area select:focus,
+.content-area textarea:focus {
+  border-color: #008b8b !important;
+  box-shadow: 0 0 0 3px rgba(0, 139, 139, 0.12);
+}
+.content-area input::placeholder,
+.content-area textarea::placeholder {
+  color: #b4c0cd;
+}
+
+/* 게시판 행 hover 하이라이트 */
+.content-area table tbody tr {
+  transition: background-color 0.12s ease;
+}
+.content-area table tbody tr:hover {
+  background-color: #f6fbfb;
+}
+.bt-row {
+  background: #fff;
+  transition: background-color 0.12s ease;
+}
+.bt-row:hover {
+  background: #f6fbfb;
+}
+
+/* 얇은 스크롤바 */
+.content-area *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.content-area *::-webkit-scrollbar-thumb {
+  background: #dbe3ec;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.content-area *::-webkit-scrollbar-thumb:hover {
+  background: #c2ccd8;
+  background-clip: padding-box;
 }
 
 .dashboard-layout {

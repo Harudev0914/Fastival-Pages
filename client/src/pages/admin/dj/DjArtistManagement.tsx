@@ -4,6 +4,8 @@ import { Search, ChevronRight } from 'lucide-react';
 import { djApi, DJ_STATUS_LABEL, DJ_REGIONS, type DjArtist, type DjStatus } from '../../../api/djApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../../components/admin/shared';
+import { ExportBtn } from '../../../components/admin/listTools';
+import { exportToCsv } from '../../../utils/exportCsv';
 
 const STATUS_COLOR: Record<DjStatus, string> = { pending: '#2563eb', approved: '#059669', hold: '#d97706', rejected: '#dc2626' };
 const badge = (color: string, label: string) => <span style={{ background: `${color}1a`, color, fontSize: '0.74rem', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>{label}</span>;
@@ -31,6 +33,15 @@ const DjArtistManagement: React.FC = () => {
     return true;
   }), [items, search, status, region]);
 
+  const doExport = () => exportToCsv('DJ입점신청', [
+    { header: '접수일', value: (a: DjArtist) => fmtDate(a.created_at) },
+    { header: '활동명', value: (a) => a.stage_name },
+    { header: '이름', value: (a) => a.name },
+    { header: '연락처', value: (a) => a.phone },
+    { header: '지역', value: (a) => (a.regions || []).join(' / ') },
+    { header: '상태', value: (a) => DJ_STATUS_LABEL[a.status] },
+  ], view);
+
   const th: React.CSSProperties = { padding: '12px 14px', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 700, background: '#f8fafc', whiteSpace: 'nowrap' };
   const td: React.CSSProperties = { padding: '12px 14px', fontSize: '0.86rem', color: '#334155', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' };
 
@@ -54,6 +65,7 @@ const DjArtistManagement: React.FC = () => {
           <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
           <input style={{ ...inputStyle, paddingLeft: '36px' }} placeholder="이름·활동명·연락처 검색" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <ExportBtn onClick={doExport} disabled={view.length === 0} />
         <span style={{ fontSize: '0.85rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{view.length}건</span>
       </div>
 
