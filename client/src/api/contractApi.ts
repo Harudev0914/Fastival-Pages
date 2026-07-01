@@ -57,4 +57,12 @@ export const contractApi = {
     const { error } = await supabase.from(TB).delete().eq('id', id);
     return { data: error ? null : (true as const), error };
   }),
+
+  // 승인 발송 시 입력한 금액을 계약서 문서(data.amount)에 그대로 기입
+  patchAmount: (id: number | string, amount: number) => run<true>(async () => {
+    const { data: c } = await supabase.from(TB).select('data').eq('id', id).single();
+    const nextData = { ...((c?.data as Record<string, string>) || {}), amount: String(amount) };
+    const { error } = await supabase.from(TB).update({ data: nextData }).eq('id', id);
+    return { data: error ? null : (true as const), error };
+  }),
 };

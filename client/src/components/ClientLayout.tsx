@@ -40,6 +40,16 @@ const Footer: React.FC = () => {
           <img src="/Klipse_Logo.png" alt="Klipse" className="footer-logo" />
         </div>
 
+        <nav className="footer-links">
+          <Link to="/company">회사 소개</Link>
+          <Link to="/rental/inquiry">입점신청</Link>
+          <Link to="/partnership">제휴/광고 문의</Link>
+          <Link to="/partner-guide">시공 파트너 안내</Link>
+          <Link to="/terms/service">이용 약관</Link>
+          <Link to="/terms/privacy">개인정보 처리방침</Link>
+          <Link to="/terms/partner-privacy">파트너 개인정보 처리방침</Link>
+        </nav>
+
         <div className="footer-divider" />
 
         <div className="footer-legal">
@@ -68,9 +78,9 @@ const Footer: React.FC = () => {
 
         <div className="footer-bottom">
           <nav className="footer-policy">
-            <Link to="/privacy">개인정보처리방침</Link>
+            <Link to="/terms/privacy">개인정보처리방침</Link>
             <Sep />
-            <Link to="/terms">서비스 이용약관</Link>
+            <Link to="/terms/service">서비스 이용약관</Link>
           </nav>
           <p className="footer-copy">Copyright {g('biz_name')} {year} All rights reserved.</p>
         </div>
@@ -81,7 +91,7 @@ const Footer: React.FC = () => {
         .footer-inner { max-width: none; margin: 0; padding: 44px 18vw 40px; }
         .footer-head { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
         .footer-logo { height: 26px; }
-        .footer-links { display: flex; gap: 26px; flex-wrap: wrap; }
+        .footer-links { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 20px; }
         .footer-links a { font-size: 0.92rem; font-weight: 600; color: #374151; text-decoration: none; transition: color 0.15s; }
         .footer-links a:hover { color: #2563eb; }
         .footer-divider { height: 1px; background: #e5e7eb; margin: 22px 0; }

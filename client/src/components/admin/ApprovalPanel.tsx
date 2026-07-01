@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Send, X, CheckCircle2, RotateCcw, Search, UserCheck, UserX } from 'lucide-react';
-import { approvalApi, DOC_TYPE_LABEL, APPROVAL_STATUS_LABEL, APPROVAL_STATUS_COLOR, type ApprovalRefType, type ApprovalDocType, type ApprovalRequest, type MatchedUser } from '../../api/approvalApi';
+import { Send, X, CheckCircle2, RotateCcw, Search, UserCheck, UserX, FileText } from 'lucide-react';
+import { approvalApi, APPROVAL_STATUS_LABEL, APPROVAL_STATUS_COLOR, type ApprovalRefType, type ApprovalRequest, type MatchedUser } from '../../api/approvalApi';
+import { estimateApi, ESTIMATE_TYPE_LABEL, type Estimate } from '../../api/opsApi';
+import { contractApi, type Contract } from '../../api/contractApi';
+import { TEMPLATES } from '../../pages/admin/contract/contractTemplates';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, fmtDate, useAdminModal, StatusPill } from './shared';
 
 interface Props {
@@ -25,8 +28,10 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultE
   const [matched, setMatched] = useState<MatchedUser | null>(null);
   const [looked, setLooked] = useState(false);       // 조회 시도 여부
   const [looking, setLooking] = useState(false);
-  const [docType, setDocType] = useState<ApprovalDocType>('none');
-  const [docId, setDocId] = useState('');
+  const [estimates, setEstimates] = useState<Estimate[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [estimateId, setEstimateId] = useState('');   // 첨부 견적서
+  const [contractId, setContractId] = useState('');   // 첨부 계약서
   const [amount, setAmount] = useState(defaultAmount != null ? String(defaultAmount) : '');
   const [busy, setBusy] = useState(false);
   const { element: modal, alert, confirm } = useAdminModal();
@@ -37,6 +42,20 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultE
     setLoading(false);
   }, [refType, refId]);
   useEffect(() => { load(); }, [load]);
+
+  // 폼 열릴 때 발송 가능한 기존 견적서·계약서 목록 로드
+  useEffect(() => {
+    if (!showForm || estimates.length || contracts.length) return;
+    estimateApi.listAll().then(({ data }) => setEstimates(data || []));
+    contractApi.list().then(({ data }) => setContracts(data || []));
+  }, [showForm, estimates.length, contracts.length]);
+
+  // 견적서 선택 시 금액을 해당 견적서 총액으로 자동 반영
+  const pickEstimate = (id: string) => {
+    setEstimateId(id);
+    const est = estimates.find((e) => String(e.id) === id);
+    if (est) setAmount(String(est.total || 0));
+  };
 
   const resolve = useCallback(async () => {
     if (!email.trim()) { setMatched(null); setLooked(true); return null; }
@@ -56,10 +75,14 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultE
     if (!owner) owner = await resolve();
     if (!owner) return alert('가입 계정 없음', '해당 이메일로 가입된 회원 계정을 찾을 수 없습니다. 신청자에게 회원가입을 안내하거나 이메일을 확인해주세요.');
     setBusy(true);
+    const amt = amount ? Number(amount) : null;
+    // 입력 금액을 첨부 계약서 문서에 그대로 기입
+    if (contractId && amt != null) await contractApi.patchAmount(Number(contractId), amt);
     const { error } = await approvalApi.create({
       ref_type: refType, ref_id: refId, title, owner_user_id: owner.id,
-      doc_type: docType, doc_id: docId ? Number(docId) : null, customer_name: defaultCustomer || owner.name || null,
-      amount: amount ? Number(amount) : null,
+      estimate_id: estimateId ? Number(estimateId) : null,
+      contract_id: contractId ? Number(contractId) : null,
+      customer_name: defaultCustomer || owner.name || null, amount: amt,
     });
     setBusy(false);
     if (error) return alert('발송 오류', error);
@@ -89,7 +112,8 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultE
         {head}
         <div style={{ fontSize: '0.86rem', color: '#475569', display: 'grid', gap: '6px' }}>
           <div><b>제목</b> · {active.title}</div>
-          <div><b>발송 서류</b> · {DOC_TYPE_LABEL[active.doc_type]}{active.doc_id ? ` (#${active.doc_id})` : ''}</div>
+          <div><b>발송 서류</b> · {[active.estimate_id ? `견적서 #${active.estimate_id}` : null, active.contract_id ? `계약서 #${active.contract_id}` : null].filter(Boolean).join(' · ') || '서류 없음(승인만)'}</div>
+          {active.amount != null && <div><b>금액</b> · ₩{Number(active.amount).toLocaleString()}</div>}
           <div><b>승인 대상</b> · {active.customer_name || '-'} <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>({active.owner_user_id.slice(0, 8)}…)</span></div>
           <div><b>발송일</b> · {fmtDate(active.created_at)}</div>
           {active.status === 'approved' && (
@@ -146,17 +170,33 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultE
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '150px' }}>
-              <label style={labelStyle}>발송 서류</label>
-              <select style={{ ...sel, width: '100%' }} value={docType} onChange={(e) => setDocType(e.target.value as ApprovalDocType)}>
-                <option value="none">서류 없음(승인만)</option>
-                <option value="estimate">견적서</option>
-                <option value="contract">계약서</option>
-              </select>
+          {/* 발송 서류 — 견적서·계약서 각각 기존 문서에서 선택(둘 다 첨부 가능) */}
+          <div style={{ display: 'grid', gap: '10px' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}><FileText size={14} color="#008b8b" /> 발송 서류 (견적서·계약서 각각 첨부 가능)</div>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <label style={labelStyle}>견적서 발송 (견적서 관리에서 생성된 문서)</label>
+                <select style={{ ...sel, width: '100%' }} value={estimateId} onChange={(e) => pickEstimate(e.target.value)}>
+                  <option value="">첨부 안 함</option>
+                  {estimates.map((e) => (
+                    <option key={e.id} value={e.id}>[{ESTIMATE_TYPE_LABEL[e.type]}] {e.estimate_no ? `${e.estimate_no} · ` : ''}{e.title} (₩{Number(e.total || 0).toLocaleString()})</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <label style={labelStyle}>계약서 발송 (계약서 관리에서 생성된 문서)</label>
+                <select style={{ ...sel, width: '100%' }} value={contractId} onChange={(e) => setContractId(e.target.value)}>
+                  <option value="">첨부 안 함</option>
+                  {contracts.map((c) => (
+                    <option key={c.id} value={c.id}>[{TEMPLATES[c.template]?.label || c.template}] {c.title}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            {docType !== 'none' && <div style={{ flex: 1, minWidth: '150px' }}><label style={labelStyle}>{DOC_TYPE_LABEL[docType]} ID</label><input type="number" style={inputStyle} value={docId} onChange={(e) => setDocId(e.target.value)} placeholder="문서 번호(마이페이지 열람용)" /></div>}
-            <div style={{ flex: 1, minWidth: '150px' }}><label style={labelStyle}>금액(원)</label><input type="number" style={inputStyle} value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
+            <div style={{ maxWidth: '260px' }}>
+              <label style={labelStyle}>금액(원) · 견적서 선택 시 자동 반영 / 계약서에 기입</label>
+              <input type="number" style={inputStyle} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 1500000" />
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
             <button style={btnGhost} onClick={() => setShowForm(false)}>취소</button>

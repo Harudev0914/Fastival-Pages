@@ -39,8 +39,7 @@ const Header: React.FC = () => {
         { label: '카테고리', path: '/rental/categories' },
         { label: '베스트', path: '/rental/best' },
         { label: '단독상품', path: '/rental/exclusive' },
-        { label: '기획전', path: '/rental/event' },
-        { label: '입점문의', path: '/rental/inquiry' }
+        { label: '기획전', path: '/rental/event' }
       ]
     },
     '/dj': {

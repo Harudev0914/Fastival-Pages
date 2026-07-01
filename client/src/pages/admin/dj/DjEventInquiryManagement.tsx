@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, LayoutGrid, List } from 'lucide-react';
-import { djEventApi, DJ_EVENT_STATUS_LABEL, DJ_EVENT_STATUS_COLOR, DJ_REGIONS, type DjEventInquiry, type DjEventStatus } from '../../../api/djApi';
+import { djEventApi, DJ_EVENT_STATUS_LABEL, DJ_EVENT_STATUS_COLOR, KR_REGIONS, regionToKR, type DjEventInquiry, type DjEventStatus } from '../../../api/djApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import BoardTable, { type Column } from '../../../components/admin/BoardTable';
 import KanbanBoard, { type KanbanColumn } from '../../../components/admin/KanbanBoard';
@@ -38,7 +38,7 @@ const DjEventInquiryManagement: React.FC = () => {
   const view = useMemo(() => {
     let v = items.filter((it) => {
       if (status !== 'all' && it.status !== status) return false;
-      if (region !== 'all' && it.region !== region) return false;
+      if (region !== 'all' && regionToKR(it.region) !== region) return false;
       if (search.trim() && !`${it.title} ${it.customer_name || ''} ${it.artist_name || ''} ${it.region || ''}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
       return true;
     });
@@ -114,7 +114,7 @@ const DjEventInquiryManagement: React.FC = () => {
         )}
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={region} onChange={(e) => setRegion(e.target.value)}>
           <option value="all">전체 지역</option>
-          {DJ_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+          {KR_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={sort} onChange={(e) => setSort(e.target.value as any)}>
           <option value="recent">최근 접수순</option>

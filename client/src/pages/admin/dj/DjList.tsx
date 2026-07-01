@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight } from 'lucide-react';
-import { djApi, DJ_STATUS_LABEL, DJ_REGIONS, type DjArtist } from '../../../api/djApi';
+import { Search, ChevronRight, Crown } from 'lucide-react';
+import { djApi, DJ_STATUS_LABEL, DJ_REGIONS, KR_REGIONS, regionToKR, isPremiumActive, type DjArtist } from '../../../api/djApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { card, inputStyle, PageHead, EmptyState, Spinner, useAdminModal } from '../../../components/admin/shared';
 
@@ -33,7 +33,7 @@ const DjList: React.FC = () => {
   const view = useMemo(() => {
     const budget = maxBudget ? Number(maxBudget) : null;
     let v = items.filter((it) => {
-      if (region !== 'all' && !(it.regions || []).includes(region)) return false;
+      if (region !== 'all' && !(it.regions || []).some((rg) => regionToKR(rg) === region)) return false;
       if (search.trim() && !`${it.name} ${it.stage_name || ''}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
       if (budget != null) {
         const g = guaranteeOf(it, budgetRegion);
@@ -46,6 +46,8 @@ const DjList: React.FC = () => {
     else if (sort === 'g_asc') v = [...v].sort((a, b) => gr(a) - gr(b));
     else if (sort === 'g_desc') v = [...v].sort((a, b) => (guaranteeOf(b, budgetRegion) ?? -1) - (guaranteeOf(a, budgetRegion) ?? -1));
     else v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    // 프리미엄 구독자 상위 노출(선택 정렬 내에서 프리미엄 우선)
+    v = [...v].sort((a, b) => (isPremiumActive(b) ? 1 : 0) - (isPremiumActive(a) ? 1 : 0));
     return v;
   }, [items, search, region, sort, budgetRegion, maxBudget]);
 
@@ -59,7 +61,7 @@ const DjList: React.FC = () => {
       <div style={{ ...card, marginBottom: '16px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={region} onChange={(e) => setRegion(e.target.value)}>
           <option value="all">섭외 가능 지역: 전체</option>
-          {DJ_REGIONS.map((r) => <option key={r} value={r}>{r} 가능</option>)}
+          {KR_REGIONS.map((r) => <option key={r} value={r}>{r} 가능</option>)}
         </select>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={sort} onChange={(e) => setSort(e.target.value)}>
           <option value="recent">최근 승인순</option>
@@ -89,7 +91,13 @@ const DjList: React.FC = () => {
             <tbody>
               {view.map((a) => (
                 <tr key={a.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/admin/dashboard/dj/artists/detail/${a.id}`)}>
-                  <td style={{ ...td, fontWeight: 700, color: '#1e293b' }}>{a.stage_name || a.name}<div style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.78rem' }}>{a.name}</div></td>
+                  <td style={{ ...td, fontWeight: 700, color: '#1e293b' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      {isPremiumActive(a) && <span title="프리미엄 구독" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', background: '#7c3aed18', color: '#7c3aed', fontSize: '0.66rem', fontWeight: 800, padding: '2px 7px', borderRadius: '999px' }}><Crown size={11} /> PREMIUM</span>}
+                      {a.stage_name || a.name}
+                    </span>
+                    <div style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.78rem' }}>{a.name}</div>
+                  </td>
                   <td style={td}>{a.phone || '-'}</td>
                   <td style={td}>{(a.regions || []).join(', ') || '-'}</td>
                   <td style={td}>{won(a.guarantee_seoul)} / {won(a.guarantee_gyeonggi)} / {won(a.guarantee_daejeon)}</td>

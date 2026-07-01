@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight } from 'lucide-react';
-import { djApi, DJ_STATUS_LABEL, DJ_REGIONS, type DjArtist, type DjStatus } from '../../../api/djApi';
+import { djApi, DJ_STATUS_LABEL, KR_REGIONS, regionToKR, type DjArtist, type DjStatus } from '../../../api/djApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { card, inputStyle, PageHead, EmptyState, Spinner, fmtDate, useAdminModal } from '../../../components/admin/shared';
 import { ExportBtn } from '../../../components/admin/listTools';
@@ -28,7 +28,7 @@ const DjArtistManagement: React.FC = () => {
 
   const view = useMemo(() => items.filter((it) => {
     if (status !== 'all' && it.status !== status) return false;
-    if (region !== 'all' && !(it.regions || []).includes(region)) return false;
+    if (region !== 'all' && !(it.regions || []).some((rg) => regionToKR(rg) === region)) return false;
     if (search.trim() && !`${it.name} ${it.stage_name || ''} ${it.phone || ''}`.toLowerCase().includes(search.trim().toLowerCase())) return false;
     return true;
   }), [items, search, status, region]);
@@ -59,7 +59,7 @@ const DjArtistManagement: React.FC = () => {
         </select>
         <select style={{ ...(SELECT_STYLE as React.CSSProperties) }} value={region} onChange={(e) => setRegion(e.target.value)}>
           <option value="all">전체 지역</option>
-          {DJ_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+          {KR_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
         <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
           <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />

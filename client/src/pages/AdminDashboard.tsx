@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt, Megaphone, Truck } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt, Megaphone, Truck, CalendarRange, Crown } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
@@ -20,7 +20,9 @@ const AdminDashboard: React.FC = () => {
   const WORK_KEYS = ['construction/inquiries', 'construction/works', 'construction/companies', 'construction/reviews', 'construction/calendar', 'construction/stats'];
   const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events'];
   const RENTOPS_KEYS = ['rental/orders', 'rental/shipments', 'rental/purchases', 'rental/calendar', 'rental/stats'];
-  const DJ_KEYS = ['dj/list', 'dj/artists', 'dj/event-inquiries', 'dj/calendar', 'dj/stats'];
+  const DJ_KEYS = ['dj/list', 'dj/artists'];
+  const DJOPS_KEYS = ['dj/event-inquiries', 'dj/calendar', 'dj/stats'];
+  const SUB_KEYS = ['subscriptions/members', 'subscriptions/tiers', 'subscriptions/stats'];
   const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj', 'contracts'];
   const TERMS_KEYS = ['terms/service', 'terms/privacy'];
   const SYS_KEYS = ['system/admins', 'system/departments', 'system/permissions', 'system/company'];
@@ -172,9 +174,36 @@ const AdminDashboard: React.FC = () => {
             <div className="sub-menu">
                 {can('dj/list') && <span className={activeMenu === 'DJ 목록' ? 'active' : ''} onClick={() => handleMenuClick('DJ 목록', '/admin/dashboard/dj/list')}>DJ 목록</span>}
                 {can('dj/artists') && <span className={activeMenu === 'DJ 입점 관리' ? 'active' : ''} onClick={() => handleMenuClick('DJ 입점 관리', '/admin/dashboard/dj/artists')}>DJ 입점 관리</span>}
+            </div>
+        )}
+        </>)}
+
+        {/* DJ 업무 관리 */}
+        {canGroup(DJOPS_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('DJ 업무 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CalendarRange size={18} /> <span>DJ 업무 관리</span></div>
+            {expandedMenus['DJ 업무 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['DJ 업무 관리'] && (
+            <div className="sub-menu">
                 {can('dj/event-inquiries') && <span className={activeMenu === 'DJ 행사 문의 관리' ? 'active' : ''} onClick={() => handleMenuClick('DJ 행사 문의 관리', '/admin/dashboard/dj/event-inquiries')}>DJ 행사 문의 관리</span>}
                 {can('dj/calendar') && <span className={activeMenu === 'DJ 행사 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('DJ 행사 캘린더', '/admin/dashboard/dj/calendar')}>DJ 행사 캘린더</span>}
                 {can('dj/stats') && <span className={activeMenu === 'DJ 행사 통계' ? 'active' : ''} onClick={() => handleMenuClick('DJ 행사 통계', '/admin/dashboard/dj/stats')}>DJ 행사 통계</span>}
+            </div>
+        )}
+        </>)}
+
+        {/* 구독 관리 */}
+        {canGroup(SUB_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('구독 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Crown size={18} /> <span>구독 관리</span></div>
+            {expandedMenus['구독 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['구독 관리'] && (
+            <div className="sub-menu">
+                {can('subscriptions/members') && <span className={activeMenu === '구독 회원 목록' ? 'active' : ''} onClick={() => handleMenuClick('구독 회원 목록', '/admin/dashboard/subscriptions/members')}>구독 회원 목록</span>}
+                {can('subscriptions/tiers') && <span className={activeMenu === '구독 티어 관리' ? 'active' : ''} onClick={() => handleMenuClick('구독 티어 관리', '/admin/dashboard/subscriptions/tiers')}>구독 티어 관리</span>}
+                {can('subscriptions/stats') && <span className={activeMenu === '구독 통계' ? 'active' : ''} onClick={() => handleMenuClick('구독 통계', '/admin/dashboard/subscriptions/stats')}>구독 통계</span>}
             </div>
         )}
         </>)}

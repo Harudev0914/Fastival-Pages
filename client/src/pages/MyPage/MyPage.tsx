@@ -50,23 +50,37 @@ const MyPage: React.FC = () => {
     setOpenMemo(null); setMemo(''); load();
   };
 
+  // 첨부 문서 id (신규 estimate_id/contract_id 우선, 구버전 doc_type/doc_id 하위호환)
+  const estOf = (r: ApprovalRequest) => r.estimate_id ?? (r.doc_type === 'estimate' ? r.doc_id : null);
+  const conOf = (r: ApprovalRequest) => r.contract_id ?? (r.doc_type === 'contract' ? r.doc_id : null);
+
   // 발송된 견적서/계약서 열람
-  const openDoc = async (r: ApprovalRequest) => {
-    if (r.doc_type === 'none' || !r.doc_id) return;
+  const openDoc = async (kind: 'estimate' | 'contract', id: number) => {
     setDocLoading(true);
     try {
-      if (r.doc_type === 'estimate') {
-        const [{ data: est }, { data: company }] = await Promise.all([estimateApi.get(r.doc_id), companyApi.get()]);
+      if (kind === 'estimate') {
+        const [{ data: est }, { data: company }] = await Promise.all([estimateApi.get(id), companyApi.get()]);
         if (est) setDocView(<EstimateDocument est={est} typeLabel={ESTIMATE_TYPE_LABEL[est.type]} company={company} />);
         else alert('서류를 불러올 수 없습니다.');
-      } else if (r.doc_type === 'contract') {
-        const { data: c } = await contractApi.get(r.doc_id);
+      } else {
+        const { data: c } = await contractApi.get(id);
         if (c) setDocView(<ContractDocument template={c.template} title={c.title} data={c.data} />);
         else alert('서류를 불러올 수 없습니다.');
       }
     } finally { setDocLoading(false); }
   };
-  const hasDoc = (r: ApprovalRequest) => r.doc_type !== 'none' && !!r.doc_id;
+  // 요청에 첨부된 견적서·계약서 열람 버튼(둘 다 가능)
+  const docButtons = (r: ApprovalRequest) => {
+    const est = estOf(r); const con = conOf(r);
+    if (!est && !con) return null;
+    const bStyle: React.CSSProperties = { marginTop: '10px', marginRight: '8px', padding: '9px 16px', background: '#eef2f7', color: '#334155', border: '1px solid #e2e8f0', borderRadius: '9px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' };
+    return (
+      <div>
+        {est && <button onClick={() => openDoc('estimate', est)} disabled={docLoading} style={bStyle}>📄 견적서 보기</button>}
+        {con && <button onClick={() => openDoc('contract', con)} disabled={docLoading} style={bStyle}>📄 계약서 보기</button>}
+      </div>
+    );
+  };
 
   if (authState === 'loading') return <div style={{ padding: '80px 20px', textAlign: 'center', color: '#94a3b8' }}>불러오는 중…</div>;
   if (authState === 'out') {
@@ -100,13 +114,14 @@ const MyPage: React.FC = () => {
               <div key={r.id} style={{ ...card, borderLeft: '3px solid #d97706' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
                   {pill(REF_TYPE_LABEL[r.ref_type], '#0891b2')}
-                  {r.doc_type !== 'none' && pill(DOC_TYPE_LABEL[r.doc_type] + (r.doc_id ? ` #${r.doc_id}` : ''), '#7c3aed')}
+                  {estOf(r) && pill('견적서', '#7c3aed')}
+                  {conOf(r) && pill('계약서', '#7c3aed')}
                   <span style={{ marginLeft: 'auto', fontSize: '0.78rem', color: '#94a3b8' }}>{fdate(r.created_at)} 발송</span>
                 </div>
                 <div style={{ fontSize: '1.02rem', fontWeight: 800, color: '#1e293b' }}>{r.title}</div>
                 {r.amount != null && <div style={{ marginTop: '6px', color: '#008b8b', fontWeight: 800 }}>{won(r.amount)}</div>}
                 <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '10px 0 0' }}>내용을 확인하신 후 승인 또는 반려해 주세요.</p>
-                {hasDoc(r) && <button onClick={() => openDoc(r)} disabled={docLoading} style={{ marginTop: '10px', padding: '9px 16px', background: '#eef2f7', color: '#334155', border: '1px solid #e2e8f0', borderRadius: '9px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>📄 {DOC_TYPE_LABEL[r.doc_type]} 보기</button>}
+                {docButtons(r)}
 
                 {openMemo === r.id ? (
                   <div style={{ marginTop: '12px' }}>

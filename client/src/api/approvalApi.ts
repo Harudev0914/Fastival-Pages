@@ -20,6 +20,8 @@ export interface ApprovalRequest {
   title: string;
   doc_type: ApprovalDocType;
   doc_id: number | null;
+  estimate_id: number | null;   // 첨부 견적서
+  contract_id: number | null;   // 첨부 계약서
   owner_user_id: string;
   customer_name: string | null;
   amount: number | null;
@@ -59,14 +61,20 @@ export const approvalApi = {
   }),
   async create(input: {
     ref_type: ApprovalRefType; ref_id: number; title: string; owner_user_id: string;
+    estimate_id?: number | null; contract_id?: number | null;
     doc_type?: ApprovalDocType; doc_id?: number | null; customer_name?: string | null; amount?: number | null;
   }): Promise<Result<ApprovalRequest>> {
     if (!input.owner_user_id?.trim()) return { data: null, error: '승인할 사용자 ID(UUID)를 입력해주세요.' };
     if (!input.title?.trim()) return { data: null, error: '제목을 입력해주세요.' };
     const by = await currentAdminName();
+    // 하위호환: 대표 doc_type/doc_id 는 첨부된 서류 기준으로 기록(견적서 우선)
+    const estId = input.estimate_id ?? null;
+    const conId = input.contract_id ?? null;
+    const docType: ApprovalDocType = input.doc_type ?? (estId ? 'estimate' : conId ? 'contract' : 'none');
+    const docId = input.doc_id ?? estId ?? conId ?? null;
     return run<ApprovalRequest>(() => supabase.from(T).insert({
       ref_type: input.ref_type, ref_id: input.ref_id, title: input.title.trim(),
-      doc_type: input.doc_type || 'none', doc_id: input.doc_id ?? null,
+      doc_type: docType, doc_id: docId, estimate_id: estId, contract_id: conId,
       owner_user_id: input.owner_user_id.trim(), customer_name: input.customer_name || null, amount: input.amount ?? null,
       status: 'sent', created_by: by,
     }).select().single() as any);

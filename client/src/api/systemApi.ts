@@ -51,9 +51,20 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
     key: 'dj', label: 'DJ 관리', items: [
       { key: 'dj/list', label: 'DJ 목록' },
       { key: 'dj/artists', label: 'DJ 입점 관리' },
+    ],
+  },
+  {
+    key: 'dj-ops', label: 'DJ 업무 관리', items: [
       { key: 'dj/event-inquiries', label: 'DJ 행사 문의 관리' },
       { key: 'dj/calendar', label: 'DJ 행사 캘린더' },
       { key: 'dj/stats', label: 'DJ 행사 통계' },
+    ],
+  },
+  {
+    key: 'subscriptions', label: '구독 관리', items: [
+      { key: 'subscriptions/members', label: '구독 회원 목록' },
+      { key: 'subscriptions/tiers', label: '구독 티어 관리' },
+      { key: 'subscriptions/stats', label: '구독 통계' },
     ],
   },
   {

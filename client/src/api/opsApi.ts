@@ -139,6 +139,8 @@ export interface Estimate {
 const EST = 'estimates';
 export const estimateApi = {
   list: (type: EstimateType) => run<Estimate[]>(() => supabase.from(EST).select('*').eq('type', type).order('created_at', { ascending: false }) as any),
+  // 전체 견적서(모든 유형) — 승인 요청 첨부 선택용
+  listAll: () => run<Estimate[]>(() => supabase.from(EST).select('*').order('created_at', { ascending: false }) as any),
   get: (id: number | string) => run<Estimate>(() => supabase.from(EST).select('*').eq('id', id).single() as any),
   async create(input: Partial<Estimate>): Promise<Result<Estimate>> {
     if (!input.title?.trim()) return { data: null, error: '견적서 제목을 입력해주세요.' };

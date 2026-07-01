@@ -56,6 +56,8 @@ import EmailLoginPage from './pages/Auth/EmailLoginPage';
 import SignupPage from './pages/Auth/SignupPage';
 import GeneralSignupPage from './pages/Auth/GeneralSignupPage';
 import CustomerCenterPage from './pages/CustomerCenter/CustomerCenterPage';
+import TermsViewPage from './pages/Terms/TermsViewPage';
+import Placeholder from './pages/common/Placeholder';
 import MyPage from './pages/MyPage/MyPage';
 import DjArtistManagement from './pages/admin/dj/DjArtistManagement';
 import DjArtistDetail from './pages/admin/dj/DjArtistDetail';
@@ -79,6 +81,9 @@ const ConstructionStats = React.lazy(() => import('./pages/admin/construction/Co
 const RentalStats = React.lazy(() => import('./pages/admin/rental/RentalStats'));
 import ContractManagement from './pages/admin/contract/ContractManagement';
 import ContractBuilder from './pages/admin/contract/ContractBuilder';
+import SubscriptionMembers from './pages/admin/subscription/SubscriptionMembers';
+import SubscriptionTiers from './pages/admin/subscription/SubscriptionTiers';
+const SubscriptionStats = React.lazy(() => import('./pages/admin/subscription/SubscriptionStats'));
 import AdminUserManagement from './pages/admin/system/AdminUserManagement';
 import DepartmentManagement from './pages/admin/system/DepartmentManagement';
 import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
@@ -146,6 +151,11 @@ function AdminContent() {
       <Route path="dj/event-inquiries/detail/:id" element={<DjEventInquiryDetail />} />
       <Route path="dj/calendar" element={<DjEventCalendar />} />
       <Route path="dj/stats" element={<DjStats />} />
+
+      {/* 구독 관리 */}
+      <Route path="subscriptions/members" element={<SubscriptionMembers />} />
+      <Route path="subscriptions/tiers" element={<SubscriptionTiers />} />
+      <Route path="subscriptions/stats" element={<SubscriptionStats />} />
 
       {/* 시공 - 업무/업체/캘린더/통계 */}
       <Route path="construction/works" element={<ConstructionWorkManagement />} />
@@ -249,6 +259,17 @@ function App() {
           <Route path="/signup/general" element={<GeneralSignupPage />} />
           <Route path="/cs" element={<CustomerCenterPage />} />
           <Route path="/mypage" element={<MyPage />} />
+
+          {/* 푸터 메뉴 */}
+          <Route path="/company" element={<Placeholder title="회사 소개" desc="클립스(Klipse) 회사 소개 페이지입니다. 곧 오픈됩니다." seoKeywords="클립스,회사소개,Klipse" />} />
+          <Route path="/partnership" element={<Placeholder title="제휴/광고 문의" desc="제휴 및 광고 문의 페이지입니다. 곧 오픈됩니다." seoKeywords="제휴 문의,광고 문의,클립스 제휴" />} />
+          <Route path="/partner-guide" element={<Placeholder title="시공 파트너 안내" desc="시공 파트너(협력 업체) 안내 페이지입니다. 곧 오픈됩니다." seoKeywords="시공 파트너,협력 업체,시공 제휴" />} />
+          <Route path="/terms/service" element={<TermsViewPage type="service" />} />
+          <Route path="/terms/privacy" element={<TermsViewPage type="privacy" />} />
+          <Route path="/terms/partner-privacy" element={<Placeholder title="파트너 개인정보 처리방침" desc="파트너 개인정보 처리방침 페이지입니다. 곧 오픈됩니다." seoKeywords="파트너 개인정보 처리방침" />} />
+          {/* 레거시 경로 별칭 */}
+          <Route path="/terms" element={<TermsViewPage type="service" />} />
+          <Route path="/privacy" element={<TermsViewPage type="privacy" />} />
         </Route>
       </Routes>
     </Router>

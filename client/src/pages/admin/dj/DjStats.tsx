@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { djApi, djEventApi, DJ_STATUS_LABEL, DJ_EVENT_STATUS_LABEL, DJ_EVENT_STATUS_COLOR, DJ_REGIONS, type DjArtist, type DjEventInquiry, type DjStatus, type DjEventStatus } from '../../../api/djApi';
+import { djApi, djEventApi, DJ_STATUS_LABEL, DJ_EVENT_STATUS_LABEL, DJ_EVENT_STATUS_COLOR, KR_REGIONS, regionToKR, type DjArtist, type DjEventInquiry, type DjStatus, type DjEventStatus } from '../../../api/djApi';
 import { PageHead, Spinner, fmtDate, useAdminModal } from '../../../components/admin/shared';
 import { StatGrid } from '../../../components/admin/Stats';
-import { DonutChart, CategoryBarChart } from '../../../components/admin/Charts';
+import { DonutChart } from '../../../components/admin/Charts';
+import KoreaMap from '../../../components/admin/KoreaMap';
 import { PeriodSelect, periodStart, PERIOD_LABEL, ExportBtn, type PeriodKey } from '../../../components/admin/listTools';
 import { exportToCsv } from '../../../utils/exportCsv';
 
@@ -35,8 +36,15 @@ const DjStats: React.FC = () => {
     const DJ_STATUS_COLOR: Record<DjStatus, string> = { pending: '#f59e0b', approved: '#10b981', hold: '#94a3b8', rejected: '#f43f5e' };
     const artistByStatus = (Object.keys(DJ_STATUS_LABEL) as DjStatus[]).map((k) => ({ label: DJ_STATUS_LABEL[k], value: artists.filter((a) => a.status === k).length, color: DJ_STATUS_COLOR[k] }));
     const eventByStatus = (Object.keys(DJ_EVENT_STATUS_LABEL) as DjEventStatus[]).map((k) => ({ label: DJ_EVENT_STATUS_LABEL[k], value: events.filter((e) => e.status === k).length, color: DJ_EVENT_STATUS_COLOR[k] }));
-    const byRegion = DJ_REGIONS.map((r) => ({ label: r, value: approved.filter((a) => (a.regions || []).includes(r)).length, color: '#7c3aed' }));
-    return { approved, thisMonth, artistByStatus, eventByStatus, byRegion };
+    // 지역별 승인(출장 가능) 아티스트 수 — 전국 17개 시·도 정규화 집계
+    const regionMap: Record<string, number> = {};
+    KR_REGIONS.forEach((r) => { regionMap[r] = 0; });
+    approved.forEach((a) => {
+      const set = new Set<string>();
+      (a.regions || []).forEach((rg) => { const kr = regionToKR(rg); if (kr) set.add(kr); });
+      set.forEach((kr) => { regionMap[kr] = (regionMap[kr] || 0) + 1; });
+    });
+    return { approved, thisMonth, artistByStatus, eventByStatus, regionMap };
   }, [artists, events]);
 
   const doExport = () => exportToCsv(`DJ통계_${PERIOD_LABEL[period]}`, [
@@ -68,7 +76,7 @@ const DjStats: React.FC = () => {
         <DonutChart title="입점 상태 분포" data={stats.artistByStatus} centerLabel="명" unit="명" />
         <DonutChart title="행사 문의 상태 분포" data={stats.eventByStatus} centerLabel="건" unit="건" />
       </div>
-      <CategoryBarChart title="지역별 승인 아티스트" data={stats.byRegion} unit="명" />
+      <KoreaMap title="지역별 승인 아티스트 (출장 가능 지역)" data={stats.regionMap} color="#7c3aed" unit="명" />
       {modal}
     </div>
   );
