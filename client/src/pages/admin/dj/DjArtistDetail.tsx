@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, Pause, X } from 'lucide-react';
+import { Check, Pause, X } from 'lucide-react';
 import { djApi, DJ_STATUS_LABEL, type DjArtist, type DjStatus } from '../../../api/djApi';
-import { card, inputStyle, labelStyle, btnGhost, useAdminModal, Spinner, fmtDate } from '../../../components/admin/shared';
+import { inputStyle, labelStyle, useAdminModal, Spinner, fmtDate, DetailHead, StatusPill, FormSection } from '../../../components/admin/shared';
 
 const won = (n: number | null) => (n == null ? '-' : `₩${Number(n).toLocaleString()}`);
 
-const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+const InfoRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div style={{ display: 'flex', padding: '11px 0', borderBottom: '1px solid #f1f5f9', fontSize: '0.9rem' }}>
     <div style={{ width: '130px', color: '#94a3b8', flexShrink: 0 }}>{label}</div>
     <div style={{ color: '#1e293b', fontWeight: 600, wordBreak: 'break-all' }}>{children}</div>
   </div>
 );
 const FileLink: React.FC<{ url: string | null }> = ({ url }) => url ? <a href={url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>보기</a> : <span style={{ color: '#cbd5e1' }}>-</span>;
+
+const STATUS_COLOR: Record<DjStatus, string> = { approved: '#059669', hold: '#d97706', rejected: '#dc2626', pending: '#94a3b8' };
 
 const DjArtistDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,42 +47,40 @@ const DjArtistDetail: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '760px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate('/admin/dashboard/dj/artists')}><ArrowLeft size={16} /> 목록으로</button>
+      <DetailHead
+        title={`${item.stage_name || item.name} #${item.id}`}
+        onBack={() => navigate('/admin/dashboard/dj/artists')}
+        badge={<StatusPill label={DJ_STATUS_LABEL[item.status]} color={STATUS_COLOR[item.status] || '#94a3b8'} />}
+      />
 
-      <div style={card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{item.stage_name || item.name} <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.9rem' }}>#{item.id}</span></h2>
-          <span style={{ background: '#f1f5f9', color: '#475569', fontWeight: 700, fontSize: '0.82rem', padding: '6px 12px', borderRadius: '999px' }}>현재: {DJ_STATUS_LABEL[item.status]}</span>
-        </div>
-
-        <Row label="이름">{item.name}</Row>
-        <Row label="활동명">{item.stage_name || '-'}</Row>
-        <Row label="연락처">{item.phone || '-'}</Row>
-        <Row label="이메일">{item.email || '-'}</Row>
-        <Row label="신분증"><FileLink url={item.id_card_url} /></Row>
-        <Row label="통장사본"><FileLink url={item.bankbook_url} /></Row>
-        <Row label="이력서"><FileLink url={item.resume_url} /></Row>
-        <Row label={`포트폴리오(${item.portfolio_type.toUpperCase()})`}>
+      <FormSection title="신청 정보">
+        <InfoRow label="이름">{item.name}</InfoRow>
+        <InfoRow label="활동명">{item.stage_name || '-'}</InfoRow>
+        <InfoRow label="연락처">{item.phone || '-'}</InfoRow>
+        <InfoRow label="이메일">{item.email || '-'}</InfoRow>
+        <InfoRow label="신분증"><FileLink url={item.id_card_url} /></InfoRow>
+        <InfoRow label="통장사본"><FileLink url={item.bankbook_url} /></InfoRow>
+        <InfoRow label="이력서"><FileLink url={item.resume_url} /></InfoRow>
+        <InfoRow label={`포트폴리오(${item.portfolio_type.toUpperCase()})`}>
           {item.portfolio_files?.length ? item.portfolio_files.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" style={{ color: '#2563eb', marginRight: '10px' }}>파일 {i + 1}</a>) : '-'}
-        </Row>
-        <Row label="사운드클라우드">{item.soundcloud_url ? <a href={item.soundcloud_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{item.soundcloud_url}</a> : '-'}</Row>
-        <Row label="MP3">{item.mp3_url ? <a href={item.mp3_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{item.mp3_url}</a> : '-'}</Row>
-        <Row label="유튜브">{item.youtube_url ? <a href={item.youtube_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{item.youtube_url}</a> : '-'}</Row>
-        <Row label="소셜">{item.social_links?.length ? item.social_links.map((s, i) => <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', marginRight: '10px' }}>{s.label || s.url}</a>) : '-'}</Row>
-        <Row label="섭외 지역">{(item.regions || []).join(', ') || '-'}</Row>
-        <Row label="게런티">{(() => {
+        </InfoRow>
+        <InfoRow label="사운드클라우드">{item.soundcloud_url ? <a href={item.soundcloud_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{item.soundcloud_url}</a> : '-'}</InfoRow>
+        <InfoRow label="MP3">{item.mp3_url ? <a href={item.mp3_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{item.mp3_url}</a> : '-'}</InfoRow>
+        <InfoRow label="유튜브">{item.youtube_url ? <a href={item.youtube_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{item.youtube_url}</a> : '-'}</InfoRow>
+        <InfoRow label="소셜">{item.social_links?.length ? item.social_links.map((s, i) => <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', marginRight: '10px' }}>{s.label || s.url}</a>) : '-'}</InfoRow>
+        <InfoRow label="섭외 지역">{(item.regions || []).join(', ') || '-'}</InfoRow>
+        <InfoRow label="게런티">{(() => {
           const gm = item.guarantees && Object.keys(item.guarantees).length
             ? item.guarantees
             : { 서울: item.guarantee_seoul, 경기: item.guarantee_gyeonggi, 대전: item.guarantee_daejeon };
           const entries = Object.entries(gm).filter(([, v]) => v != null);
           return entries.length ? entries.map(([r, v]) => `${r} ${won(v as number)}`).join(' · ') : '-';
-        })()}</Row>
-        <Row label="소개">{item.intro || '-'}</Row>
-        <Row label="접수일">{fmtDate(item.created_at)}</Row>
-      </div>
+        })()}</InfoRow>
+        <InfoRow label="소개">{item.intro || '-'}</InfoRow>
+        <InfoRow label="접수일">{fmtDate(item.created_at)}</InfoRow>
+      </FormSection>
 
-      <div style={{ ...card, marginTop: '20px' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '14px' }}>심사 처리</h3>
+      <FormSection title="심사 처리">
         <div style={{ marginBottom: '16px' }}>
           <label style={labelStyle}>관리자 메모</label>
           <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="심사 메모 / 게런티 협의 등" />
@@ -90,7 +90,7 @@ const DjArtistDetail: React.FC = () => {
           <button style={actBtn('#d97706')} onClick={() => setStatus('hold')} disabled={saving}><Pause size={16} /> 보류</button>
           <button style={actBtn('#dc2626')} onClick={() => setStatus('rejected')} disabled={saving}><X size={16} /> 반려</button>
         </div>
-      </div>
+      </FormSection>
       {modal}
     </div>
   );

@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { portfolioApi, categoryApi } from '../../../api/constructionApi';
-import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import RichTextEditor from '../../../components/UI/RichTextEditor';
 import ImageUploader from '../../../components/UI/ImageUploader';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
+import { labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, DetailHead, StatusPill, FormSection, Row, TextField, SelectField, FormActions } from '../../../components/admin/shared';
 
 interface CategoryOpt { id: number; name: string; }
+
+const LIST = '/admin/dashboard/construction/portfolio';
 
 const ConstructionPortfolioDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,35 +56,32 @@ const ConstructionPortfolioDetail: React.FC = () => {
     const { error } = isNew ? await portfolioApi.create(input) : await portfolioApi.update(id!, input);
     setSaving(false);
     if (error) alert('저장 오류', error);
-    else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/construction/portfolio'));
+    else alert('저장 완료', '저장되었습니다.', () => navigate(LIST));
   };
 
   if (loading) return <Spinner />;
 
   return (
     <div style={{ maxWidth: '820px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate('/admin/dashboard/construction/portfolio')}>
-        <ArrowLeft size={16} /> 목록으로
-      </button>
-      <div style={card}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '24px' }}>
-          {isNew ? '포트폴리오 등록' : '포트폴리오 수정'}
-        </h2>
+      <DetailHead
+        title={isNew ? '포트폴리오 등록' : '포트폴리오 수정'}
+        onBack={() => navigate(LIST)}
+        badge={!isNew ? <StatusPill label={isActive ? '활성' : '비활성'} color={isActive ? '#059669' : '#94a3b8'} /> : undefined}
+        right={<button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>}
+      />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '18px', marginBottom: '18px' }}>
-          <div>
-            <label style={labelStyle}>카테고리 *</label>
-            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={categoryId} onChange={(e) => setCategoryId(e.target.value === '' ? '' : Number(e.target.value))}>
-              <option value="">선택</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>제목 *</label>
-            <input style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="포트폴리오 제목" />
-          </div>
-        </div>
+      <FormSection title="기본 정보">
+        <Row>
+          <SelectField label="카테고리" required flex={0} minWidth="220px" value={categoryId} onChange={(v) => setCategoryId(v === '' ? '' : Number(v))}>
+            <option value="">선택</option>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </SelectField>
+          <TextField label="제목" required value={title} onChange={setTitle} placeholder="포트폴리오 제목" />
+        </Row>
+        <Row><TextField label="링크 URL" minWidth="100%" value={linkUrl} onChange={setLinkUrl} placeholder="https://... (선택)" /></Row>
+      </FormSection>
 
+      <FormSection title="이미지 · 상세 내용">
         <div style={{ marginBottom: '18px' }}>
           <label style={labelStyle}>대표 이미지</label>
           <ImageUploader
@@ -95,26 +93,21 @@ const ConstructionPortfolioDetail: React.FC = () => {
           />
         </div>
 
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>링크 URL</label>
-          <input style={inputStyle} value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://... (선택)" />
-        </div>
-
         <div style={{ marginBottom: '24px' }}>
           <label style={labelStyle}>상세 내용</label>
           <RichTextEditor value={contentHtml} onChange={setContentHtml} placeholder="시공 상세 내용을 입력하세요" />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
           <label style={{ ...labelStyle, marginBottom: 0 }}>활성화</label>
           <ToggleButton isOn={isActive} onToggle={() => setIsActive((v) => !v)} />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          <button style={btnGhost} onClick={() => navigate('/admin/dashboard/construction/portfolio')}>취소</button>
+        <FormActions>
+          <button style={btnGhost} onClick={() => navigate(LIST)}>취소</button>
           <button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>
-        </div>
-      </div>
+        </FormActions>
+      </FormSection>
       {modal}
     </div>
   );

@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { orderApi, PAYMENT_LABEL, ORDER_LABEL, type RentalOrder, type OrderStatus, type PaymentStatus } from '../../../api/rentalApi';
-import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, fmtDate } from '../../../components/admin/shared';
+import { inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, fmtDate, DetailHead, StatusPill, FormSection, Row, SelectField, FormActions } from '../../../components/admin/shared';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 
-const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+const InfoRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div style={{ display: 'flex', padding: '11px 0', borderBottom: '1px solid #f1f5f9', fontSize: '0.9rem' }}>
     <div style={{ width: '130px', color: '#94a3b8', flexShrink: 0 }}>{label}</div>
     <div style={{ color: '#1e293b', fontWeight: 600 }}>{children}</div>
   </div>
 );
+
+const ORDER_COLOR: Record<OrderStatus, string> = { reserved: '#0891b2', renting: '#059669', returned: '#64748b', cancelled: '#dc2626' };
+
+const LIST = '/admin/dashboard/rental/orders';
 
 const RentalOrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,7 +41,7 @@ const RentalOrderDetail: React.FC = () => {
     setSaving(true);
     const { error } = await orderApi.updateStatus(id!, { order_status: orderStatus, payment_status: payStatus, memo });
     setSaving(false);
-    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/rental/orders'));
+    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate(LIST));
   };
 
   if (loading) return <Spinner />;
@@ -46,49 +49,47 @@ const RentalOrderDetail: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '720px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate('/admin/dashboard/rental/orders')}><ArrowLeft size={16} /> 목록으로</button>
+      <DetailHead
+        title={`렌탈 주문 상세 #${order.id}`}
+        onBack={() => navigate(LIST)}
+        badge={<StatusPill label={ORDER_LABEL[order.order_status]} color={ORDER_COLOR[order.order_status]} />}
+        right={<button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>}
+      />
 
-      <div style={card}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '20px' }}>렌탈 주문 상세 #{order.id}</h2>
-        <Row label="상품">{order.product_name || '-'}{order.option_name ? ` · ${order.option_name}` : ''}</Row>
-        <Row label="브랜드">{order.brand_name || '-'}</Row>
-        <Row label="고객">{order.customer_name || '-'}</Row>
-        <Row label="연락처">{order.customer_phone || '-'}</Row>
-        <Row label="이메일">{order.customer_email || '-'}</Row>
-        <Row label="대여 시작">{order.rental_start ? fmtDate(order.rental_start) : '-'}</Row>
-        <Row label="대여 기간">{order.rental_days}일{order.rental_end ? ` (반납예정 ${fmtDate(order.rental_end)})` : ''}</Row>
-        <Row label="수량">{order.quantity}개</Row>
-        <Row label="일일 단가">{won(order.daily_price)}</Row>
-        <Row label="보증금 / 배송비">{won(order.deposit)} / {won(order.delivery_fee)}</Row>
-        <Row label="결제 총액"><span style={{ color: '#008b8b', fontWeight: 800 }}>{won(order.total_amount)}</span></Row>
-        <Row label="결제수단/PG">{order.payment_method || '-'}{order.payment_id ? ` (${order.payment_id})` : ''}</Row>
-        <Row label="주문일">{fmtDate(order.created_at)}</Row>
-      </div>
+      <FormSection title="주문 정보">
+        <InfoRow label="상품">{order.product_name || '-'}{order.option_name ? ` · ${order.option_name}` : ''}</InfoRow>
+        <InfoRow label="브랜드">{order.brand_name || '-'}</InfoRow>
+        <InfoRow label="고객">{order.customer_name || '-'}</InfoRow>
+        <InfoRow label="연락처">{order.customer_phone || '-'}</InfoRow>
+        <InfoRow label="이메일">{order.customer_email || '-'}</InfoRow>
+        <InfoRow label="대여 시작">{order.rental_start ? fmtDate(order.rental_start) : '-'}</InfoRow>
+        <InfoRow label="대여 기간">{order.rental_days}일{order.rental_end ? ` (반납예정 ${fmtDate(order.rental_end)})` : ''}</InfoRow>
+        <InfoRow label="수량">{order.quantity}개</InfoRow>
+        <InfoRow label="일일 단가">{won(order.daily_price)}</InfoRow>
+        <InfoRow label="보증금 / 배송비">{won(order.deposit)} / {won(order.delivery_fee)}</InfoRow>
+        <InfoRow label="결제 총액"><span style={{ color: '#008b8b', fontWeight: 800 }}>{won(order.total_amount)}</span></InfoRow>
+        <InfoRow label="결제수단/PG">{order.payment_method || '-'}{order.payment_id ? ` (${order.payment_id})` : ''}</InfoRow>
+        <InfoRow label="주문일">{fmtDate(order.created_at)}</InfoRow>
+      </FormSection>
 
-      <div style={{ ...card, marginTop: '20px' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '16px' }}>상태 변경</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
-          <div>
-            <label style={labelStyle}>대여 상태</label>
-            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={orderStatus} onChange={(e) => setOrderStatus(e.target.value as OrderStatus)}>
-              {(['reserved', 'renting', 'returned', 'cancelled'] as OrderStatus[]).map((s) => <option key={s} value={s}>{ORDER_LABEL[s]}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>결제 상태</label>
-            <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={payStatus} onChange={(e) => setPayStatus(e.target.value as PaymentStatus)}>
-              {(['paid', 'pending', 'cancelled', 'refunded'] as PaymentStatus[]).map((s) => <option key={s} value={s}>{PAYMENT_LABEL[s]}</option>)}
-            </select>
-          </div>
-        </div>
+      <FormSection title="상태 변경">
+        <Row>
+          <SelectField label="대여 상태" value={orderStatus} onChange={(v) => setOrderStatus(v as OrderStatus)}>
+            {(['reserved', 'renting', 'returned', 'cancelled'] as OrderStatus[]).map((s) => <option key={s} value={s}>{ORDER_LABEL[s]}</option>)}
+          </SelectField>
+          <SelectField label="결제 상태" value={payStatus} onChange={(v) => setPayStatus(v as PaymentStatus)}>
+            {(['paid', 'pending', 'cancelled', 'refunded'] as PaymentStatus[]).map((s) => <option key={s} value={s}>{PAYMENT_LABEL[s]}</option>)}
+          </SelectField>
+        </Row>
         <div style={{ marginBottom: '20px' }}>
           <label style={labelStyle}>관리자 메모</label>
           <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={memo} onChange={(e) => setMemo(e.target.value)} />
         </div>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <FormActions>
+          <button style={btnGhost} onClick={() => navigate(LIST)}>취소</button>
           <button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>
-        </div>
-      </div>
+        </FormActions>
+      </FormSection>
       {modal}
     </div>
   );

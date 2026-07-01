@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt, Megaphone, Truck } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
@@ -16,9 +16,10 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { can, canGroup } = useAdminPermissions();
 
-  const CON_KEYS = ['construction/inquiries', 'construction/categories', 'construction/reviews', 'construction/portfolio', 'construction/chatbot', 'construction/calendar', 'construction/stats'];
-  const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events', 'rental/orders', 'rental/purchases', 'rental/calendar', 'rental/stats'];
-  const WORK_KEYS = ['construction/works', 'construction/companies'];
+  const CON_KEYS = ['construction/categories', 'construction/portfolio', 'construction/chatbot'];
+  const WORK_KEYS = ['construction/inquiries', 'construction/works', 'construction/companies', 'construction/reviews', 'construction/calendar', 'construction/stats'];
+  const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events', 'rental/orders'];
+  const RENTOPS_KEYS = ['rental/shipments', 'rental/purchases', 'rental/calendar', 'rental/stats'];
   const DJ_KEYS = ['dj/list', 'dj/artists', 'dj/event-inquiries', 'dj/calendar', 'dj/stats'];
   const EST_KEYS = ['estimates/construction', 'estimates/rental', 'estimates/dj', 'contracts'];
   const TERMS_KEYS = ['terms/service', 'terms/privacy'];
@@ -102,13 +103,9 @@ const AdminDashboard: React.FC = () => {
         </div>
         {expandedMenus['시공 관리'] && (
             <div className="sub-menu">
-                {can('construction/inquiries') && <span className={activeMenu === '시공 문의 내역' ? 'active' : ''} onClick={() => handleMenuClick('시공 문의 내역', '/admin/dashboard/inquiries')}>시공 문의 내역</span>}
                 {can('construction/categories') && <span className={activeMenu === '카테고리 관리(시공)' ? 'active' : ''} onClick={() => handleMenuClick('카테고리 관리(시공)', '/admin/dashboard/construction/categories')}>카테고리 관리</span>}
-                {can('construction/reviews') && <span className={activeMenu === '후기 관리' ? 'active' : ''} onClick={() => handleMenuClick('후기 관리', '/admin/dashboard/construction/reviews')}>후기 관리</span>}
                 {can('construction/portfolio') && <span className={activeMenu === '포트폴리오 관리' ? 'active' : ''} onClick={() => handleMenuClick('포트폴리오 관리', '/admin/dashboard/construction/portfolio')}>포트폴리오 관리</span>}
                 {can('construction/chatbot') && <span className={activeMenu === '시공 문의 챗봇 관리' ? 'active' : ''} onClick={() => handleMenuClick('시공 문의 챗봇 관리', '/admin/dashboard/construction/chatbot')}>시공 문의 챗봇 관리</span>}
-                {can('construction/calendar') && <span className={activeMenu === '시공 내역 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('시공 내역 캘린더', '/admin/dashboard/construction/calendar')}>시공 내역 캘린더</span>}
-                {can('construction/stats') && <span className={activeMenu === '시공 내역 통계' ? 'active' : ''} onClick={() => handleMenuClick('시공 내역 통계', '/admin/dashboard/construction/stats')}>시공 내역 통계</span>}
             </div>
         )}
         </>)}
@@ -121,8 +118,12 @@ const AdminDashboard: React.FC = () => {
         </div>
         {expandedMenus['시공 업무 관리'] && (
             <div className="sub-menu">
+                {can('construction/inquiries') && <span className={activeMenu === '시공 문의 내역' ? 'active' : ''} onClick={() => handleMenuClick('시공 문의 내역', '/admin/dashboard/inquiries')}>시공 문의 내역</span>}
                 {can('construction/works') && <span className={activeMenu === '시공 업무 현황' ? 'active' : ''} onClick={() => handleMenuClick('시공 업무 현황', '/admin/dashboard/construction/works')}>시공 업무 현황</span>}
                 {can('construction/companies') && <span className={activeMenu === '시공 업체 관리' ? 'active' : ''} onClick={() => handleMenuClick('시공 업체 관리', '/admin/dashboard/construction/companies')}>시공 업체 관리</span>}
+                {can('construction/reviews') && <span className={activeMenu === '후기 관리' ? 'active' : ''} onClick={() => handleMenuClick('후기 관리', '/admin/dashboard/construction/reviews')}>후기 관리</span>}
+                {can('construction/calendar') && <span className={activeMenu === '시공 내역 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('시공 내역 캘린더', '/admin/dashboard/construction/calendar')}>시공 내역 캘린더</span>}
+                {can('construction/stats') && <span className={activeMenu === '시공 내역 통계' ? 'active' : ''} onClick={() => handleMenuClick('시공 내역 통계', '/admin/dashboard/construction/stats')}>시공 내역 통계</span>}
             </div>
         )}
         </>)}
@@ -141,6 +142,19 @@ const AdminDashboard: React.FC = () => {
                 {can('rental/exclusive') && <span className={activeMenu === '단독 상품' ? 'active' : ''} onClick={() => handleMenuClick('단독 상품', '/admin/dashboard/rental/exclusive')}>단독 상품</span>}
                 {can('rental/events') && <span className={activeMenu === '기획전' ? 'active' : ''} onClick={() => handleMenuClick('기획전', '/admin/dashboard/rental/events')}>기획전</span>}
                 {can('rental/orders') && <span className={activeMenu === '렌탈 주문 관리' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 주문 관리', '/admin/dashboard/rental/orders')}>렌탈 관리(주문)</span>}
+            </div>
+        )}
+        </>)}
+
+        {/* 렌탈 업무 관리 */}
+        {canGroup(RENTOPS_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('렌탈 업무 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Truck size={18} /> <span>렌탈 업무 관리</span></div>
+            {expandedMenus['렌탈 업무 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['렌탈 업무 관리'] && (
+            <div className="sub-menu">
+                {can('rental/shipments') && <span className={activeMenu === '렌탈 출고 현황' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 출고 현황', '/admin/dashboard/rental/shipments')}>렌탈 출고 현황</span>}
                 {can('rental/purchases') && <span className={activeMenu === '렌탈 입점 문의' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 입점 문의', '/admin/dashboard/rental/purchases')}>렌탈 입점 문의</span>}
                 {can('rental/calendar') && <span className={activeMenu === '렌탈 내역 캘린더' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 내역 캘린더', '/admin/dashboard/rental/calendar')}>렌탈 내역 캘린더</span>}
                 {can('rental/stats') && <span className={activeMenu === '렌탈 내역 통계' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 내역 통계', '/admin/dashboard/rental/stats')}>렌탈 내역 통계</span>}

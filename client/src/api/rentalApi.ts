@@ -345,3 +345,72 @@ export const purchaseApi = {
   },
   remove: removeFn('rental_purchase_inquiries'),
 };
+
+// ---------------- 렌탈 출고 현황 (계약 후 실제 출고 → 사용자 마이페이지 노출) ----------------
+export type ShipmentStatus = 'preparing' | 'shipped' | 'delivering' | 'installed' | 'returned';
+export const SHIPMENT_STATUS_LABEL: Record<ShipmentStatus, string> = { preparing: '출고 준비', shipped: '출고 완료', delivering: '배송중', installed: '설치·수령', returned: '회수 완료' };
+export const SHIPMENT_STATUS_COLOR: Record<ShipmentStatus, string> = { preparing: '#64748b', shipped: '#2563eb', delivering: '#d97706', installed: '#059669', returned: '#94a3b8' };
+
+export interface RentalShipment {
+  id: number;
+  order_id: number | null;
+  contract_id: number | null;
+  product_name: string;
+  brand_name: string | null;
+  quantity: number;
+  customer_name: string | null;
+  customer_phone: string | null;
+  ship_date: string | null;
+  return_date: string | null;
+  tracking_no: string | null;
+  status: ShipmentStatus;
+  memo: string | null;
+  owner_user_id: string | null;
+  created_at: string;
+  updated_at: string | null;
+  created_by: string | null;
+  updated_by: string | null;
+}
+
+export const shipmentApi = {
+  list: () => run<RentalShipment[]>(() => supabase.from('rental_shipments').select('*').order('ship_date', { ascending: false, nullsFirst: false }) as any),
+  get: (id: number | string) => run<RentalShipment>(() => supabase.from('rental_shipments').select('*').eq('id', id).single() as any),
+  // 사용자 마이페이지: 본인 소유 출고 건 조회 (RLS owner read 정책과 함께 사용)
+  listMine: () => run<RentalShipment[]>(() => supabase.from('rental_shipments').select('*').order('ship_date', { ascending: false, nullsFirst: false }) as any),
+  async create(input: Partial<RentalShipment>): Promise<Result<RentalShipment>> {
+    if (!input.product_name?.trim()) return { data: null, error: '품목명을 입력해주세요.' };
+    const by = await currentAdminName();
+    return run<RentalShipment>(() => supabase.from('rental_shipments').insert({
+      order_id: input.order_id ?? null, contract_id: input.contract_id ?? null,
+      product_name: input.product_name!.trim(), brand_name: input.brand_name || null, quantity: input.quantity ?? 1,
+      customer_name: input.customer_name || null, customer_phone: input.customer_phone || null,
+      ship_date: input.ship_date || null, return_date: input.return_date || null, tracking_no: input.tracking_no || null,
+      status: input.status || 'preparing', memo: input.memo || null, owner_user_id: input.owner_user_id || null,
+      created_by: by, updated_by: by,
+    }).select().single() as any);
+  },
+  async update(id: number | string, input: Partial<RentalShipment>): Promise<Result<RentalShipment>> {
+    if (!input.product_name?.trim()) return { data: null, error: '품목명을 입력해주세요.' };
+    const by = await currentAdminName();
+    return run<RentalShipment>(() => supabase.from('rental_shipments').update({
+      order_id: input.order_id ?? null, contract_id: input.contract_id ?? null,
+      product_name: input.product_name!.trim(), brand_name: input.brand_name || null, quantity: input.quantity ?? 1,
+      customer_name: input.customer_name || null, customer_phone: input.customer_phone || null,
+      ship_date: input.ship_date || null, return_date: input.return_date || null, tracking_no: input.tracking_no || null,
+      status: input.status, memo: input.memo || null, owner_user_id: input.owner_user_id || null,
+      updated_by: by,
+    }).eq('id', id).select().single() as any);
+  },
+  async setStatus(id: number | string, status: ShipmentStatus): Promise<Result<true>> {
+    const by = await currentAdminName();
+    return run<true>(async () => {
+      const { error } = await supabase.from('rental_shipments').update({ status, updated_by: by }).eq('id', id);
+      return { data: error ? null : (true as const), error };
+    });
+  },
+  remove: removeFn('rental_shipments'),
+  removeMany: (ids: (number | string)[]) => run<true>(async () => {
+    const { error } = await supabase.from('rental_shipments').delete().in('id', ids);
+    return { data: error ? null : (true as const), error };
+  }),
+};

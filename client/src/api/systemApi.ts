@@ -14,19 +14,19 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
   { key: 'notices', label: '사내 공지', items: [] },
   {
     key: 'construction', label: '시공 관리', items: [
-      { key: 'construction/inquiries', label: '시공 문의 내역' },
       { key: 'construction/categories', label: '카테고리 관리' },
-      { key: 'construction/reviews', label: '후기 관리' },
       { key: 'construction/portfolio', label: '포트폴리오 관리' },
       { key: 'construction/chatbot', label: '시공 문의 챗봇 관리' },
-      { key: 'construction/calendar', label: '시공 내역 캘린더' },
-      { key: 'construction/stats', label: '시공 내역 통계' },
     ],
   },
   {
     key: 'construction-ops', label: '시공 업무 관리', items: [
+      { key: 'construction/inquiries', label: '시공 문의 내역' },
       { key: 'construction/works', label: '시공 업무 현황' },
       { key: 'construction/companies', label: '시공 업체 관리' },
+      { key: 'construction/reviews', label: '후기 관리' },
+      { key: 'construction/calendar', label: '시공 내역 캘린더' },
+      { key: 'construction/stats', label: '시공 내역 통계' },
     ],
   },
   {
@@ -37,6 +37,11 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'rental/exclusive', label: '단독 상품' },
       { key: 'rental/events', label: '기획전' },
       { key: 'rental/orders', label: '렌탈 관리(주문)' },
+    ],
+  },
+  {
+    key: 'rental-ops', label: '렌탈 업무 관리', items: [
+      { key: 'rental/shipments', label: '렌탈 출고 현황' },
       { key: 'rental/purchases', label: '렌탈 입점 문의' },
       { key: 'rental/calendar', label: '렌탈 내역 캘린더' },
       { key: 'rental/stats', label: '렌탈 내역 통계' },

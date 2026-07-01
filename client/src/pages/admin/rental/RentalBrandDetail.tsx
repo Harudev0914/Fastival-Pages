@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { brandApi } from '../../../api/rentalApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import ImageUploader from '../../../components/UI/ImageUploader';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
+import { labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, DetailHead, StatusPill, FormSection, Row, Field, TextField, TextareaField, FormActions } from '../../../components/admin/shared';
+
+const LIST = '/admin/dashboard/rental/brands';
 
 const RentalBrandDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,38 +36,35 @@ const RentalBrandDetail: React.FC = () => {
     const input = { name, logo_url: logoUrl, description, is_active: isActive };
     const { error } = isNew ? await brandApi.create(input) : await brandApi.update(id!, input);
     setSaving(false);
-    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/rental/brands'));
+    if (error) alert('저장 오류', error); else alert('저장 완료', '저장되었습니다.', () => navigate(LIST));
   };
 
   if (loading) return <Spinner />;
 
   return (
     <div style={{ maxWidth: '680px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate('/admin/dashboard/rental/brands')}><ArrowLeft size={16} /> 목록으로</button>
-      <div style={card}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '24px' }}>{isNew ? '브랜드 등록' : '브랜드 수정'}</h2>
+      <DetailHead
+        title={isNew ? '브랜드 등록' : '브랜드 수정'}
+        onBack={() => navigate(LIST)}
+        badge={!isNew ? <StatusPill label={isActive ? '활성' : '비활성'} color={isActive ? '#059669' : '#94a3b8'} /> : undefined}
+        right={<button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>}
+      />
 
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>브랜드명 *</label>
-          <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 요기보" />
-        </div>
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>로고 / 대표 이미지</label>
+      <FormSection title="브랜드 정보">
+        <Row><TextField label="브랜드명" required minWidth="100%" value={name} onChange={setName} placeholder="예: 요기보" /></Row>
+        <Field label="로고 / 대표 이미지" minWidth="100%">
           <ImageUploader value={logoUrl ? [logoUrl] : []} onChange={(urls) => setLogoUrl(urls[0] || '')} folder="rental-brand" multiple={false} max={1} />
-        </div>
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>브랜드 설명</label>
-          <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="브랜드 소개" />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
+        </Field>
+        <TextareaField label="브랜드 설명" value={description} onChange={setDescription} placeholder="브랜드 소개" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
           <label style={{ ...labelStyle, marginBottom: 0 }}>활성화</label>
           <ToggleButton isOn={isActive} onToggle={() => setIsActive((v) => !v)} />
         </div>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          <button style={btnGhost} onClick={() => navigate('/admin/dashboard/rental/brands')}>취소</button>
+        <FormActions>
+          <button style={btnGhost} onClick={() => navigate(LIST)}>취소</button>
           <button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>
-        </div>
-      </div>
+        </FormActions>
+      </FormSection>
       {modal}
     </div>
   );

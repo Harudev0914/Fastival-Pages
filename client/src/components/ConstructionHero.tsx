@@ -47,8 +47,8 @@ const ConstructionHero: React.FC = () => {
   if (!loaded) return null;
 
   return (
-    <section className="ch-hero">
-      {/* 좌측 메인 슬라이더 */}
+    <section className={`ch-hero ${ad ? 'ch-hero--hasad' : ''}`}>
+      {/* 좌측 메인 슬라이더 (모바일에서는 AD 배너로 대체) */}
       <div className="ch-main">
         {mains.length === 0 ? (
           <div className="ch-empty"><ImageOff size={34} strokeWidth={1.5} /><p>등록된 시공 메인 비주얼이 없습니다.</p></div>
@@ -93,7 +93,6 @@ const ConstructionHero: React.FC = () => {
       {/* 우측 고정 AD 배너 (슬라이딩 X) */}
       {ad && (
         <aside className={`ch-ad ${ad.image_mobile_url ? 'ch-ad--hasmo' : ''}`} onClick={() => open(ad)} style={{ cursor: ad.link_url ? 'pointer' : 'default' }}>
-          <span className="ch-ad__tag">AD</span>
           {ad.image_url
             ? <img className="ch-ad__img ch-ad__img--pc" src={ad.image_url} alt={ad.title} loading="lazy" />
             : <div className="ch-ad__noimg"><ImageOff size={28} color="#cbd5e1" /></div>}

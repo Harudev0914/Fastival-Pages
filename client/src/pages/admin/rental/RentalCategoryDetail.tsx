@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { rentalCategoryApi, brandApi } from '../../../api/rentalApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import ImageUploader from '../../../components/UI/ImageUploader';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
+import { labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, DetailHead, StatusPill, FormSection, Row, Field, TextField, TextareaField, FormActions } from '../../../components/admin/shared';
 
 const RentalCategoryDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -54,41 +54,39 @@ const RentalCategoryDetail: React.FC = () => {
 
   if (loading) return <Spinner />;
 
+  const title = parentId ? (isNew ? '하위 카테고리 등록' : '하위 카테고리 수정') : (isNew ? '카테고리 등록' : '카테고리 수정');
+
   return (
     <div style={{ maxWidth: '680px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate(backUrl)}><ArrowLeft size={16} /> 목록으로</button>
-      <div style={card}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '24px' }}>{parentId ? (isNew ? '하위 카테고리 등록' : '하위 카테고리 수정') : (isNew ? '카테고리 등록' : '카테고리 수정')}</h2>
+      <DetailHead
+        title={title}
+        onBack={() => navigate(backUrl)}
+        badge={!isNew ? <StatusPill label={isActive ? '활성' : '비활성'} color={isActive ? '#059669' : '#94a3b8'} /> : undefined}
+        right={<button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>}
+      />
 
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>브랜드 *</label>
+      <FormSection title="카테고리 정보">
+        <Field label="브랜드" required minWidth="100%">
           <select style={{ ...(SELECT_STYLE as React.CSSProperties), width: '100%' }} value={brandId} onChange={(e) => setBrandId(e.target.value === '' ? '' : Number(e.target.value))} disabled={!!parentId}>
             <option value="">브랜드 선택</option>
             {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           {parentId ? <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>상위 카테고리의 브랜드를 따릅니다.</span> : null}
-        </div>
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>카테고리명 *</label>
-          <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 소파 / 빈백" />
-        </div>
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>카테고리 이미지 <span style={{ fontWeight: 400, color: '#94a3b8' }}>(쇼핑홈 퀵메뉴 노출)</span></label>
+        </Field>
+        <Row><TextField label="카테고리명" required minWidth="100%" value={name} onChange={setName} placeholder="예: 소파 / 빈백" /></Row>
+        <Field label="카테고리 이미지 (쇼핑홈 퀵메뉴 노출)" minWidth="100%">
           <ImageUploader value={imageUrl ? [imageUrl] : []} onChange={(urls) => setImageUrl(urls[0] || '')} folder="rental-category" multiple={false} max={1} />
-        </div>
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>설명</label>
-          <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={description} onChange={(e) => setDescription(e.target.value)} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
+        </Field>
+        <TextareaField label="설명" value={description} onChange={setDescription} minHeight="80px" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
           <label style={{ ...labelStyle, marginBottom: 0 }}>활성화</label>
           <ToggleButton isOn={isActive} onToggle={() => setIsActive((v) => !v)} />
         </div>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <FormActions>
           <button style={btnGhost} onClick={() => navigate(backUrl)}>취소</button>
           <button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>
-        </div>
-      </div>
+        </FormActions>
+      </FormSection>
       {modal}
     </div>
   );

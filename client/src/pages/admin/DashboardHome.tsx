@@ -66,15 +66,18 @@ const DashboardHome: React.FC = () => {
   }, []);
 
   // 부서 권한 기반 도메인 필터 (시공팀이면 시공만 기본 노출)
-  const permitted = useMemo(() => ({
-    construction: can('construction/works') || can('construction/calendar') || can('construction/inquiries'),
-    rental: can('rental/orders') || can('rental/calendar'),
-    dj: can('dj/event-inquiries') || can('dj/calendar'),
-  }), [can]);
+  // ⚠️ can()은 매 렌더 새 함수라 primitive 불리언으로 의존성을 안정화(무한 루프 방지)
+  const cAllow = can('construction/works') || can('construction/calendar') || can('construction/inquiries');
+  const rAllow = can('rental/orders') || can('rental/calendar');
+  const dAllow = can('dj/event-inquiries') || can('dj/calendar');
   const permittedKeys = useMemo(() => {
-    const ks = (Object.keys(permitted) as (keyof typeof permitted)[]).filter((k) => permitted[k]);
-    return ks.length ? ks : (['construction', 'rental', 'dj'] as (keyof typeof permitted)[]);
-  }, [permitted]);
+    const ks: (keyof typeof DOMAIN)[] = [];
+    if (cAllow) ks.push('construction');
+    if (rAllow) ks.push('rental');
+    if (dAllow) ks.push('dj');
+    return ks.length ? ks : (['construction', 'rental', 'dj'] as (keyof typeof DOMAIN)[]);
+  }, [cAllow, rAllow, dAllow]);
+  // permittedKeys는 primitive 의존성이라 참조가 안정적 → 로드 완료 시 1회만 반영
   useEffect(() => { if (!permLoading) setDomains(new Set(permittedKeys as string[])); }, [permLoading, permittedKeys]);
 
   const kpis = useMemo(() => {
@@ -238,9 +241,12 @@ const DashboardHome: React.FC = () => {
 
       {/* ===== 하단: 캘린더 / 예정 업무 내용 ===== */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '20px', alignItems: 'start' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', gap: '10px', flexWrap: 'wrap' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>업무 일정</h3>
+        <div style={{ ...card, padding: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CalendarDays size={16} color="#008b8b" />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>업무 일정</h3>
+            </div>
             {domainChips.length > 1 && (
               <FilterChips options={domainChips} active={domains} onToggle={(k) => setDomains((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })} />
             )}

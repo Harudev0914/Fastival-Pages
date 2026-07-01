@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { categoryApi } from '../../../api/constructionApi';
 import ToggleButton from '../../../components/UI/ToggleButton';
 import ImageUploader from '../../../components/UI/ImageUploader';
-import { card, inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner } from '../../../components/admin/shared';
+import { labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, DetailHead, StatusPill, FormSection, Row, TextField, TextareaField, FormActions } from '../../../components/admin/shared';
+
+const LIST = '/admin/dashboard/construction/categories';
 
 const ConstructionCategoryDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,46 +38,40 @@ const ConstructionCategoryDetail: React.FC = () => {
     const { error } = isNew ? await categoryApi.create(input) : await categoryApi.update(id!, input);
     setSaving(false);
     if (error) alert('저장 오류', error);
-    else alert('저장 완료', '저장되었습니다.', () => navigate('/admin/dashboard/construction/categories'));
+    else alert('저장 완료', '저장되었습니다.', () => navigate(LIST));
   };
 
   if (loading) return <Spinner />;
 
   return (
     <div style={{ maxWidth: '720px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate('/admin/dashboard/construction/categories')}>
-        <ArrowLeft size={16} /> 목록으로
-      </button>
-      <div style={card}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '24px' }}>
-          {isNew ? '카테고리 등록' : '카테고리 수정'}
-        </h2>
+      <DetailHead
+        title={isNew ? '카테고리 등록' : '카테고리 수정'}
+        onBack={() => navigate(LIST)}
+        badge={!isNew ? <StatusPill label={isActive ? '활성' : '비활성'} color={isActive ? '#059669' : '#94a3b8'} /> : undefined}
+        right={<button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>}
+      />
 
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>카테고리명 *</label>
-          <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 카페" />
-        </div>
+      <FormSection title="카테고리 정보">
+        <Row><TextField label="카테고리명" required minWidth="100%" value={name} onChange={setName} placeholder="예: 카페" /></Row>
 
         <div style={{ marginBottom: '18px' }}>
           <label style={labelStyle}>카테고리 이미지 <span style={{ fontWeight: 400, color: '#94a3b8' }}>(포트폴리오 탭 노출, 없으면 아이콘)</span></label>
           <ImageUploader value={imageUrl ? [imageUrl] : []} onChange={(urls) => setImageUrl(urls[0] || '')} folder="construction-category" multiple={false} max={1} />
         </div>
 
-        <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>설명</label>
-          <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="카테고리 설명(선택)" />
-        </div>
+        <TextareaField label="설명" value={description} onChange={setDescription} placeholder="카테고리 설명(선택)" />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
           <label style={{ ...labelStyle, marginBottom: 0 }}>활성화</label>
           <ToggleButton isOn={isActive} onToggle={() => setIsActive((v) => !v)} />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          <button style={btnGhost} onClick={() => navigate('/admin/dashboard/construction/categories')}>취소</button>
+        <FormActions>
+          <button style={btnGhost} onClick={() => navigate(LIST)}>취소</button>
           <button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>
-        </div>
-      </div>
+        </FormActions>
+      </FormSection>
       {modal}
     </div>
   );

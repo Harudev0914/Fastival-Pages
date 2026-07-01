@@ -10,10 +10,11 @@ import EstimateDocument from './EstimateDocument';
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const sel = SELECT_STYLE as React.CSSProperties;
 const emptyRow = (): EstimateItem => ({ name: '', spec: '', unit: '', qty: 1, unit_price: 0, amount: 0 });
-const DEFAULT_TERMS = `1. 본 견적서의 유효기간은 발행일로부터 30일입니다.
-2. 대금 지급 조건: 계약금 50%, 잔금 50%(작업 완료 후 협의).
-3. 부가가치세(VAT)는 합계금액에 포함되어 있습니다.
-4. 현장 여건 및 사양 변경 시 금액은 상호 협의하여 조정될 수 있습니다.`;
+const DEFAULT_TERMS = `1. 본 견적서의 유효기간은 발행일로부터 30일이며, 유효기간 경과 후에는 견적 조건이 변경될 수 있습니다.
+2. 상기 금액은 부가가치세(VAT)가 포함된 금액입니다.
+3. 대금 지급 조건: 계약금 30% / 중도금 40% / 잔금 30% (별도 합의 시 그에 따릅니다).
+4. 현장 여건, 자재 수급, 사양 변경 등으로 인하여 금액 및 일정은 상호 협의하여 조정될 수 있습니다.
+5. 본 견적서에 명시되지 아니한 항목은 별도 협의하며, 정식 계약 체결 시 계약서의 내용이 우선합니다.`;
 
 const EstimateDetail: React.FC<{ type: EstimateType }> = ({ type }) => {
   const { id } = useParams<{ id: string }>();

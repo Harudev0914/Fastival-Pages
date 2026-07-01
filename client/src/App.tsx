@@ -32,6 +32,8 @@ import RentalOrderManagement from './pages/admin/rental/RentalOrderManagement';
 import RentalOrderDetail from './pages/admin/rental/RentalOrderDetail';
 import RentalPurchaseManagement from './pages/admin/rental/RentalPurchaseManagement';
 import RentalPurchaseDetail from './pages/admin/rental/RentalPurchaseDetail';
+import RentalShipmentManagement from './pages/admin/rental/RentalShipmentManagement';
+import RentalShipmentDetail from './pages/admin/rental/RentalShipmentDetail';
 import ClientLayout from './components/ClientLayout';
 import { InfoPage } from './pages/PlaceholderPages';
 import ReviewDetailPage from './pages/ReviewDetail/ReviewDetailPage';
@@ -186,6 +188,8 @@ function AdminContent() {
       <Route path="rental/orders/detail/:id" element={<RentalOrderDetail />} />
       <Route path="rental/purchases" element={<RentalPurchaseManagement />} />
       <Route path="rental/purchases/detail/:id" element={<RentalPurchaseDetail />} />
+      <Route path="rental/shipments" element={<RentalShipmentManagement />} />
+      <Route path="rental/shipments/detail/:id" element={<RentalShipmentDetail />} />
     </Routes>
     </React.Suspense>
   );

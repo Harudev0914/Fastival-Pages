@@ -1,17 +1,21 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, Pause, X } from 'lucide-react';
+import { Check, Pause, X } from 'lucide-react';
 import { purchaseApi, PURCHASE_STATUS_LABEL, type PurchaseInquiry, type PurchaseStatus } from '../../../api/rentalApi';
-import { card, inputStyle, labelStyle, btnGhost, useAdminModal, Spinner, fmtDate } from '../../../components/admin/shared';
+import { inputStyle, labelStyle, useAdminModal, Spinner, fmtDate, DetailHead, StatusPill, FormSection } from '../../../components/admin/shared';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 
-const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+const InfoRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div style={{ display: 'flex', padding: '11px 0', borderBottom: '1px solid #f1f5f9', fontSize: '0.9rem' }}>
     <div style={{ width: '120px', color: '#94a3b8', flexShrink: 0 }}>{label}</div>
     <div style={{ color: '#1e293b', fontWeight: 600, whiteSpace: 'pre-wrap' }}>{children}</div>
   </div>
 );
+
+const PURCHASE_STATUS_COLOR: Record<PurchaseStatus, string> = { pending: '#64748b', approved: '#059669', hold: '#d97706', rejected: '#dc2626' };
+
+const LIST = '/admin/dashboard/rental/purchases';
 
 const RentalPurchaseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,23 +49,22 @@ const RentalPurchaseDetail: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '760px' }}>
-      <button style={{ ...btnGhost, marginBottom: '16px' }} onClick={() => navigate('/admin/dashboard/rental/purchases')}><ArrowLeft size={16} /> 목록으로</button>
+      <DetailHead
+        title={`입점(중고매입) 문의 #${item.id}`}
+        onBack={() => navigate(LIST)}
+        badge={<StatusPill label={PURCHASE_STATUS_LABEL[item.status]} color={PURCHASE_STATUS_COLOR[item.status]} />}
+      />
 
-      <div style={card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>입점(중고매입) 문의 #{item.id}</h2>
-          <span style={{ background: '#f1f5f9', color: '#475569', fontWeight: 700, fontSize: '0.82rem', padding: '6px 12px', borderRadius: '999px' }}>현재: {PURCHASE_STATUS_LABEL[item.status]}</span>
-        </div>
-
-        <Row label="품목">{item.product_name}</Row>
-        <Row label="브랜드">{item.brand_name || '-'}</Row>
-        <Row label="컨디션 등급"><strong>{item.condition_grade}급</strong></Row>
-        <Row label="매입 희망가"><span style={{ color: '#008b8b', fontWeight: 800 }}>{won(item.desired_price)}</span></Row>
-        <Row label="컨디션 설명">{item.description || '-'}</Row>
-        <Row label="신청자">{item.applicant_name || '-'}</Row>
-        <Row label="연락처">{item.applicant_phone || '-'}</Row>
-        <Row label="이메일">{item.applicant_email || '-'}</Row>
-        <Row label="접수일">{fmtDate(item.created_at)}</Row>
+      <FormSection title="문의 정보">
+        <InfoRow label="품목">{item.product_name}</InfoRow>
+        <InfoRow label="브랜드">{item.brand_name || '-'}</InfoRow>
+        <InfoRow label="컨디션 등급"><strong>{item.condition_grade}급</strong></InfoRow>
+        <InfoRow label="매입 희망가"><span style={{ color: '#008b8b', fontWeight: 800 }}>{won(item.desired_price)}</span></InfoRow>
+        <InfoRow label="컨디션 설명">{item.description || '-'}</InfoRow>
+        <InfoRow label="신청자">{item.applicant_name || '-'}</InfoRow>
+        <InfoRow label="연락처">{item.applicant_phone || '-'}</InfoRow>
+        <InfoRow label="이메일">{item.applicant_email || '-'}</InfoRow>
+        <InfoRow label="접수일">{fmtDate(item.created_at)}</InfoRow>
 
         {item.images?.length > 0 && (
           <div style={{ marginTop: '16px' }}>
@@ -71,10 +74,9 @@ const RentalPurchaseDetail: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      </FormSection>
 
-      <div style={{ ...card, marginTop: '20px' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b', marginTop: 0, marginBottom: '14px' }}>심사 처리</h3>
+      <FormSection title="심사 처리">
         <div style={{ marginBottom: '16px' }}>
           <label style={labelStyle}>관리자 메모</label>
           <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="검토 내용 / 매입 결정가 등" />
@@ -84,7 +86,7 @@ const RentalPurchaseDetail: React.FC = () => {
           <button style={actBtn('#d97706')} onClick={() => setStatus('hold')} disabled={saving}><Pause size={16} /> 보류</button>
           <button style={actBtn('#dc2626')} onClick={() => setStatus('rejected')} disabled={saving}><X size={16} /> 반려</button>
         </div>
-      </div>
+      </FormSection>
       {modal}
     </div>
   );

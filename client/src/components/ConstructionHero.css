@@ -53,11 +53,15 @@
 }
 .ch-empty p { margin: 0; font-size: 0.9rem; font-weight: 600; color: #64748b; }
 
-/* 모바일: 세로 적층 + AD 가로 배너 */
-@media (max-width: 900px) {
+/* 모바일/태블릿: 메인 슬라이더 숨기고 등록된 AD 가로 배너만 노출 (사이트 전역 모바일 기준 1024px에 맞춤) */
+@media (max-width: 1024px) {
   .ch-hero { flex-direction: column; }
   .ch-slide__title { font-size: 1.25rem; }
+  /* AD가 등록된 경우 모바일에서는 메인 슬라이더를 숨김 */
+  .ch-hero--hasad .ch-main { display: none; }
+  /* AD 배너: 모바일에서 가로 배너 비율로 전체 폭 노출 */
   .ch-ad { aspect-ratio: 16 / 6; }
+  .ch-ad__title { font-size: 0.95rem; }
   /* 모바일 가로 이미지가 있으면 그것을 노출 */
   .ch-ad--hasmo .ch-ad__img--pc { display: none; }
   .ch-ad--hasmo .ch-ad__img--mo { display: block; }
