@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3, FileText, Briefcase, Receipt, FileSignature } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
@@ -167,6 +167,9 @@ const AdminDashboard: React.FC = () => {
             </div>
         )}
         </>)}
+
+        {/* 계약서 관리 (단일) */}
+        {can('contracts') && <div className={`menu-item ${activeMenu === '계약서 관리' ? 'active' : ''}`} onClick={() => handleMenuClick('계약서 관리', '/admin/dashboard/contracts')}><FileSignature size={18} /> <span>계약서 관리</span></div>}
 
         {/* 약관 관리 */}
         {canGroup(TERMS_KEYS) && (<>

@@ -73,6 +73,8 @@ import DjEventCalendar from './pages/admin/dj/DjEventCalendar';
 import DjStats from './pages/admin/dj/DjStats';
 import ConstructionStats from './pages/admin/construction/ConstructionStats';
 import RentalStats from './pages/admin/rental/RentalStats';
+import ContractManagement from './pages/admin/contract/ContractManagement';
+import ContractBuilder from './pages/admin/contract/ContractBuilder';
 import AdminUserManagement from './pages/admin/system/AdminUserManagement';
 import DepartmentManagement from './pages/admin/system/DepartmentManagement';
 import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
@@ -157,6 +159,11 @@ function AdminContent() {
       <Route path="estimates/rental/detail/:id" element={<EstimateDetail type="rental" />} />
       <Route path="estimates/dj" element={<EstimateManagement type="dj" />} />
       <Route path="estimates/dj/detail/:id" element={<EstimateDetail type="dj" />} />
+
+      {/* 계약서 관리 */}
+      <Route path="contracts" element={<ContractManagement />} />
+      <Route path="contracts/new/:template" element={<ContractBuilder />} />
+      <Route path="contracts/detail/:id" element={<ContractBuilder />} />
 
       {/* 약관 관리 */}
       <Route path="terms/service" element={<TermsManagement type="service" />} />

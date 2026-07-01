@@ -58,6 +58,7 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'estimates/dj', label: 'DJ 프리랜서 견적서' },
     ],
   },
+  { key: 'contracts', label: '계약서 관리', items: [] },
   {
     key: 'terms', label: '약관 관리', items: [
       { key: 'terms/service', label: '서비스 이용약관' },
