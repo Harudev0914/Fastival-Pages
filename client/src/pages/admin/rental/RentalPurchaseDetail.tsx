@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Check, Pause, X } from 'lucide-react';
 import { purchaseApi, PURCHASE_STATUS_LABEL, type PurchaseInquiry, type PurchaseStatus } from '../../../api/rentalApi';
 import { inputStyle, labelStyle, useAdminModal, Spinner, fmtDate, DetailHead, StatusPill, FormSection } from '../../../components/admin/shared';
+import ApprovalPanel from '../../../components/admin/ApprovalPanel';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 
@@ -75,6 +76,15 @@ const RentalPurchaseDetail: React.FC = () => {
           </div>
         )}
       </FormSection>
+
+      <ApprovalPanel
+        refType="rental_purchase" refId={item.id}
+        defaultTitle={`렌탈 매입 심사 - ${item.product_name}`}
+        defaultEmail={item.applicant_email}
+        defaultCustomer={item.applicant_name}
+        defaultAmount={item.desired_price}
+        onFinalize={() => setStatus('approved')} finalizeLabel="매입 승인 확정"
+      />
 
       <FormSection title="심사 처리">
         <div style={{ marginBottom: '16px' }}>

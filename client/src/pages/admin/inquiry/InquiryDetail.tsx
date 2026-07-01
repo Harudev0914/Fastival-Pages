@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Save, FileText } from 'lucide-react';
 import { inquiryApi, type ConstructionInquiry, type InquiryStatus } from '../../../api/constructionApi';
 import { card, btnPrimary, fmtDate, useAdminModal, Spinner, DetailHead, StatusPill, FormSection, SelectField, TextareaField, FormActions } from '../../../components/admin/shared';
+import ApprovalPanel from '../../../components/admin/ApprovalPanel';
 import { STATUS_MAP } from './InquiryList';
 
 const InquiryDetail: React.FC<{ id: number; onBack: () => void }> = ({ id, onBack }) => {
@@ -89,6 +90,13 @@ const InquiryDetail: React.FC<{ id: number; onBack: () => void }> = ({ id, onBac
           {(!item.answers || item.answers.length === 0) && <div style={{ color: '#94a3b8' }}>응답 데이터가 없습니다.</div>}
         </div>
       </FormSection>
+
+      <ApprovalPanel
+        refType="construction_inquiry" refId={id}
+        defaultTitle={`시공 견적 승인 - ${item.name || '고객'}`}
+        defaultEmail={item.email}
+        defaultCustomer={item.name}
+      />
 
       <FormSection title="처리 상태">
         <div style={{ maxWidth: '240px' }}>

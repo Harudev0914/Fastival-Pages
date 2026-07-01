@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Search, Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setLoggedIn(!!session));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const logout = async () => { await supabase.auth.signOut(); setIsMobileMenuOpen(false); navigate('/'); };
 
   const handleSearchClick = () => {
     navigate('/search');
@@ -83,8 +93,17 @@ const Header: React.FC = () => {
             <Search size={16} color="#64748b" />
             <input type="text" placeholder="통합검색" className="search-input" readOnly />
           </div>
-          <Link to="/login" className="user-nav-link">로그인</Link>
-          <Link to="/signup" className="user-nav-link">회원가입</Link>
+          {loggedIn ? (
+            <>
+              <Link to="/mypage" className="user-nav-link">마이페이지</Link>
+              <button onClick={logout} className="user-nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>로그아웃</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="user-nav-link">로그인</Link>
+              <Link to="/signup" className="user-nav-link">회원가입</Link>
+            </>
+          )}
           <Link to="/cs" className="user-nav-link">고객센터</Link>
         </div>
 
@@ -138,8 +157,17 @@ const Header: React.FC = () => {
               <Search size={18} color="#64748b" /> <span>통합검색</span>
             </div>
             <div className="mm-users">
-              <button onClick={() => go('/login')}>로그인</button>
-              <button onClick={() => go('/signup')}>회원가입</button>
+              {loggedIn ? (
+                <>
+                  <button onClick={() => go('/mypage')}>마이페이지</button>
+                  <button onClick={logout}>로그아웃</button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => go('/login')}>로그인</button>
+                  <button onClick={() => go('/signup')}>회원가입</button>
+                </>
+              )}
               <button onClick={() => go('/cs')}>고객센터</button>
             </div>
           </div>

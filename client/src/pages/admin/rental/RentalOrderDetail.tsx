@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Save } from 'lucide-react';
 import { orderApi, PAYMENT_LABEL, ORDER_LABEL, type RentalOrder, type OrderStatus, type PaymentStatus } from '../../../api/rentalApi';
 import { inputStyle, labelStyle, btnPrimary, btnGhost, useAdminModal, Spinner, fmtDate, DetailHead, StatusPill, FormSection, Row, SelectField, FormActions } from '../../../components/admin/shared';
+import ApprovalPanel from '../../../components/admin/ApprovalPanel';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 
@@ -71,6 +72,14 @@ const RentalOrderDetail: React.FC = () => {
         <InfoRow label="결제수단/PG">{order.payment_method || '-'}{order.payment_id ? ` (${order.payment_id})` : ''}</InfoRow>
         <InfoRow label="주문일">{fmtDate(order.created_at)}</InfoRow>
       </FormSection>
+
+      <ApprovalPanel
+        refType="rental_order" refId={order.id}
+        defaultTitle={`렌탈 신청 계약 승인 - ${order.product_name || ''}`}
+        defaultEmail={order.customer_email}
+        defaultCustomer={order.customer_name}
+        defaultAmount={order.total_amount}
+      />
 
       <FormSection title="상태 변경">
         <Row>

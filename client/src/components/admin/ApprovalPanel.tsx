@@ -1,27 +1,30 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Send, X, CheckCircle2, RotateCcw } from 'lucide-react';
-import { approvalApi, DOC_TYPE_LABEL, APPROVAL_STATUS_LABEL, APPROVAL_STATUS_COLOR, type ApprovalRefType, type ApprovalDocType, type ApprovalRequest } from '../../api/approvalApi';
+import { Send, X, CheckCircle2, RotateCcw, Search, UserCheck, UserX } from 'lucide-react';
+import { approvalApi, DOC_TYPE_LABEL, APPROVAL_STATUS_LABEL, APPROVAL_STATUS_COLOR, type ApprovalRefType, type ApprovalDocType, type ApprovalRequest, type MatchedUser } from '../../api/approvalApi';
 import { card, inputStyle, labelStyle, btnPrimary, btnGhost, fmtDate, useAdminModal, StatusPill } from './shared';
 
 interface Props {
   refType: ApprovalRefType;
   refId: number;
   defaultTitle: string;
-  defaultOwner?: string | null;
+  defaultEmail?: string | null;      // 신청자 이메일 → 가입 계정 자동 매칭
   defaultAmount?: number | null;
   defaultCustomer?: string | null;
-  onFinalize?: () => void | Promise<void>;   // 사용자 승인 후 관리자 최종 처리(예: 아티스트 승인/매입 확정)
+  onFinalize?: () => void | Promise<void>;   // 사용자 승인 후 관리자 최종 처리
   finalizeLabel?: string;
 }
 
 const sel: React.CSSProperties = { ...inputStyle, cursor: 'pointer' };
 
-const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultOwner, defaultAmount, defaultCustomer, onFinalize, finalizeLabel = '최종 승인 처리' }) => {
+const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultEmail, defaultAmount, defaultCustomer, onFinalize, finalizeLabel = '최종 승인 처리' }) => {
   const [req, setReq] = useState<ApprovalRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState(defaultTitle);
-  const [owner, setOwner] = useState(defaultOwner || '');
+  const [email, setEmail] = useState(defaultEmail || '');
+  const [matched, setMatched] = useState<MatchedUser | null>(null);
+  const [looked, setLooked] = useState(false);       // 조회 시도 여부
+  const [looking, setLooking] = useState(false);
   const [docType, setDocType] = useState<ApprovalDocType>('none');
   const [docId, setDocId] = useState('');
   const [amount, setAmount] = useState(defaultAmount != null ? String(defaultAmount) : '');
@@ -35,14 +38,27 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultO
   }, [refType, refId]);
   useEffect(() => { load(); }, [load]);
 
+  const resolve = useCallback(async () => {
+    if (!email.trim()) { setMatched(null); setLooked(true); return null; }
+    setLooking(true);
+    const m = await approvalApi.findUserByEmail(email);
+    setLooking(false); setMatched(m); setLooked(true);
+    return m;
+  }, [email]);
+
+  // 폼 열릴 때 기본 이메일 자동 조회
+  useEffect(() => { if (showForm && email.trim() && !looked) resolve(); }, [showForm, email, looked, resolve]);
+
   const active = req && req.status !== 'cancelled' && req.status !== 'rejected' ? req : null;
 
   const send = async () => {
-    if (!owner.trim()) return alert('입력 필요', '승인할 사용자 ID(UUID)를 입력해주세요.');
+    let owner = matched;
+    if (!owner) owner = await resolve();
+    if (!owner) return alert('가입 계정 없음', '해당 이메일로 가입된 회원 계정을 찾을 수 없습니다. 신청자에게 회원가입을 안내하거나 이메일을 확인해주세요.');
     setBusy(true);
     const { error } = await approvalApi.create({
-      ref_type: refType, ref_id: refId, title, owner_user_id: owner,
-      doc_type: docType, doc_id: docId ? Number(docId) : null, customer_name: defaultCustomer || null,
+      ref_type: refType, ref_id: refId, title, owner_user_id: owner.id,
+      doc_type: docType, doc_id: docId ? Number(docId) : null, customer_name: defaultCustomer || owner.name || null,
       amount: amount ? Number(amount) : null,
     });
     setBusy(false);
@@ -53,12 +69,7 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultO
     const { error } = await approvalApi.cancel(req!.id);
     if (error) alert('오류', error); else load();
   });
-  const finalize = async () => {
-    if (!onFinalize) return;
-    setBusy(true);
-    await onFinalize();
-    setBusy(false);
-  };
+  const finalize = async () => { if (!onFinalize) return; setBusy(true); await onFinalize(); setBusy(false); };
 
   const wrap: React.CSSProperties = { ...card, marginBottom: '16px', borderLeft: '3px solid #008b8b' };
   const head = (
@@ -121,6 +132,20 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultO
       ) : (
         <div style={{ display: 'grid', gap: '12px' }}>
           <div><label style={labelStyle}>제목</label><input style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+
+          {/* 신청자 이메일 → 가입 계정 자동 매칭 */}
+          <div>
+            <label style={labelStyle}>승인 대상 (신청자 이메일) *</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input style={{ ...inputStyle, flex: 1 }} value={email} onChange={(e) => { setEmail(e.target.value); setMatched(null); setLooked(false); }} placeholder="신청자 이메일 (가입 계정 자동 조회)" />
+              <button style={{ ...btnGhost, whiteSpace: 'nowrap' }} onClick={resolve} disabled={looking}><Search size={15} /> {looking ? '조회중' : '계정 확인'}</button>
+            </div>
+            {looked && (matched
+              ? <div style={{ marginTop: '7px', fontSize: '0.82rem', color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><UserCheck size={15} /> 계정 확인됨 · {matched.name || matched.email}</div>
+              : <div style={{ marginTop: '7px', fontSize: '0.82rem', color: '#dc2626', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><UserX size={15} /> 가입 계정을 찾을 수 없습니다 (회원가입 필요)</div>
+            )}
+          </div>
+
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '150px' }}>
               <label style={labelStyle}>발송 서류</label>
@@ -130,12 +155,8 @@ const ApprovalPanel: React.FC<Props> = ({ refType, refId, defaultTitle, defaultO
                 <option value="contract">계약서</option>
               </select>
             </div>
-            {docType !== 'none' && <div style={{ flex: 1, minWidth: '150px' }}><label style={labelStyle}>{DOC_TYPE_LABEL[docType]} ID</label><input type="number" style={inputStyle} value={docId} onChange={(e) => setDocId(e.target.value)} placeholder="문서 번호(선택)" /></div>}
+            {docType !== 'none' && <div style={{ flex: 1, minWidth: '150px' }}><label style={labelStyle}>{DOC_TYPE_LABEL[docType]} ID</label><input type="number" style={inputStyle} value={docId} onChange={(e) => setDocId(e.target.value)} placeholder="문서 번호(마이페이지 열람용)" /></div>}
             <div style={{ flex: 1, minWidth: '150px' }}><label style={labelStyle}>금액(원)</label><input type="number" style={inputStyle} value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
-          </div>
-          <div>
-            <label style={labelStyle}>승인 사용자 ID (UUID) *</label>
-            <input style={inputStyle} value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="회원 계정 UUID — 해당 사용자 마이페이지에 승인 요청이 표시됩니다" />
           </div>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
             <button style={btnGhost} onClick={() => setShowForm(false)}>취소</button>

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Check, Pause, X } from 'lucide-react';
 import { djApi, DJ_STATUS_LABEL, type DjArtist, type DjStatus } from '../../../api/djApi';
 import { inputStyle, labelStyle, useAdminModal, Spinner, fmtDate, DetailHead, StatusPill, FormSection } from '../../../components/admin/shared';
+import ApprovalPanel from '../../../components/admin/ApprovalPanel';
 
 const won = (n: number | null) => (n == null ? '-' : `₩${Number(n).toLocaleString()}`);
 
@@ -79,6 +80,14 @@ const DjArtistDetail: React.FC = () => {
         <InfoRow label="소개">{item.intro || '-'}</InfoRow>
         <InfoRow label="접수일">{fmtDate(item.created_at)}</InfoRow>
       </FormSection>
+
+      <ApprovalPanel
+        refType="dj_artist" refId={item.id}
+        defaultTitle={`DJ 입점 서류 승인 - ${item.stage_name || item.name}`}
+        defaultEmail={item.email}
+        defaultCustomer={item.name}
+        onFinalize={() => setStatus('approved')} finalizeLabel="입점 승인 확정"
+      />
 
       <FormSection title="심사 처리">
         <div style={{ marginBottom: '16px' }}>

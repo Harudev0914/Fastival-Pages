@@ -56,6 +56,7 @@ import EmailLoginPage from './pages/Auth/EmailLoginPage';
 import SignupPage from './pages/Auth/SignupPage';
 import GeneralSignupPage from './pages/Auth/GeneralSignupPage';
 import CustomerCenterPage from './pages/CustomerCenter/CustomerCenterPage';
+import MyPage from './pages/MyPage/MyPage';
 import DjArtistManagement from './pages/admin/dj/DjArtistManagement';
 import DjArtistDetail from './pages/admin/dj/DjArtistDetail';
 import TermsManagement from './pages/admin/terms/TermsManagement';
@@ -245,6 +246,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signup/general" element={<GeneralSignupPage />} />
           <Route path="/cs" element={<CustomerCenterPage />} />
+          <Route path="/mypage" element={<MyPage />} />
         </Route>
       </Routes>
     </Router>

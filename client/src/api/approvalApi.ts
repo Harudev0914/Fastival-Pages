@@ -33,7 +33,20 @@ export interface ApprovalRequest {
 
 const T = 'approval_requests';
 
+export interface MatchedUser { id: string; email: string; name: string; }
+
 export const approvalApi = {
+  // 신청자 이메일로 가입 계정 조회 (승인 대상 자동 매칭)
+  async findUserByEmail(email: string): Promise<MatchedUser | null> {
+    if (!email?.trim()) return null;
+    try {
+      const { data, error } = await supabase.rpc('lookup_user_by_email', { p_email: email.trim() });
+      if (error) return null;
+      const row = Array.isArray(data) ? data[0] : data;
+      return row ? { id: row.id, email: row.email, name: row.name } : null;
+    } catch { return null; }
+  },
+
   // ---- 관리자 ----
   // 엔티티에 연결된 최신 승인 요청 1건 (없으면 null)
   async getByRef(refType: ApprovalRefType, refId: number | string): Promise<Result<ApprovalRequest | null>> {

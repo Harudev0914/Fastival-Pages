@@ -4,6 +4,7 @@ import { Save } from 'lucide-react';
 import { djApi, djEventApi, DJ_EVENT_STATUS_LABEL, DJ_EVENT_STATUS_COLOR, type DjArtist, type DjEventStatus } from '../../../api/djApi';
 import { SELECT_STYLE } from '../../../components/UI/StyledSelect';
 import { inputStyle, btnPrimary, btnGhost, useAdminModal, Spinner, DetailHead, StatusPill, FormSection, Field, Row } from '../../../components/admin/shared';
+import ApprovalPanel from '../../../components/admin/ApprovalPanel';
 
 const LIST = '/admin/dashboard/dj/event-inquiries';
 const sel = SELECT_STYLE as React.CSSProperties;
@@ -75,6 +76,21 @@ const DjEventInquiryDetail: React.FC = () => {
         badge={!isNew ? <StatusPill label={DJ_EVENT_STATUS_LABEL[status]} color={DJ_EVENT_STATUS_COLOR[status]} /> : undefined}
         right={<button style={btnPrimary} onClick={save} disabled={saving}><Save size={16} /> {saving ? '저장 중...' : '저장'}</button>}
       />
+
+      {!isNew && (
+        <ApprovalPanel
+          refType="dj_event" refId={Number(id)}
+          defaultTitle={`DJ 행사 계약 승인 - ${title}`}
+          defaultEmail={cEmail}
+          defaultCustomer={cName}
+          defaultAmount={budget ? Number(budget) : null}
+          onFinalize={async () => {
+            const { error } = await djEventApi.setStatus(id!, 'confirmed');
+            if (error) alert('오류', error); else { setStatus('confirmed'); alert('확정', '행사가 확정 처리되었습니다.'); }
+          }}
+          finalizeLabel="행사 확정"
+        />
+      )}
 
       <FormSection title="행사 개요">
         <div style={{ marginBottom: '4px' }}>
