@@ -36,7 +36,7 @@ const RentalProductListPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [{ data: p }, { data: b }, { data: c }, salesMap] = [await productApi.list(), await brandApi.listActive(), await rentalCategoryApi.list(), await orderApi.salesCountByProduct()];
+      const [{ data: p }, { data: b }, { data: c }, salesMap] = [await productApi.listActive(), await brandApi.listActive(), await rentalCategoryApi.listActive(), await orderApi.salesCountByProduct()];
       setProducts((p || []).filter((x) => x.is_active));
       setBrands((b || []) as any);
       setCats(((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id })));

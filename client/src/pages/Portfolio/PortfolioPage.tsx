@@ -40,7 +40,7 @@ const PortfolioPage: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [catRes, pfRes] = await Promise.all([categoryApi.list(), portfolioApi.list()]);
+      const [catRes, pfRes] = await Promise.all([categoryApi.list(), portfolioApi.listActive()]);
       setCategories((catRes.data || []).filter((c) => c.is_active).map((c) => ({ id: c.id, name: c.name, image_url: c.image_url })));
       setItems((pfRes.data || []).filter((p) => p.is_active));
       setLoading(false);

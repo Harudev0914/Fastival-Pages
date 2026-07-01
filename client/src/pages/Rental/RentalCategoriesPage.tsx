@@ -14,7 +14,7 @@ const RentalCategoriesPage: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await rentalCategoryApi.list();
+      const { data } = await rentalCategoryApi.listActive();
       const map = new Map<string, Cat>();
       (data || []).filter((c) => c.is_active && !c.parent_id).forEach((c) => { if (!map.has(c.name)) map.set(c.name, { id: c.id, name: c.name, image_url: c.image_url }); });
       setCats([...map.values()]);

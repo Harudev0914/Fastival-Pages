@@ -190,6 +190,7 @@ export const categoryApi = {
 // =============================================================
 export const reviewApi = {
   list: () => run<ConstructionReview[]>(() => supabase.from(T.review).select('*, construction_categories(name)').order('display_order', { ascending: true }) as any),
+  listActive: () => run<ConstructionReview[]>(() => supabase.from(T.review).select('*, construction_categories(name)').eq('is_active', true).order('display_order', { ascending: true }) as any),
   get: (id: number | string) => run<ConstructionReview>(() => supabase.from(T.review).select('*').eq('id', id).single() as any),
 
   async create(input: ReviewInput): Promise<Result<ConstructionReview>> {
@@ -235,6 +236,7 @@ export const reviewApi = {
 // =============================================================
 export const portfolioApi = {
   list: () => run<ConstructionPortfolio[]>(() => supabase.from(T.portfolio).select('*, construction_categories(name)').order('display_order', { ascending: true }) as any),
+  listActive: () => run<ConstructionPortfolio[]>(() => supabase.from(T.portfolio).select('*, construction_categories(name)').eq('is_active', true).order('display_order', { ascending: true }) as any),
   get: (id: number | string) => run<ConstructionPortfolio>(() => supabase.from(T.portfolio).select('*').eq('id', id).single() as any),
 
   async create(input: PortfolioInput): Promise<Result<ConstructionPortfolio>> {

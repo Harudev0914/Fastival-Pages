@@ -109,7 +109,7 @@ export const KlipseServiceSection: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [{ data: rv }, { data: pf }] = [await reviewApi.list(), await portfolioApi.list()];
+      const [{ data: rv }, { data: pf }] = [await reviewApi.listActive(), await portfolioApi.listActive()];
       const nearby: Nearby[] = (rv || [])
         .filter((r) => r.is_active)
         .slice(0, 12)

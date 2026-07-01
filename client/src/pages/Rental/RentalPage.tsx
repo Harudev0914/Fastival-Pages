@@ -16,7 +16,7 @@ const RentalPage: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [{ data: pd }, { data: cd }] = [await productApi.list(), await rentalCategoryApi.list()];
+      const [{ data: pd }, { data: cd }] = [await productApi.listActive(), await rentalCategoryApi.listActive()];
       setProducts((pd || []).filter((p) => p.is_active));
       // 활성 1차 카테고리(parent_id 없음)만 노출
       const map = new Map<string, { id: number; name: string; image_url: string | null }>();
