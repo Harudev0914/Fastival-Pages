@@ -32,6 +32,7 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'rental/purchases', label: '렌탈 입점 문의' },
     ],
   },
+  { key: 'dj', label: 'DJ 관리', items: [{ key: 'dj/artists', label: 'DJ 아티스트(입점)' }] },
   {
     key: 'system', label: '환경설정', items: [
       { key: 'system/admins', label: '관리자 목록' },
@@ -46,7 +47,7 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
 export const ALL_MENU_KEYS: string[] = ADMIN_MENU_TREE.flatMap((g) => g.items.length ? g.items.map((i) => i.key) : [g.key]);
 
 // 최상위 관리자(권한/목록 노출 제외)
-export const SUPER_ADMIN_EMAIL = 'admin@klipse.com';
+export const SUPER_ADMIN_EMAIL = 'klipse@admin.com';
 export const SUPER_DEPT_NAME = '최상위 관리자';
 
 // 메뉴별 액션 권한 (조회/추가/수정/삭제)

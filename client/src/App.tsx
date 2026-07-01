@@ -44,6 +44,10 @@ import RentalCategoriesPage from './pages/Rental/RentalCategoriesPage';
 import PaymentSuccess from './pages/Rental/PaymentSuccess';
 import PaymentFail from './pages/Rental/PaymentFail';
 import SearchPage from './pages/SearchPage';
+import DjPage from './pages/Dj/DjPage';
+import DjApplyPage from './pages/Dj/DjApplyPage';
+import DjArtistManagement from './pages/admin/dj/DjArtistManagement';
+import DjArtistDetail from './pages/admin/dj/DjArtistDetail';
 import AdminUserManagement from './pages/admin/system/AdminUserManagement';
 import DepartmentManagement from './pages/admin/system/DepartmentManagement';
 import DepartmentPermissions from './pages/admin/system/DepartmentPermissions';
@@ -100,6 +104,10 @@ function AdminContent() {
       <Route path="rental/exclusive" element={<RentalProductManagement mode="exclusive" />} />
       <Route path="rental/events" element={<RentalProductManagement mode="event" />} />
 
+      {/* DJ 관리 */}
+      <Route path="dj/artists" element={<DjArtistManagement />} />
+      <Route path="dj/artists/detail/:id" element={<DjArtistDetail />} />
+
       {/* 환경설정 */}
       <Route path="system/admins" element={<AdminUserManagement />} />
       <Route path="system/departments" element={<DepartmentManagement />} />
@@ -153,6 +161,8 @@ function App() {
           <Route path="/rental/exclusive" element={<RentalProductListPage />} />
           <Route path="/rental/event" element={<RentalProductListPage />} />
           <Route path="/rental/*" element={<RentalPage />} />
+          <Route path="/dj" element={<DjPage />} />
+          <Route path="/dj/apply" element={<DjApplyPage />} />
         </Route>
       </Routes>
     </Router>

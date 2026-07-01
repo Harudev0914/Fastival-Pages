@@ -15,8 +15,13 @@ const AdminLogin: React.FC = () => {
     setError('');
 
     try {
+      // 아이디를 유효 이메일로 정규화: 'klipse@admin' → 'klipse@admin.com', 'klipse' → 'klipse@klipse.com'
+      let email = username.trim();
+      if (email && !email.includes('@')) email = `${email}@klipse.com`;
+      else if (/@/.test(email) && !/@[^@]+\.[^@]+$/.test(email)) email = `${email}.com`;
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: username, // Using username field for email
+        email,
         password: password,
       });
 

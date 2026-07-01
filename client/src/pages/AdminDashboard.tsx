@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
-import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, ChevronLeft, Image as ImageIcon, Hammer, Disc3 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Outlet } from 'react-router-dom';
 import Seo from '../components/Seo';
@@ -16,6 +16,7 @@ const AdminDashboard: React.FC = () => {
 
   const CON_KEYS = ['construction/inquiries', 'construction/categories', 'construction/reviews', 'construction/portfolio', 'construction/chatbot'];
   const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events', 'rental/orders', 'rental/purchases'];
+  const DJ_KEYS = ['dj/artists'];
   const SYS_KEYS = ['system/admins', 'system/departments', 'system/permissions', 'system/company'];
 
   React.useEffect(() => {
@@ -110,6 +111,19 @@ const AdminDashboard: React.FC = () => {
                 {can('rental/events') && <span className={activeMenu === '기획전' ? 'active' : ''} onClick={() => handleMenuClick('기획전', '/admin/dashboard/rental/events')}>기획전</span>}
                 {can('rental/orders') && <span className={activeMenu === '렌탈 주문 관리' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 주문 관리', '/admin/dashboard/rental/orders')}>렌탈 관리(주문)</span>}
                 {can('rental/purchases') && <span className={activeMenu === '렌탈 입점 문의' ? 'active' : ''} onClick={() => handleMenuClick('렌탈 입점 문의', '/admin/dashboard/rental/purchases')}>렌탈 입점 문의</span>}
+            </div>
+        )}
+        </>)}
+
+        {/* DJ 관리 */}
+        {canGroup(DJ_KEYS) && (<>
+        <div className={`menu-item`} onClick={() => toggleMenu('DJ 관리')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Disc3 size={18} /> <span>DJ 관리</span></div>
+            {expandedMenus['DJ 관리'] ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
+        </div>
+        {expandedMenus['DJ 관리'] && (
+            <div className="sub-menu">
+                {can('dj/artists') && <span className={activeMenu === 'DJ 아티스트' ? 'active' : ''} onClick={() => handleMenuClick('DJ 아티스트', '/admin/dashboard/dj/artists')}>DJ 아티스트(입점)</span>}
             </div>
         )}
         </>)}

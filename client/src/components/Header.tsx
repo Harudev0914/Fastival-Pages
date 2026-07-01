@@ -33,7 +33,13 @@ const Header: React.FC = () => {
         { label: '입점문의', path: '/rental/inquiry' }
       ]
     },
-    '/dj': { top: 'DJ', sub: [] }
+    '/dj': {
+      top: 'DJ',
+      sub: [
+        { label: '홈', path: '/dj' },
+        { label: '아티스트 등록', path: '/dj/apply' }
+      ]
+    }
   };
 
   const getParentPath = (pathname: string) => {
