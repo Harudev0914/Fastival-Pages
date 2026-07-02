@@ -240,19 +240,19 @@ const ConstructionInquiry: React.FC = () => {
                 return (
                 <div className="form-container">
                   <div className="form-field">
-                    <label className="form-label">이름</label>
+                    <label className="form-label">이름 <span className="form-req">필수</span></label>
                     <input className={`form-input ${nameErr ? 'has-error' : ''}`} placeholder="이름을 입력해주세요" value={userInfo.name}
                       onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
                     {nameErr && <span className="form-error">{nameErr}</span>}
                   </div>
                   <div className="form-field">
-                    <label className="form-label">연락처</label>
+                    <label className="form-label">연락처 <span className="form-req">필수</span></label>
                     <input className={`form-input ${phoneErr ? 'has-error' : ''}`} placeholder="010-0000-0000" inputMode="tel" value={userInfo.phone}
                       onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
                     {phoneErr && <span className="form-error">{phoneErr}</span>}
                   </div>
                   <div className="form-field">
-                    <label className="form-label">이메일</label>
+                    <label className="form-label">이메일 <span className="form-req">필수</span></label>
                     <input className={`form-input ${emailErr ? 'has-error' : ''}`} type="email" placeholder="example@email.com" value={userInfo.email}
                       onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })} />
                     {emailErr && <span className="form-error">{emailErr}</span>}
@@ -281,11 +281,7 @@ const ConstructionInquiry: React.FC = () => {
                       <span><b className="agree-opt">[선택]</b> 마케팅 활용 동의</span>
                     </label>
                   </div>
-                  {canSubmit ? (
-                    <button className="form-submit" onClick={() => handleApplySubmit(msg.step)}>신청하기</button>
-                  ) : (
-                    <p className="form-hint">이름·연락처·이메일을 올바르게 입력하고 <b>[필수]</b> 동의에 체크하면 신청할 수 있어요.</p>
-                  )}
+                  <button className="form-submit" disabled={!canSubmit} onClick={() => handleApplySubmit(msg.step)}>신청하기</button>
                 </div>
                 );
               })()}
@@ -386,6 +382,7 @@ const ConstructionInquiry: React.FC = () => {
         .form-field { display: flex; flex-direction: column; gap: 6px; }
         .form-label { font-size: 0.82rem; font-weight: 600; color: #334155; }
         .form-optional { font-weight: 400; color: #94a3b8; }
+        .form-req { margin-left: 4px; font-size: 0.7rem; font-weight: 700; color: #dc2626; background: #fef2f2; padding: 1px 6px; border-radius: 999px; vertical-align: middle; }
         .form-input { padding: 11px 14px; border: 1px solid #e2e8f0; border-radius: 10px; width: 100%; font-size: 0.9rem; font-family: inherit; outline: none; box-sizing: border-box; transition: border-color 0.15s; }
         .form-input:focus { border-color: #2563eb; }
         .form-input.has-error { border-color: #dc2626; }
