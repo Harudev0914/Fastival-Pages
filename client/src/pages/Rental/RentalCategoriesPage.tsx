@@ -287,8 +287,12 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
                     <p className="rv-prod__brand">{p.rental_brands?.name || p.rental_categories?.name || ''}</p>
                     <p className="rv-prod__name">{p.name}</p>
                     <div className="rv-prod__price">
-                      {disc > 0 && <span className="rv-prod__disc">{disc}%</span>}
-                      <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
+                      {Number(p.daily_price) > 0 ? (<>
+                        {disc > 0 && <span className="rv-prod__disc">{disc}%</span>}
+                        <span className="rv-prod__monthly">월 {Number(p.daily_price).toLocaleString()}원</span>
+                      </>) : (
+                        <span className="rv-prod__monthly">-</span>
+                      )}
                     </div>
                   </article>
                 );

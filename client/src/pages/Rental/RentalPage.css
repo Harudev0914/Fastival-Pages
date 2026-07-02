@@ -84,6 +84,8 @@
   .rv-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 767px) {
+  /* 모바일은 좌우 여백을 최소화해 상품 그리드가 화면을 꽉 채우게 */
+  .rental-page { padding: 18px 12px 40px; }
   .rv-card { flex-basis: 86%; aspect-ratio: 3 / 3.6; } /* 모바일 1개 + 살짝 다음 카드 */
   .rv-card__body { left: 20px; right: 20px; bottom: 22px; }
   .rv-card__title { font-size: 1.35rem; }
@@ -93,5 +95,10 @@
   .rv-cat__icon { width: 52px; height: 52px; font-size: 1.3rem; }
   .rv-section { margin-top: 40px; }
   .rv-section__head h3 { font-size: 1.15rem; }
-  .rv-grid { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
+  /* 2열 · 간격 축소 · 카드 요소도 살짝 작게 */
+  .rv-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 10px; }
+  .rv-prod__media { border-radius: 10px; }
+  .rv-prod__brand { margin: 8px 0 2px; font-size: 0.68rem; }
+  .rv-prod__name { font-size: 0.8rem; margin: 0 0 4px; }
+  .rv-prod__monthly, .rv-prod__disc { font-size: 0.84rem; }
 }
