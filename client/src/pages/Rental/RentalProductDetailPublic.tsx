@@ -247,6 +247,12 @@ const RentalProductDetailPublic: React.FC = () => {
               <Share2 size={20} /> 공유
             </button>
             <button
+              onClick={() => navigate('/rental/inquiry')}
+              style={{ padding: '0 16px', background: '#fff', color: TEAL, border: `1px solid ${TEAL}`, borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              판매하기
+            </button>
+            <button
               onClick={() => { if (SHOW_BOOKING) submit(); else alert('렌탈 신청은 준비 중입니다. 고객센터로 문의해 주세요.'); }}
               disabled={submitting}
               style={{ flex: 1, background: TEAL, color: '#fff', border: 'none', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 800, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}
