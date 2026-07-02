@@ -59,10 +59,14 @@ const RentalPurchaseDetail: React.FC = () => {
       <FormSection title="문의 정보">
         <InfoRow label="품목">{item.product_name}</InfoRow>
         <InfoRow label="브랜드">{item.brand_name || '-'}</InfoRow>
+        <InfoRow label="카테고리">{[item.parent_category_name, item.category_name].filter(Boolean).join(' › ') || '-'}</InfoRow>
         <InfoRow label="컨디션 등급"><strong>{item.condition_grade}급</strong></InfoRow>
-        <InfoRow label="매입 희망가"><span style={{ color: '#008b8b', fontWeight: 800 }}>{won(item.desired_price)}</span></InfoRow>
-        <InfoRow label="컨디션 설명">{item.description || '-'}</InfoRow>
-        <InfoRow label="신청자">{item.applicant_name || '-'}</InfoRow>
+        <InfoRow label="판매 희망가"><span style={{ color: '#008b8b', fontWeight: 800 }}>{won(item.desired_price)}</span></InfoRow>
+        {item.description && <InfoRow label="컨디션 설명">{item.description}</InfoRow>}
+        <InfoRow label="신청자">
+          {item.applicant_name || '-'}
+          {item.owner_user_id && <span style={{ marginLeft: '8px', fontSize: '0.72rem', fontWeight: 700, color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: '999px' }}>회원</span>}
+        </InfoRow>
         <InfoRow label="연락처">{item.applicant_phone || '-'}</InfoRow>
         <InfoRow label="이메일">{item.applicant_email || '-'}</InfoRow>
         <InfoRow label="접수일">{fmtDate(item.created_at)}</InfoRow>

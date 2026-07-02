@@ -319,6 +319,8 @@ export interface PurchaseInquiry {
   product_id: number | null;
   product_name: string;
   brand_name: string | null;
+  parent_category_name: string | null;  // 1차(대) 카테고리
+  category_name: string | null;         // 2차(소) 카테고리
   condition_grade: Grade;
   desired_price: number;
   images: string[];
@@ -326,6 +328,7 @@ export interface PurchaseInquiry {
   applicant_name: string | null;
   applicant_phone: string | null;
   applicant_email: string | null;
+  owner_user_id: string | null;         // 판매 신청 회원(auth.users.id)
   status: PurchaseStatus;
   admin_memo: string | null;
   created_at: string;

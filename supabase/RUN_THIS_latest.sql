@@ -264,3 +264,14 @@ ALTER TABLE public.dj_artists ADD COLUMN IF NOT EXISTS guarantees JSONB NOT NULL
 UPDATE storage.buckets
 SET allowed_mime_types = ARRAY['image/jpeg','image/png','image/webp','image/gif','image/avif','application/pdf']
 WHERE id = 'construction';
+
+-- ==============================================================
+-- 20260701000027_rental_purchase_sell.sql
+-- ==============================================================
+-- 판매(중고 매입) 신청 고도화: 상품 상세 '판매하기' → 회원 전용 · 상품/카테고리 자동 기입 + 신청 회원 연결
+ALTER TABLE public.rental_purchase_inquiries
+  ADD COLUMN IF NOT EXISTS category_name        TEXT,  -- 2차(소) 카테고리
+  ADD COLUMN IF NOT EXISTS parent_category_name TEXT,  -- 1차(대) 카테고리
+  ADD COLUMN IF NOT EXISTS owner_user_id        UUID;  -- 판매 신청 회원(auth.users.id)
+
+CREATE INDEX IF NOT EXISTS idx_rental_purchase_owner ON public.rental_purchase_inquiries (owner_user_id);

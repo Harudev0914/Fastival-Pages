@@ -247,7 +247,7 @@ const RentalProductDetailPublic: React.FC = () => {
               <Share2 size={20} /> 공유
             </button>
             <button
-              onClick={() => navigate('/rental/inquiry')}
+              onClick={() => navigate(`/rental/inquiry?product=${product.id}`)}
               style={{ padding: '0 16px', background: '#fff', color: TEAL, border: `1px solid ${TEAL}`, borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               판매하기
