@@ -59,6 +59,12 @@ const RentalProductDetailPublic: React.FC = () => {
 
   const maxDays = product.max_days || 365;
 
+  // 가격 표시 (이미지처럼 정가 취소선 → 할인율 + 판매가 → 쿠폰 적용가)
+  const listPrice = Number(product.list_price) || 0;
+  const couponPrice = Number(product.coupon_price) || 0;
+  const hasDiscount = listPrice > Number(product.daily_price);
+  const discountPct = hasDiscount ? Math.round(((listPrice - Number(product.daily_price)) / listPrice) * 100) : 0;
+
   const submit = async () => {
     if (!startDate) return alert('대여 시작일을 선택해주세요.');
     if (days < product.min_days) return alert(`최소 ${product.min_days}일 이상 대여 가능합니다.`);
@@ -138,21 +144,37 @@ const RentalProductDetailPublic: React.FC = () => {
 
         {/* 정보 + 예약 폼 */}
         <div style={{ flex: '1 1 380px', minWidth: '300px' }}>
-          <p style={{ color: TEAL, fontWeight: 700, margin: 0 }}>{product.rental_brands?.name || ''}</p>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', margin: '6px 0 2px' }}>{product.name}</h1>
+          {/* 가격 — 정가(취소선) → 할인율 + 판매가 → 쿠폰 적용가 */}
+          {hasDiscount && (
+            <div style={{ fontSize: '0.95rem', color: '#94a3b8', textDecoration: 'line-through', marginBottom: '2px' }}>{won(listPrice)}</div>
+          )}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap', marginBottom: couponPrice > 0 ? '4px' : '10px' }}>
+            {hasDiscount && <span style={{ fontSize: '1.7rem', fontWeight: 800, color: '#ef4444' }}>{discountPct}%</span>}
+            <span style={{ fontSize: '1.7rem', fontWeight: 800, color: '#1e293b' }}>{won(product.daily_price)}</span>
+            <span style={{ color: '#94a3b8', fontSize: '0.95rem' }}>/ 일</span>
+          </div>
+          {couponPrice > 0 && (
+            <div style={{ fontSize: '0.9rem', color: TEAL, fontWeight: 700, marginBottom: '10px' }}>쿠폰 적용가 {won(couponPrice)} / 일</div>
+          )}
 
-          {/* 제품 설명 — 제목 바로 아래 */}
+          {/* 상품명 */}
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', margin: '2px 0 4px', lineHeight: 1.3 }}>{product.name}</h1>
+
+          {/* 카테고리 태그 (브랜드 · 카테고리) */}
+          {(product.rental_brands?.name || product.rental_categories?.name) && (
+            <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '12px' }}>
+              {[product.rental_brands?.name, product.rental_categories?.name].filter(Boolean).join(' · ')}
+            </div>
+          )}
+
+          <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '16px' }}>
+            보증금 {won(product.deposit)} · 배송/설치비 {won(product.delivery_fee)} · 재고 {product.stock}개
+          </div>
+
+          {/* 제품 설명 */}
           {product.description && (
             <div style={{ color: '#475569', lineHeight: 1.5, fontSize: '0.9rem', margin: '0 0 16px' }} dangerouslySetInnerHTML={{ __html: product.description }} />
           )}
-
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1e293b' }}>{won(product.daily_price)}</span>
-            <span style={{ color: '#94a3b8' }}>/ 일</span>
-          </div>
-          <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '20px' }}>
-            보증금 {won(product.deposit)} · 배송/설치비 {won(product.delivery_fee)} · 재고 {product.stock}개
-          </div>
 
           {/* 예약 옵션 */}
           <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '18px', marginBottom: '18px' }}>

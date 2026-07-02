@@ -42,6 +42,8 @@ export interface RentalProduct {
   thumbnail_url: string | null;
   images: string[];
   daily_price: number;
+  list_price: number | null;    // 정가(할인 전 일 단가, 취소선). null/0 = 할인 표시 안 함
+  coupon_price: number | null;  // 쿠폰 적용가(일 단가). null/0 = 쿠폰 표시 안 함
   deposit: number;
   delivery_fee: number;
   stock: number;
@@ -174,6 +176,8 @@ export interface ProductInput {
   thumbnail_url?: string;
   images?: string[];
   daily_price?: number;
+  list_price?: number | null;
+  coupon_price?: number | null;
   deposit?: number;
   delivery_fee?: number;
   stock?: number;
@@ -196,6 +200,8 @@ function productPayload(input: ProductInput, by: string) {
     thumbnail_url: input.thumbnail_url?.trim() || imgs[0] || null,
     images: imgs,
     daily_price: Number(input.daily_price) || 0,
+    list_price: input.list_price == null || input.list_price === ('' as any) ? null : Number(input.list_price),
+    coupon_price: input.coupon_price == null || input.coupon_price === ('' as any) ? null : Number(input.coupon_price),
     deposit: Number(input.deposit) || 0,
     delivery_fee: Number(input.delivery_fee) || 0,
     stock: Number(input.stock) || 0,
@@ -212,7 +218,7 @@ export const productApi = {
   list: () => run<RentalProduct[]>(() => supabase.from('rental_products').select('*, rental_brands(name), rental_categories(name)').order('display_order', { ascending: true }) as any),
   // 공개 페이지용: 활성 상품만 (서버 필터로 payload 절감)
   listActive: () => run<RentalProduct[]>(() => supabase.from('rental_products').select('*, rental_brands(name), rental_categories(name)').eq('is_active', true).order('display_order', { ascending: true }) as any),
-  get: (id: number | string) => run<RentalProduct>(() => supabase.from('rental_products').select('*').eq('id', id).single() as any),
+  get: (id: number | string) => run<RentalProduct>(() => supabase.from('rental_products').select('*, rental_brands(name), rental_categories(name)').eq('id', id).single() as any),
 
   async create(input: ProductInput): Promise<Result<RentalProduct>> {
     if (!input.brand_id) return { data: null, error: '브랜드를 선택해주세요.' };

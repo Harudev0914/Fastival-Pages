@@ -27,6 +27,8 @@ const RentalProductDetail: React.FC = () => {
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [dailyPrice, setDailyPrice] = useState('0');
+  const [listPrice, setListPrice] = useState('');
+  const [couponPrice, setCouponPrice] = useState('');
   const [deposit, setDeposit] = useState('0');
   const [deliveryFee, setDeliveryFee] = useState('0');
   const [stock, setStock] = useState('0');
@@ -59,6 +61,8 @@ const RentalProductDetail: React.FC = () => {
           setName(data.name); setDescription(data.description || '');
           setImages(Array.isArray(data.images) ? data.images : []);
           setDailyPrice(String(data.daily_price ?? 0)); setDeposit(String(data.deposit ?? 0));
+          setListPrice(data.list_price == null ? '' : String(data.list_price));
+          setCouponPrice(data.coupon_price == null ? '' : String(data.coupon_price));
           setDeliveryFee(String(data.delivery_fee ?? 0)); setStock(String(data.stock ?? 0));
           setMinDays(String(data.min_days ?? 1)); setMaxDays(data.max_days == null ? '' : String(data.max_days));
           setOptions(Array.isArray(data.options) ? data.options : []);
@@ -88,7 +92,8 @@ const RentalProductDetail: React.FC = () => {
       brand_id: brandId === '' ? null : Number(brandId),
       category_id: finalCat,
       name, description, images, thumbnail_url: images[0],
-      daily_price: Number(dailyPrice), deposit: Number(deposit), delivery_fee: Number(deliveryFee),
+      daily_price: Number(dailyPrice), list_price: listPrice === '' ? null : Number(listPrice), coupon_price: couponPrice === '' ? null : Number(couponPrice),
+      deposit: Number(deposit), delivery_fee: Number(deliveryFee),
       stock: Number(stock), min_days: Number(minDays), max_days: maxDays === '' ? null : Number(maxDays),
       options, is_active: isActive, is_exclusive: isExclusive, is_event: isEvent,
     };
@@ -146,9 +151,13 @@ const RentalProductDetail: React.FC = () => {
         </div>
       </FormSection>
 
-      <FormSection title="가격 · 렌탈 정보" desc="가격 = 일일 단가 × 대여일수">
+      <FormSection title="가격 · 렌탈 정보" desc="가격 = 일일 단가 × 대여일수 · 정가/쿠폰가는 상세페이지 할인 표시용(비우면 미표시)">
         <Row>
-          <TextField label="일일 단가 (원)" required type="number" value={dailyPrice} onChange={setDailyPrice} />
+          <TextField label="정가 (원, 취소선·비우면 미표시)" type="number" value={listPrice} onChange={setListPrice} placeholder="할인 전 일 단가" />
+          <TextField label="일일 단가 (판매가, 원)" required type="number" value={dailyPrice} onChange={setDailyPrice} />
+          <TextField label="쿠폰 적용가 (원, 비우면 미표시)" type="number" value={couponPrice} onChange={setCouponPrice} placeholder="쿠폰 사용 시 일 단가" />
+        </Row>
+        <Row>
           <TextField label="보증금 (원)" type="number" value={deposit} onChange={setDeposit} />
           <TextField label="배송/설치비 (원)" type="number" value={deliveryFee} onChange={setDeliveryFee} />
         </Row>
