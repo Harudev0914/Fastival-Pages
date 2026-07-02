@@ -5,6 +5,8 @@ import { requestTossPayment, genOrderId } from '../../lib/toss';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const TEAL = '#2563eb';
+// 예약 옵션·신청자·동의·결제 요약·신청 버튼 노출 여부 (현재 비노출 — 상품 정보만 표시)
+const SHOW_BOOKING = false;
 
 const label: React.CSSProperties = { display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' };
 const input: React.CSSProperties = { width: '100%', padding: '11px 12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.92rem', boxSizing: 'border-box' };
@@ -160,22 +162,35 @@ const RentalProductDetailPublic: React.FC = () => {
           {/* 상품명 */}
           <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', margin: '2px 0 4px', lineHeight: 1.3 }}>{product.name}</h1>
 
-          {/* 카테고리 태그 (브랜드 · 카테고리) */}
+          {/* 영문 부제 등 설명 — 상품명 바로 아래 */}
+          {product.description && (
+            <div style={{ color: '#475569', lineHeight: 1.5, fontSize: '0.9rem', margin: '0 0 10px' }} dangerouslySetInnerHTML={{ __html: product.description }} />
+          )}
+
+          {/* 카테고리 태그 (브랜드 · 카테고리) — 브랜드 클릭 시 해당 브랜드 상세로 이동 */}
           {(product.rental_brands?.name || product.rental_categories?.name) && (
             <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '12px' }}>
-              {[product.rental_brands?.name, product.rental_categories?.name].filter(Boolean).join(' · ')}
+              {product.rental_brands?.name && product.brand_id && (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/rental/brands?brand=${product.brand_id}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/rental/brands?brand=${product.brand_id}`); } }}
+                  style={{ color: '#121212', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  {product.rental_brands.name}
+                </span>
+              )}
+              {product.rental_brands?.name && product.rental_categories?.name && ' · '}
+              {product.rental_categories?.name}
             </div>
           )}
 
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '16px' }}>
-            보증금 {won(product.deposit)} · 배송/설치비 {won(product.delivery_fee)} · 재고 {product.stock}개
+            보증금 {won(product.deposit)}{Number(product.delivery_fee) > 0 ? ` · 배송/설치비 ${won(product.delivery_fee)}` : ''} · 재고 {product.stock}개
           </div>
 
-          {/* 제품 설명 */}
-          {product.description && (
-            <div style={{ color: '#475569', lineHeight: 1.5, fontSize: '0.9rem', margin: '0 0 16px' }} dangerouslySetInnerHTML={{ __html: product.description }} />
-          )}
-
+          {SHOW_BOOKING && (<>
           {/* 예약 옵션 */}
           <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '18px', marginBottom: '18px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
@@ -235,6 +250,7 @@ const RentalProductDetailPublic: React.FC = () => {
           <button onClick={submit} disabled={submitting} style={{ width: '100%', background: TEAL, color: '#fff', border: 'none', borderRadius: '10px', padding: '15px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}>
             {submitting ? '처리 중...' : '렌탈 신청하기'}
           </button>
+          </>)}
         </div>
       </div>
     </div>
