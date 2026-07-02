@@ -44,6 +44,7 @@ import RentalInquiryPage from './pages/Rental/RentalInquiryPage';
 import RentalProductListPage from './pages/Rental/RentalProductListPage';
 import RentalCategoriesPage from './pages/Rental/RentalCategoriesPage';
 import RentalBrandsPage from './pages/Rental/RentalBrandsPage';
+import RentalBrandDetailPage from './pages/Rental/RentalBrandDetailPage';
 import PaymentSuccess from './pages/Rental/PaymentSuccess';
 import PaymentFail from './pages/Rental/PaymentFail';
 import SearchPage from './pages/SearchPage';
@@ -240,6 +241,7 @@ function App() {
           <Route path="/rental/product/:id" element={<RentalProductDetailPublic />} />
           <Route path="/rental/categories" element={<RentalCategoriesPage />} />
           <Route path="/rental/brands" element={<RentalBrandsPage />} />
+          <Route path="/rental/brand/:id" element={<RentalBrandDetailPage />} />
           <Route path="/rental/inquiry" element={<RentalInquiryPage />} />
           <Route path="/rental/payment/success" element={<PaymentSuccess />} />
           <Route path="/rental/payment/fail" element={<PaymentFail />} />

@@ -112,9 +112,9 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
             {by === 'brand'
               ? brands.map((b) => (
                 <li key={b.id}>
-                  <div className={`rcat-side__row ${selectedId === b.id ? 'on' : ''}`} role="button" tabIndex={0}
-                    onClick={() => pickSel(b.id)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickSel(b.id); } }}>
+                  <div className="rcat-side__row" role="button" tabIndex={0}
+                    onClick={() => navigate(`/rental/brand/${b.id}`)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/rental/brand/${b.id}`); } }}>
                     <span className="rcat-side__name">{b.name}</span>
                   </div>
                 </li>
