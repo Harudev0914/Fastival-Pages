@@ -34,7 +34,8 @@ const MainVisualCarousel: React.FC<{ section: MvSection; autoPlayMs?: number }> 
     (async () => {
       const { data } = await mainVisualApi.listBySection(section);
       if (cancelled) return;
-      setBanners(data || []);
+      // AD 배너는 슬라이더에서 제외 (AD는 상세페이지 등 별도 배치)
+      setBanners((data || []).filter((b: any) => !b.is_ad));
       setLoaded(true);
     })();
     return () => { cancelled = true; };

@@ -80,11 +80,12 @@ const MainVisualDetail: React.FC = () => {
   }, [id, isNew, alert]);
 
   const isConstruction = section === 'construction';
+  const allowAd = section === 'construction' || section === 'rental'; // AD 배너 지원 섹션
 
   const save = async () => {
     if (useText && !title.trim()) return alert('입력 필요', '제목을 입력하거나 "문구 사용"을 꺼주세요.');
     const input = {
-      section, type, is_ad: isConstruction ? isAd : false,
+      section, type, is_ad: allowAd ? isAd : false,
       image_url: imageUrl, image_mobile_url: imageMobileUrl,
       badge, title: useText ? title : '', subtitle: useText ? subtitle : '', cta_text: ctaText, link_url: linkUrl,
       author_name: authorName, author_avatar: authorAvatar, is_active: isActive,
@@ -115,10 +116,10 @@ const MainVisualDetail: React.FC = () => {
             <option value="rental">렌탈</option>
             <option value="dj">DJ</option>
           </SelectField>
-          {isConstruction ? (
+          {allowAd ? (
             <SelectField label="배너 종류" required value={isAd ? 'ad' : 'main'} onChange={(v) => setIsAd(v === 'ad')}>
-              <option value="main">일반 배너 (좌측 메인 슬라이드)</option>
-              <option value="ad">AD 배너 (우측 고정)</option>
+              <option value="main">일반 배너 (메인 노출)</option>
+              <option value="ad">AD 배너 (상세페이지 등)</option>
             </SelectField>
           ) : (
             <SelectField label="타입" required value={type} onChange={(v) => setType(v as MvType)}>
@@ -144,7 +145,7 @@ const MainVisualDetail: React.FC = () => {
         {useText && (
           <div style={{ marginTop: '16px', display: 'grid', gap: '16px' }}>
             <TextareaField label="제목" required minHeight="70px" value={title} onChange={setTitle} placeholder={'예: 애니메이션 속 아늑한 방을 꿈꾸는 청춘 소녀방'} />
-            {!(isConstruction && isAd) && (
+            {!(allowAd && isAd) && (
               <Row><TextField label="부제목" minWidth="100%" value={subtitle} onChange={setSubtitle} placeholder="예: 하나의 취향으로 완성하는 라이프스타일 컬렉션" /></Row>
             )}
           </div>
@@ -175,13 +176,13 @@ const MainVisualDetail: React.FC = () => {
 
         <hr style={hr} />
         {subHead('3. 이미지', '배너에 사용할 이미지를 업로드합니다. (JPG·PNG·WebP)')}
-        <div style={{ marginBottom: (isConstruction && isAd) ? '18px' : '0' }}>
-          <label style={labelStyle}>{isConstruction && isAd ? 'AD 이미지 · 데스크탑(세로형)' : '배너 이미지'}<span style={{ fontWeight: 400, color: '#94a3b8' }}> — 대표 이미지</span></label>
+        <div style={{ marginBottom: (allowAd && isAd) ? '18px' : '0' }}>
+          <label style={labelStyle}>{allowAd && isAd ? 'AD 이미지 · 데스크탑(세로형)' : '배너 이미지'}<span style={{ fontWeight: 400, color: '#94a3b8' }}> — 대표 이미지</span></label>
           <ImageUploader value={imageUrl ? [imageUrl] : []} onChange={(urls) => setImageUrl(urls[0] || '')} folder="main-visual" multiple={false} max={1} />
         </div>
 
         {/* AD 배너: 모바일 가로 이미지 (반응형별 이미지) */}
-        {isConstruction && isAd && (
+        {allowAd && isAd && (
           <div>
             <label style={labelStyle}>AD 이미지 · 모바일(가로형)<span style={{ fontWeight: 400, color: '#94a3b8' }}> — 모바일에서 가로 배너로 노출</span></label>
             <ImageUploader value={imageMobileUrl ? [imageMobileUrl] : []} onChange={(urls) => setImageMobileUrl(urls[0] || '')} folder="main-visual" multiple={false} max={1} />

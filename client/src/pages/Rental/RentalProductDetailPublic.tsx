@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ShieldCheck, Truck, Info, ChevronRight } from 'lucide-react';
 import { productApi, orderApi, type RentalProduct } from '../../api/rentalApi';
+import { mainVisualApi, type MainVisual } from '../../api/mainVisualApi';
 import { requestTossPayment, genOrderId } from '../../lib/toss';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
@@ -18,6 +20,7 @@ const RentalProductDetailPublic: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<RentalProduct | null>(null);
+  const [ad, setAd] = useState<MainVisual | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
 
@@ -37,6 +40,9 @@ const RentalProductDetailPublic: React.FC = () => {
     (async () => {
       const { data } = await productApi.get(id!);
       if (data) { setProduct(data); setDays(data.min_days || 1); }
+      // 렌탈 AD 배너(메인비주얼 관리 · 렌탈 섹션 AD) 노출
+      const { data: mv } = await mainVisualApi.listBySection('rental');
+      setAd((mv || []).find((b) => b.is_ad) || null);
       setLoading(false);
     })();
   }, [id]);
@@ -189,6 +195,38 @@ const RentalProductDetailPublic: React.FC = () => {
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '16px' }}>
             보증금 {won(product.deposit)}{Number(product.delivery_fee) > 0 ? ` · 배송/설치비 ${won(product.delivery_fee)}` : ''} · 재고 {product.stock}개
           </div>
+
+          {/* 정보 안내 행 (정품보증 · 배송 · 상품정보) */}
+          <div style={{ border: '1px solid #eef2f6', borderRadius: '12px', overflow: 'hidden', marginBottom: '18px' }}>
+            {[
+              { icon: <ShieldCheck size={16} color="#2563eb" />, text: <><b style={{ color: '#1e293b' }}>100% 정품 보증</b> · 전문가 책임 검수 · 가품 3배 보상</> },
+              { icon: <Truck size={16} color="#64748b" />, text: <>일반배송 {Number(product.delivery_fee) > 0 ? won(product.delivery_fee) : '무료'} · 5~7일 내 도착 예정</> },
+              { icon: <Info size={16} color="#64748b" />, text: <>모델 {product.name} · 재고 {product.stock}개</> },
+            ].map((r, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px', borderTop: i ? '1px solid #f1f5f9' : 'none', fontSize: '0.86rem', color: '#475569' }}>
+                {r.icon}
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.text}</span>
+                <ChevronRight size={16} color="#cbd5e1" />
+              </div>
+            ))}
+          </div>
+
+          {/* 렌탈 AD 배너 (메인비주얼 관리 · 렌탈 AD) */}
+          {ad && (ad.image_url || ad.title) && (
+            <div
+              onClick={() => { if (ad.link_url) { if (/^https?:\/\//.test(ad.link_url)) window.open(ad.link_url, '_blank', 'noopener'); else navigate(ad.link_url); } }}
+              style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #eef2f6', borderRadius: '12px', padding: '12px 14px', marginBottom: '18px', cursor: ad.link_url ? 'pointer' : 'default', background: '#fff' }}
+            >
+              {(ad.image_mobile_url || ad.image_url) && (
+                <img src={ad.image_mobile_url || ad.image_url || ''} alt={ad.title} style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '10px', flexShrink: 0, background: '#f1f5f9' }} />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontWeight: 700, color: '#1e293b', fontSize: '0.92rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ad.title}</p>
+                {ad.subtitle && <p style={{ margin: '3px 0 0', color: '#64748b', fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ad.subtitle}</p>}
+              </div>
+              <span style={{ position: 'absolute', top: '8px', right: '10px', fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700 }}>AD</span>
+            </div>
+          )}
 
           {SHOW_BOOKING && (<>
           {/* 예약 옵션 */}
