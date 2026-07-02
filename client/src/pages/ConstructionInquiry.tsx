@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { chatbotApi, inquiryApi } from '../api/constructionApi';
 import { useNavigate } from 'react-router-dom';
+import SocialAuthButtons from '../components/SocialAuthButtons';
 
 interface Question {
   id: number;
@@ -28,6 +29,7 @@ const ConstructionInquiry: React.FC = () => {
   const [fileName, setFileName] = useState('');
   const [privacyAgree, setPrivacyAgree] = useState(false);
   const [marketingAgree, setMarketingAgree] = useState(false);
+  const [typing, setTyping] = useState(false);   // 봇 입력중(…) 표시
 
   const handleApplySubmit = (step: number) => {
     // 버튼은 유효할 때만 노출되지만, 안전을 위해 한 번 더 검증
@@ -93,6 +95,9 @@ const ConstructionInquiry: React.FC = () => {
     }
   }, [messages]);
 
+  // 입력중(…) 애니메이션 동안에는 자동 스크롤하지 않는다 (생성될 메시지로 이동 방지)
+  // 실제 메시지가 등장한 뒤에만 위 messages 효과에서 필요 시 스크롤한다.
+
   const handleNext = (step: number, answer: string | any) => {
     const newAnswers = { ...answers, [step]: answer };
     setAnswers(newAnswers);
@@ -101,7 +106,12 @@ const ConstructionInquiry: React.FC = () => {
     const nextStep = step + 1;
     if (nextStep < questions.length) {
       setCurrentStep(nextStep);
-      setMessages(prev => [...prev, { id: nextStep + 1, type: 'bot', content: <div style={{ fontWeight: 700, color: '#121212' }}>{questions[nextStep].title}</div>, step: nextStep }]);
+      // 봇이 "입력중…" 표시 후 잠시 뒤 자연스럽게 질의 등장
+      setTyping(true);
+      window.setTimeout(() => {
+        setTyping(false);
+        setMessages(prev => [...prev, { id: nextStep + 1, type: 'bot', content: <div style={{ fontWeight: 700, color: '#121212' }}>{questions[nextStep].title}</div>, step: nextStep }]);
+      }, 700);
     } else {
       finalize(newAnswers);
     }
@@ -133,31 +143,29 @@ const ConstructionInquiry: React.FC = () => {
 
   const checkAuthAndComplete = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
+    const content = session ? (
       // 회원: 시공 문의 등록 완료 뷰
-      setMessages(prev => [...prev, { id: 99, type: 'bot', content: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ fontWeight: 700, color: '#121212' }}>시공 문의가 정상적으로 접수되었습니다 🎉</div>
-          <p style={{ color: '#475569', fontSize: '0.88rem', margin: 0 }}>담당자가 확인 후 빠르게 연락드리겠습니다. 감사합니다!</p>
-        </div>
-      ), step: -1 }]);
-    } else {
-      // 비회원: 회원가입 유도 (카카오 / 이메일)
-      setMessages(prev => [...prev, { id: 99, type: 'bot', content: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontWeight: 700, color: '#121212' }}>문의가 접수되었어요!</div>
-          <p style={{ color: '#475569', fontSize: '0.86rem', margin: '0 0 4px' }}>진행 상황을 받아보시려면 가입해 주세요.</p>
-          <button onClick={() => navigate('/signup?provider=kakao')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', backgroundColor: '#FEE500', color: '#191600', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.92rem' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#191600"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.77 1.86 5.2 4.65 6.57-.2.72-.74 2.66-.85 3.08-.13.52.19.51.4.37.17-.11 2.66-1.8 3.74-2.54.67.1 1.36.15 2.06.15 5.52 0 10-3.48 10-7.8S17.52 3 12 3z" /></svg>
-            카카오톡 가입하기
-          </button>
-          <button onClick={() => navigate('/signup?provider=email')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', backgroundColor: '#2563eb', color: '#fff', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.92rem' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
-            이메일로 가입하기
-          </button>
-        </div>
-      ), step: -1 }]);
-    }
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ fontWeight: 700, color: '#121212' }}>시공 문의가 정상적으로 접수되었습니다 🎉</div>
+        <p style={{ color: '#475569', fontSize: '0.88rem', margin: 0 }}>담당자가 확인 후 빠르게 연락드리겠습니다. 감사합니다!</p>
+      </div>
+    ) : (
+      // 비회원: 회원가입 유도 — 홈페이지가 지원하는 로그인 방식(소셜) + 이메일
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ fontWeight: 700, color: '#121212' }}>문의가 접수되었어요!</div>
+        <p style={{ color: '#475569', fontSize: '0.86rem', margin: '0 0 4px' }}>진행 상황을 받아보시려면 가입해 주세요.</p>
+        <SocialAuthButtons verb="시작하기" />
+        <button onClick={() => navigate('/signup')} style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#fff', color: '#334155', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}>
+          이메일로 시작하기
+        </button>
+      </div>
+    );
+    // 완료/가입 안내도 "입력중…" 후 자연스럽게 등장
+    setTyping(true);
+    window.setTimeout(() => {
+      setTyping(false);
+      setMessages(prev => [...prev, { id: 99, type: 'bot', content, step: -1 }]);
+    }, 800);
   };
 
   return (
@@ -305,6 +313,13 @@ const ConstructionInquiry: React.FC = () => {
             )}
           </div>
         ))}
+        {typing && (
+          <div className="message-wrapper bot">
+            <div className="chat-bubble bot typing">
+              <span className="typing-dots"><i /><i /><i /></span>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
@@ -328,9 +343,18 @@ const ConstructionInquiry: React.FC = () => {
         .message-wrapper.user { align-items: flex-end; }
         .message-wrapper.bot { align-items: flex-start; }
 
-        .chat-bubble { padding: 14px; max-width: 85%; box-shadow: rgba(0,0,0,0.05) 0 2px 5px; background-color: #ffffff; font-size: 0.9rem; word-break: keep-all; overflow-wrap: break-word; white-space: normal; }
+        .chat-bubble { padding: 14px; max-width: 85%; box-shadow: rgba(0,0,0,0.05) 0 2px 5px; background-color: #ffffff; font-size: 0.9rem; word-break: keep-all; overflow-wrap: break-word; white-space: normal; animation: msgIn 0.32s cubic-bezier(0.22,1,0.36,1) both; }
         .chat-bubble.bot { color: #121212; border-radius: 16px 16px 16px 0; }
         .chat-bubble.user { background-color: #465162; color: #ffffff; font-weight: bold; border-radius: 16px 16px 0 16px; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+        /* 봇 입력중(…) 인디케이터 */
+        .chat-bubble.typing { display: inline-flex; align-items: center; padding: 15px 16px; }
+        .typing-dots { display: inline-flex; align-items: center; gap: 5px; }
+        .typing-dots i { width: 7px; height: 7px; border-radius: 50%; background: #c3ccd8; display: inline-block; animation: typingBounce 1.2s infinite ease-in-out; }
+        .typing-dots i:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dots i:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-5px); opacity: 1; } }
         
         .chat-inner-content { font-size: 0.9rem; }
         .chat-bubble.bot .chat-inner-content { font-weight: bold; color: #121212; }

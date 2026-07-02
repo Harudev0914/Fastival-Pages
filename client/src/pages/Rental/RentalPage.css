@@ -66,14 +66,14 @@
 }
 .rv-prod__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
 .rv-prod:hover .rv-prod__media img { transform: scale(1.05); }
-.rv-prod__brand { margin: 12px 0 4px; font-size: 0.8rem; color: #94a3b8; }
+.rv-prod__brand { margin: 10px 0 3px; font-size: 0.72rem; color: #94a3b8; }
 .rv-prod__name {
-  margin: 0 0 8px; font-size: 0.92rem; color: #1e293b; line-height: 1.4;
+  margin: 0 0 6px; font-size: 0.82rem; color: #1e293b; line-height: 1.4;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.rv-prod__price { display: flex; align-items: baseline; gap: 6px; }
-.rv-prod__disc { color: #ef4444; font-weight: 800; font-size: 1rem; }
-.rv-prod__monthly { color: #1e293b; font-weight: 700; font-size: 1rem; }
+.rv-prod__price { display: flex; align-items: baseline; gap: 5px; }
+.rv-prod__disc { color: #ef4444; font-weight: 800; font-size: 0.88rem; }
+.rv-prod__monthly { color: #1e293b; font-weight: 700; font-size: 0.88rem; }
 
 /* ===== 반응형 ===== */
 @media (max-width: 1024px) {
