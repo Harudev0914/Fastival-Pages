@@ -10,17 +10,20 @@ const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 
 interface Cat { id: number; name: string; parent_id: number | null; image_url: string | null }
 
-const RentalCategoriesPage: React.FC = () => {
+// by='category' : 좌측 사이드바=카테고리(2Depth) / by='brand' : 좌측 사이드바=브랜드 (동일 UI)
+const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'category' }) => {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const selectedCat = params.get('category') ? Number(params.get('category')) : null;
+  const paramKey = by === 'brand' ? 'brand' : 'category';
+  const selectedId = params.get(paramKey) ? Number(params.get(paramKey)) : null;
 
   const [products, setProducts] = useState<RentalProduct[]>([]);
   const [cats, setCats] = useState<Cat[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const [sales, setSales] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
-  const [brandFilter, setBrandFilter] = useState<number | 'all'>('all');
+  const [brandFilter, setBrandFilter] = useState<number | 'all'>('all');   // 카테고리 모드 툴바 필터
+  const [catFilter, setCatFilter] = useState<number | 'all'>('all');       // 브랜드 모드 툴바 필터
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('recommend');
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -43,22 +46,31 @@ const RentalCategoriesPage: React.FC = () => {
   const topCats = useMemo(() => cats.filter((c) => !c.parent_id), [cats]);
   const childrenOf = (pid: number) => cats.filter((c) => c.parent_id === pid);
 
-  // 선택 카테고리의 대상 상품 id 집합 (부모면 자식 포함)
+  // 카테고리 모드: 선택 카테고리의 대상 상품 id 집합 (부모면 자식 포함)
   const selCatIds = useMemo(() => {
-    if (!selectedCat) return null;
-    const sel = cats.find((c) => c.id === selectedCat);
+    if (by !== 'category' || !selectedId) return null;
+    const sel = cats.find((c) => c.id === selectedId);
     if (!sel) return null;
     if (!sel.parent_id) return new Set<number>([sel.id, ...childrenOf(sel.id).map((c) => c.id)]);
     return new Set<number>([sel.id]);
-  }, [selectedCat, cats]);
+  }, [by, selectedId, cats]);
 
-  const selCatName = selectedCat ? (cats.find((c) => c.id === selectedCat)?.name || '카테고리') : '전체 렌탈 상품';
+  const selName = useMemo(() => {
+    if (!selectedId) return by === 'brand' ? '전체 브랜드 상품' : '전체 렌탈 상품';
+    if (by === 'brand') return brands.find((b) => b.id === selectedId)?.name || '브랜드';
+    return cats.find((c) => c.id === selectedId)?.name || '카테고리';
+  }, [by, selectedId, cats, brands]);
 
   const view = useMemo(() => {
     const q = search.trim().toLowerCase();
     let v = products.filter((p) => {
-      if (selCatIds && !(p.category_id && selCatIds.has(p.category_id))) return false;
-      if (brandFilter !== 'all' && p.brand_id !== brandFilter) return false;
+      if (by === 'category') {
+        if (selCatIds && !(p.category_id && selCatIds.has(p.category_id))) return false;
+        if (brandFilter !== 'all' && p.brand_id !== brandFilter) return false;
+      } else {
+        if (selectedId && p.brand_id !== selectedId) return false;
+        if (catFilter !== 'all' && p.category_id !== catFilter) return false;
+      }
       if (q && !`${p.name} ${p.rental_brands?.name || ''}`.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -67,7 +79,7 @@ const RentalCategoriesPage: React.FC = () => {
     else if (sort === 'price_high') v = [...v].sort((a, b) => Number(b.daily_price) - Number(a.daily_price));
     else v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
     return v;
-  }, [products, selCatIds, brandFilter, search, sort, sales]);
+  }, [by, products, selCatIds, selectedId, brandFilter, catFilter, search, sort, sales]);
 
   // 상단 가로 스크롤: 기획전 우선, 없으면 인기(판매순)
   const featured = useMemo(() => {
@@ -77,50 +89,66 @@ const RentalCategoriesPage: React.FC = () => {
   }, [products, sales]);
   const featuredTitle = products.some((p) => p.is_event) ? '#지금 기획전 특가' : '#지금 인기 렌탈';
 
-  const pickCat = (id: number | null) => { if (id) params.set('category', String(id)); else params.delete('category'); setParams(params, { replace: true }); window.scrollTo({ top: 0 }); };
+  const pickSel = (id: number | null) => { if (id) params.set(paramKey, String(id)); else params.delete(paramKey); setParams(params, { replace: true }); window.scrollTo({ top: 0 }); };
   const img = (p: RentalProduct) => p.thumbnail_url || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&q=80&auto=format&fit=crop';
   const badge = (p: RentalProduct) => p.is_exclusive ? { t: '단독', c: '#7c3aed' } : p.is_event ? { t: '기획전', c: '#db2777' } : null;
 
+  const sideTitle = by === 'brand' ? '브랜드' : '카테고리';
+
   return (
     <div className="rental-page">
-      <Seo title="렌탈 카테고리" description="클립스 렌탈 카테고리 — 원하는 카테고리에서 음향·가구 렌탈 상품을 찾아보세요." keywords="렌탈 카테고리,스피커,가구 렌탈,음향 장비" />
+      <Seo
+        title={by === 'brand' ? '렌탈 브랜드' : '렌탈 카테고리'}
+        description={by === 'brand' ? '클립스 렌탈 브랜드 — 브랜드별로 음향·가구 렌탈 상품을 찾아보세요.' : '클립스 렌탈 카테고리 — 원하는 카테고리에서 음향·가구 렌탈 상품을 찾아보세요.'}
+        keywords={by === 'brand' ? '렌탈 브랜드,음향 브랜드,가구 렌탈 브랜드' : '렌탈 카테고리,스피커,가구 렌탈,음향 장비'}
+      />
 
       <div className="rcat-wrap">
-        {/* 좌측 카테고리 사이드바 */}
+        {/* 좌측 사이드바 (카테고리 or 브랜드) */}
         <aside className="rcat-side">
-          <div className="rcat-side__title">카테고리</div>
-          <button className={`rcat-side__item ${!selectedCat ? 'on' : ''}`} onClick={() => pickCat(null)}>전체</button>
+          <div className="rcat-side__title">{sideTitle}</div>
+          <button className={`rcat-side__item ${!selectedId ? 'on' : ''}`} onClick={() => pickSel(null)}>전체</button>
           <ul className="rcat-side__list">
-            {topCats.map((c) => {
-              const kids = childrenOf(c.id);
-              const hasKids = kids.length > 0;
-              const open = expanded === c.id;
-              const active = selectedCat === c.id || kids.some((k) => k.id === selectedCat);
-              return (
-                <li key={c.id}>
-                  {/* 행 전체 클릭: 하위 있으면 드롭다운 토글, 없으면 바로 선택 */}
-                  <div className={`rcat-side__row ${active ? 'on' : ''}`} role="button" tabIndex={0}
-                    onClick={() => (hasKids ? setExpanded(open ? null : c.id) : pickCat(c.id))}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (hasKids) setExpanded(open ? null : c.id); else pickCat(c.id); } }}>
-                    <span className="rcat-side__name">{c.name}</span>
-                    {hasKids && (
-                      <span className="rcat-side__chev" aria-hidden>
-                        <ChevronDown size={16} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
-                      </span>
-                    )}
+            {by === 'brand'
+              ? brands.map((b) => (
+                <li key={b.id}>
+                  <div className={`rcat-side__row ${selectedId === b.id ? 'on' : ''}`} role="button" tabIndex={0}
+                    onClick={() => pickSel(b.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickSel(b.id); } }}>
+                    <span className="rcat-side__name">{b.name}</span>
                   </div>
-                  {hasKids && open && (
-                    <ul className="rcat-side__sub">
-                      {/* 전체(해당 카테고리 전체) + 어드민 등록 하위 카테고리 */}
-                      <li><button className={`rcat-side__subitem ${selectedCat === c.id ? 'on' : ''}`} onClick={() => pickCat(c.id)}>전체</button></li>
-                      {kids.map((k) => (
-                        <li key={k.id}><button className={`rcat-side__subitem ${selectedCat === k.id ? 'on' : ''}`} onClick={() => pickCat(k.id)}>{k.name}</button></li>
-                      ))}
-                    </ul>
-                  )}
                 </li>
-              );
-            })}
+              ))
+              : topCats.map((c) => {
+                const kids = childrenOf(c.id);
+                const hasKids = kids.length > 0;
+                const open = expanded === c.id;
+                const active = selectedId === c.id || kids.some((k) => k.id === selectedId);
+                return (
+                  <li key={c.id}>
+                    {/* 행 전체 클릭: 하위 있으면 드롭다운 토글, 없으면 바로 선택 */}
+                    <div className={`rcat-side__row ${active ? 'on' : ''}`} role="button" tabIndex={0}
+                      onClick={() => (hasKids ? setExpanded(open ? null : c.id) : pickSel(c.id))}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (hasKids) setExpanded(open ? null : c.id); else pickSel(c.id); } }}>
+                      <span className="rcat-side__name">{c.name}</span>
+                      {hasKids && (
+                        <span className="rcat-side__chev" aria-hidden>
+                          <ChevronDown size={16} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+                        </span>
+                      )}
+                    </div>
+                    {hasKids && open && (
+                      <ul className="rcat-side__sub">
+                        {/* 전체(해당 카테고리 전체) + 어드민 등록 하위 카테고리 */}
+                        <li><button className={`rcat-side__subitem ${selectedId === c.id ? 'on' : ''}`} onClick={() => pickSel(c.id)}>전체</button></li>
+                        {kids.map((k) => (
+                          <li key={k.id}><button className={`rcat-side__subitem ${selectedId === k.id ? 'on' : ''}`} onClick={() => pickSel(k.id)}>{k.name}</button></li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
           </ul>
         </aside>
 
@@ -158,9 +186,9 @@ const RentalCategoriesPage: React.FC = () => {
             <input placeholder="상품명·브랜드 검색" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
 
-          {/* 툴바: 개수 + 필터 드롭다운(정렬 · 브랜드) */}
+          {/* 툴바: 개수 + 필터 드롭다운(정렬 · 브랜드/카테고리) */}
           <div className="rcat-toolbar">
-            <span className="rcat-count">{selCatName} <b>{view.length.toLocaleString()}</b>개</span>
+            <span className="rcat-count">{selName} <b>{view.length.toLocaleString()}</b>개</span>
             <div className="rcat-drops">
               <div className="rcat-drop">
                 <select value={sort} onChange={(e) => setSort(e.target.value)}>
@@ -171,13 +199,23 @@ const RentalCategoriesPage: React.FC = () => {
                 </select>
                 <ChevronDown size={15} className="rcat-drop__chev" />
               </div>
-              <div className="rcat-drop">
-                <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
-                  <option value="all">전체 브랜드</option>
-                  {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
-                <ChevronDown size={15} className="rcat-drop__chev" />
-              </div>
+              {by === 'category' ? (
+                <div className="rcat-drop">
+                  <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+                    <option value="all">전체 브랜드</option>
+                    {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                  <ChevronDown size={15} className="rcat-drop__chev" />
+                </div>
+              ) : (
+                <div className="rcat-drop">
+                  <select value={catFilter} onChange={(e) => setCatFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+                    <option value="all">전체 카테고리</option>
+                    {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                  <ChevronDown size={15} className="rcat-drop__chev" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -185,7 +223,7 @@ const RentalCategoriesPage: React.FC = () => {
           {loading ? (
             <div className="rcat-empty">불러오는 중...</div>
           ) : view.length === 0 ? (
-            <div className="rcat-empty">해당 카테고리에 등록된 상품이 없습니다.</div>
+            <div className="rcat-empty">해당 {sideTitle}에 등록된 상품이 없습니다.</div>
           ) : (
             <div className="rv-grid">
               {view.map((p) => {
@@ -260,7 +298,7 @@ const RentalCategoriesPage: React.FC = () => {
           .rcat-side__item{display:inline-block;width:auto;padding:8px 14px;border:1px solid #e2e8f0;border-radius:999px;font-size:0.86rem;margin:0 6px 8px 0;}
           .rcat-side__item.on{background:#1e293b;border-color:#1e293b;color:#fff;}
           .rcat-side__list{display:flex;flex-wrap:wrap;gap:0 6px;}
-          .rcat-side__list li{border-bottom:none;}
+          .rcat-side__list > li{border-bottom:none;}
           .rcat-side__row{border:1px solid #e2e8f0;border-radius:999px;padding:0 6px 0 8px;margin:0 6px 8px 0;}
           .rcat-side__name{padding:8px 4px;font-size:0.86rem;}
           .rcat-side__sub{display:none;}

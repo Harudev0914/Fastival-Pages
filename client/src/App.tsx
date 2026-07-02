@@ -43,6 +43,7 @@ import RentalProductDetailPublic from './pages/Rental/RentalProductDetailPublic'
 import RentalInquiryPage from './pages/Rental/RentalInquiryPage';
 import RentalProductListPage from './pages/Rental/RentalProductListPage';
 import RentalCategoriesPage from './pages/Rental/RentalCategoriesPage';
+import RentalBrandsPage from './pages/Rental/RentalBrandsPage';
 import PaymentSuccess from './pages/Rental/PaymentSuccess';
 import PaymentFail from './pages/Rental/PaymentFail';
 import SearchPage from './pages/SearchPage';
@@ -140,7 +141,6 @@ function AdminContent() {
       <Route path="rental/categories/detail/:id" element={<RentalCategoryDetail />} />
       <Route path="rental/products" element={<RentalProductManagement />} />
       <Route path="rental/products/detail/:id" element={<RentalProductDetail />} />
-      <Route path="rental/exclusive" element={<RentalProductManagement mode="exclusive" />} />
       <Route path="rental/events" element={<RentalProductManagement mode="event" />} />
 
       {/* DJ 관리 */}
@@ -239,6 +239,7 @@ function App() {
           <Route path="/rental" element={<RentalPage />} />
           <Route path="/rental/product/:id" element={<RentalProductDetailPublic />} />
           <Route path="/rental/categories" element={<RentalCategoriesPage />} />
+          <Route path="/rental/brands" element={<RentalBrandsPage />} />
           <Route path="/rental/inquiry" element={<RentalInquiryPage />} />
           <Route path="/rental/payment/success" element={<PaymentSuccess />} />
           <Route path="/rental/payment/fail" element={<PaymentFail />} />

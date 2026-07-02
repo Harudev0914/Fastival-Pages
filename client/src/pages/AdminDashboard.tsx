@@ -18,7 +18,7 @@ const AdminDashboard: React.FC = () => {
 
   const CON_KEYS = ['construction/categories', 'construction/portfolio', 'construction/chatbot'];
   const WORK_KEYS = ['construction/inquiries', 'construction/works', 'construction/companies', 'construction/reviews', 'construction/calendar', 'construction/stats'];
-  const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/exclusive', 'rental/events'];
+  const RENT_KEYS = ['rental/brands', 'rental/categories', 'rental/products', 'rental/events'];
   const RENTOPS_KEYS = ['rental/orders', 'rental/shipments', 'rental/purchases', 'rental/calendar', 'rental/stats'];
   const DJ_KEYS = ['dj/list', 'dj/artists'];
   const DJOPS_KEYS = ['dj/event-inquiries', 'dj/calendar', 'dj/stats'];
@@ -141,7 +141,6 @@ const AdminDashboard: React.FC = () => {
                 {can('rental/brands') && <span className={activeMenu === '브랜드 관리' ? 'active' : ''} onClick={() => handleMenuClick('브랜드 관리', '/admin/dashboard/rental/brands')}>브랜드 관리</span>}
                 {can('rental/categories') && <span className={activeMenu === '카테고리 관리(렌탈)' ? 'active' : ''} onClick={() => handleMenuClick('카테고리 관리(렌탈)', '/admin/dashboard/rental/categories')}>카테고리 관리</span>}
                 {can('rental/products') && <span className={activeMenu === '상품 관리' ? 'active' : ''} onClick={() => handleMenuClick('상품 관리', '/admin/dashboard/rental/products')}>상품 관리</span>}
-                {can('rental/exclusive') && <span className={activeMenu === '단독 상품' ? 'active' : ''} onClick={() => handleMenuClick('단독 상품', '/admin/dashboard/rental/exclusive')}>단독 상품</span>}
                 {can('rental/events') && <span className={activeMenu === '기획전' ? 'active' : ''} onClick={() => handleMenuClick('기획전', '/admin/dashboard/rental/events')}>기획전</span>}
             </div>
         )}

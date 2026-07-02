@@ -36,14 +36,14 @@ const RentalPage: React.FC = () => {
       {cats.length > 0 && (
         <section className="rv-cats">
           {cats.slice(0, 7).map((c) => (
-            <button type="button" className="rv-cat" key={c.id} onClick={() => navigate(`/rental/best?category=${c.id}`)}>
+            <button type="button" className="rv-cat" key={c.id} onClick={() => navigate(`/rental/categories?category=${c.id}`)}>
               <span className="rv-cat__icon">
                 {c.image_url ? <img src={c.image_url} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : <Package size={26} color="#64748b" />}
               </span>
               <span className="rv-cat__label">{c.name}</span>
             </button>
           ))}
-          <button type="button" className="rv-cat" onClick={() => navigate('/rental/best')}>
+          <button type="button" className="rv-cat" onClick={() => navigate('/rental/categories')}>
             <span className="rv-cat__icon"><MoreHorizontal size={26} color="#64748b" /></span>
             <span className="rv-cat__label">더보기</span>
           </button>

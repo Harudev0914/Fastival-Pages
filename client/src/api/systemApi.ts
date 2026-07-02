@@ -34,7 +34,6 @@ export const ADMIN_MENU_TREE: AdminMenuGroup[] = [
       { key: 'rental/brands', label: '브랜드 관리' },
       { key: 'rental/categories', label: '카테고리 관리' },
       { key: 'rental/products', label: '상품 관리' },
-      { key: 'rental/exclusive', label: '단독 상품' },
       { key: 'rental/events', label: '기획전' },
     ],
   },
