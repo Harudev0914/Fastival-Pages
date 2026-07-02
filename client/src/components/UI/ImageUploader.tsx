@@ -70,7 +70,7 @@ const ImageUploader: React.FC<Props> = ({ value, onChange, folder, multiple = tr
 
       {err && <p style={{ color: '#dc2626', fontSize: '0.78rem', marginTop: '8px' }}>{err}</p>}
       <p style={{ color: '#94a3b8', fontSize: '0.74rem', marginTop: '8px' }}>
-        업로드 시 자동으로 용량 최적화(WebP · 최대 1280px)됩니다. {multiple ? `(최대 ${max}장)` : ''}
+        JPG · PNG 이미지 · 최대 10MB {multiple ? `(최대 ${max}장)` : ''}
       </p>
 
       <style>{`@keyframes iu-spin { to { transform: rotate(360deg); } } .iu-spin { animation: iu-spin 0.8s linear infinite; }`}</style>

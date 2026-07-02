@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, SlidersHorizontal, Check } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct } from '../../api/rentalApi';
 import MainVisualCarousel from '../../components/MainVisualCarousel';
 import RentalBrandDetailPage from './RentalBrandDetailPage';
@@ -29,6 +29,7 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('recommend');
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [sheet, setSheet] = useState<null | 'cat'>(null);   // 모바일 카테고리 선택 바텀시트
 
   useEffect(() => {
     (async () => {
@@ -96,6 +97,16 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
   const badge = (p: RentalProduct) => p.is_exclusive ? { t: '단독', c: '#7c3aed' } : p.is_event ? { t: '기획전', c: '#db2777' } : null;
 
   const sideTitle = by === 'brand' ? '브랜드' : '카테고리';
+
+  // 모바일 카테고리 버튼 (숨긴 사이드바 대체) — 카테고리 페이지=주 선택(URL) / 브랜드 페이지=카테고리 필터
+  const catSheetList = topCats.flatMap((tc) => [{ id: tc.id, name: tc.name, child: false }, ...childrenOf(tc.id).map((k) => ({ id: k.id, name: k.name, child: true }))]);
+  const catBtnLabel = by === 'category'
+    ? (selectedId ? (cats.find((c) => c.id === selectedId)?.name || '카테고리') : '전체 카테고리')
+    : (catFilter === 'all' ? '전체 카테고리' : (cats.find((c) => c.id === catFilter)?.name || '전체 카테고리'));
+  const catActive = by === 'category' ? !!selectedId : catFilter !== 'all';
+  const isCatAll = by === 'category' ? !selectedId : catFilter === 'all';
+  const isCatChosen = (id: number) => (by === 'category' ? selectedId === id : catFilter === id);
+  const pickCat = (id: number | null) => { if (by === 'category') pickSel(id); else setCatFilter(id == null ? 'all' : id); setSheet(null); };
 
   return (
     <div className="rental-page">
@@ -205,8 +216,9 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
                 </select>
                 <ChevronDown size={15} className="rcat-drop__chev" />
               </div>
+              {/* 보조 필터(브랜드/카테고리) — 태블릿 이상에선 좌측 사이드바가 대체하므로 숨김 */}
               {by === 'category' ? (
-                <div className="rcat-drop">
+                <div className="rcat-drop rcat-drop--filter">
                   <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
                     <option value="all">전체 브랜드</option>
                     {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -214,7 +226,7 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
                   <ChevronDown size={15} className="rcat-drop__chev" />
                 </div>
               ) : (
-                <div className="rcat-drop">
+                <div className="rcat-drop rcat-drop--filter">
                   <select value={catFilter} onChange={(e) => setCatFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
                     <option value="all">전체 카테고리</option>
                     {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -222,6 +234,13 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
                   <ChevronDown size={15} className="rcat-drop__chev" />
                 </div>
               )}
+            </div>
+
+            {/* 모바일: 카테고리 선택 버튼 (개수 왼쪽 · 탭 → 바텀시트) */}
+            <div className="rcat-optbtns">
+              <button type="button" className={`rcat-optbtn ${catActive ? 'on' : ''}`} onClick={() => setSheet('cat')}>
+                <SlidersHorizontal size={15} /> <span>{catBtnLabel}</span> <ChevronDown size={14} color="#94a3b8" />
+              </button>
             </div>
           </div>
 
@@ -253,9 +272,30 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
         )}
       </div>
 
+      {/* 카테고리 선택 바텀시트 (모바일) */}
+      {sheet && (
+        <div className="rcat-sheet__dim" onClick={() => setSheet(null)}>
+          <div className="rcat-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="rcat-sheet__bar" />
+            <div className="rcat-sheet__title">카테고리</div>
+            <div className="rcat-sheet__opts">
+              <button type="button" className={`rcat-sheet__opt ${isCatAll ? 'on' : ''}`} onClick={() => pickCat(null)}>
+                <span>전체 카테고리</span>{isCatAll && <Check size={17} />}
+              </button>
+              {catSheetList.map((c) => (
+                <button key={c.id} type="button" className={`rcat-sheet__opt ${c.child ? 'child' : ''} ${isCatChosen(c.id) ? 'on' : ''}`} onClick={() => pickCat(c.id)}>
+                  <span>{c.name}</span>{isCatChosen(c.id) && <Check size={17} />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         .rcat-wrap{display:grid;grid-template-columns:210px 1fr;gap:30px;align-items:start;}
-        .rcat-side{position:sticky;top:120px;}
+        .rcat-side{position:sticky;top:120px;max-height:calc(100vh - 140px);overflow-y:auto;scrollbar-width:none;}
+        .rcat-side::-webkit-scrollbar{display:none;}
         .rcat-side__title{font-size:1.15rem;font-weight:800;color:#1e293b;margin:0 0 14px;padding-bottom:12px;border-bottom:2px solid #1e293b;}
         .rcat-side__item{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 4px;font-size:0.95rem;font-weight:700;color:#334155;cursor:pointer;border-radius:6px;}
         .rcat-side__item.on{color:#2563eb;}
@@ -299,18 +339,39 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
         .rcat-drop__chev{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:#94a3b8;pointer-events:none;}
         .rcat-empty{padding:80px 0;text-align:center;color:#94a3b8;}
 
-        @media (max-width:1024px){
+        /* 모바일 세부 옵션 버튼 (기본 숨김 → 모바일에서 노출) */
+        .rcat-optbtns{display:none;gap:8px;}
+        .rcat-optbtn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:0.86rem;font-weight:700;color:#334155;cursor:pointer;font-family:inherit;max-width:52vw;}
+        .rcat-optbtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .rcat-optbtn.on{border-color:#2563eb;color:#2563eb;background:#eff6ff;}
+
+        /* 바텀시트 */
+        .rcat-sheet__dim{position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1000;display:flex;align-items:flex-end;animation:rcatFade .2s ease;}
+        .rcat-sheet{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:10px 16px calc(24px + env(safe-area-inset-bottom));max-height:72vh;overflow-y:auto;animation:rcatUp .25s ease;}
+        .rcat-sheet__bar{width:40px;height:4px;border-radius:999px;background:#e2e8f0;margin:6px auto 14px;}
+        .rcat-sheet__title{font-size:1.02rem;font-weight:800;color:#1e293b;margin:0 0 14px;}
+        .rcat-sheet__opts{display:flex;flex-direction:column;gap:8px;}
+        .rcat-sheet__opt{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:#f8fafc;border:1px solid #eef2f6;border-radius:12px;padding:14px 16px;font-size:0.92rem;font-weight:600;color:#334155;cursor:pointer;font-family:inherit;}
+        .rcat-sheet__opt.on{background:#eff6ff;border-color:#2563eb;color:#2563eb;font-weight:800;}
+        .rcat-sheet__opt.child{margin-left:14px;background:#fff;font-size:0.88rem;color:#64748b;}
+        .rcat-sheet__opt.child.on{color:#2563eb;}
+        @keyframes rcatUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+        @keyframes rcatFade{from{opacity:0;}to{opacity:1;}}
+
+        /* 태블릿 이상: 보조 필터 드롭다운은 좌측 사이드바가 대체하므로 숨김(정렬만 노출) */
+        @media (min-width:769px){
+          .rcat-drop--filter{display:none;}
+        }
+
+        /* 태블릿(769px~)은 PC와 동일한 2열 레이아웃 유지 · 모바일(~768px)만 사이드바 제거 + 세부 옵션 버튼 */
+        @media (max-width:768px){
           .rcat-wrap{grid-template-columns:1fr;gap:18px;}
-          .rcat-side{position:static;border-bottom:1px solid #eef2f6;padding-bottom:12px;}
-          .rcat-side__title{display:none;}
-          .rcat-side__item{display:inline-block;width:auto;padding:8px 14px;border:1px solid #e2e8f0;border-radius:999px;font-size:0.86rem;margin:0 6px 8px 0;}
-          .rcat-side__item.on{background:#1e293b;border-color:#1e293b;color:#fff;}
-          .rcat-side__list{display:flex;flex-wrap:wrap;gap:0 6px;}
-          .rcat-side__list > li{border-bottom:none;}
-          .rcat-side__row{border:1px solid #e2e8f0;border-radius:999px;padding:0 6px 0 8px;margin:0 6px 8px 0;}
-          .rcat-side__name{padding:8px 4px;font-size:0.86rem;}
-          .rcat-side__sub{display:none;}
+          .rcat-side{display:none;}
           .rcat-search{min-width:0;width:100%;}
+          .rcat-drops{display:none;}
+          .rcat-toolbar{justify-content:flex-start;}
+          .rcat-optbtns{display:flex;order:1;}
+          .rcat-count{order:2;}
         }
       `}</style>
     </div>

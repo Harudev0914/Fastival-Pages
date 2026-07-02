@@ -23,6 +23,7 @@ const RentalProductDetailPublic: React.FC = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState<RentalProduct | null>(null);
   const [ad, setAd] = useState<MainVisual | null>(null);
+  const [recommends, setRecommends] = useState<RentalProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
 
@@ -41,11 +42,20 @@ const RentalProductDetailPublic: React.FC = () => {
 
   useEffect(() => {
     (async () => {
+      setLoading(true); setActiveImg(0);
       const { data } = await productApi.get(id!);
       if (data) { setProduct(data); setDays(data.min_days || 1); }
       // 렌탈 AD 배너(메인비주얼 관리 · 렌탈 섹션 AD) 노출
       const { data: mv } = await mainVisualApi.listBySection('rental');
       setAd((mv || []).find((b) => b.is_ad) || null);
+      // 추천 상품 — 같은 브랜드 우선, 나머지 활성 상품으로 채움(현재 상품 제외)
+      const { data: all } = await productApi.listActive();
+      if (data && all) {
+        const others = all.filter((p) => p.id !== data.id);
+        const sameBrand = others.filter((p) => p.brand_id && p.brand_id === data.brand_id);
+        const rest = others.filter((p) => !(p.brand_id && p.brand_id === data.brand_id));
+        setRecommends([...sameBrand, ...rest].slice(0, 10));
+      }
       setLoading(false);
     })();
   }, [id]);
@@ -162,7 +172,7 @@ const RentalProductDetailPublic: React.FC = () => {
         </div>
 
         {/* 정보 + 예약 폼 */}
-        <div style={{ flex: '1 1 380px', minWidth: '300px' }}>
+        <div style={{ flex: '1 1 340px', minWidth: '300px' }}>
           {/* 가격 — 정가(취소선) → 할인율 + 판매가 → 쿠폰 적용가 */}
           {hasDiscount && (
             <div style={{ fontSize: '0.95rem', color: '#94a3b8', textDecoration: 'line-through', marginBottom: '2px' }}>{won(listPrice)}</div>
@@ -324,6 +334,33 @@ const RentalProductDetailPublic: React.FC = () => {
           </>)}
         </div>
       </div>
+
+      {/* 함께 보면 좋은 상품 (크림·무신사 스타일 추천 그리드) */}
+      {recommends.length > 0 && (
+        <section style={{ marginTop: '48px' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginBottom: '16px' }}>함께 보면 좋은 상품</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '18px 14px' }}>
+            {recommends.map((p) => {
+              const lp = Number(p.list_price) || 0;
+              const disc = lp > Number(p.daily_price) ? Math.round(((lp - Number(p.daily_price)) / lp) * 100) : 0;
+              return (
+                <div key={p.id} onClick={() => navigate(`/rental/product/${p.id}`)} style={{ cursor: 'pointer' }}>
+                  <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', marginBottom: '8px' }}>
+                    {p.thumbnail_url && <img src={p.thumbnail_url} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                  </div>
+                  {p.rental_brands?.name && <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#1e293b', marginBottom: '2px' }}>{p.rental_brands.name}</div>}
+                  <div style={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.35, marginBottom: '6px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', flexWrap: 'wrap' }}>
+                    {disc > 0 && <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444' }}>{disc}%</span>}
+                    <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1e293b' }}>{won(p.daily_price)}</span>
+                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>/ 일</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

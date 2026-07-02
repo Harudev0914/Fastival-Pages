@@ -141,7 +141,7 @@ const RentalInquiryPage: React.FC = () => {
   }
 
   const catLine = [cats.parent, cats.child].filter(Boolean).join(' › ');
-  const feeRow: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', fontSize: '0.9rem', color: '#94a3b8' };
+  const feeRow: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.88rem', color: '#94a3b8' };
 
   return (
     <div className="rental-page">
@@ -187,27 +187,30 @@ const RentalInquiryPage: React.FC = () => {
           </div>
 
           {/* 판매 희망가 + 비용 안내 */}
-          <div style={{ border: '1px solid #eef2f6', borderRadius: '14px', padding: '4px 18px', background: '#fff' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid #f1f5f9' }}>
-              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1e293b', flexShrink: 0 }}>판매 희망가</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                <input
-                  type="number" min={0} inputMode="numeric" value={price}
-                  onChange={(e) => setPrice(e.target.value)} placeholder="희망가 입력"
-                  style={{ width: '150px', border: 'none', outline: 'none', textAlign: 'right', fontSize: '1.05rem', fontWeight: 800, color: '#1e293b', background: 'transparent' }}
-                />
-                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>원</span>
+          <div>
+            <label style={label}>판매 희망가 *</label>
+            {/* 크림·무신사 스타일 — 카드 없이 언더라인 큰 입력 */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', borderBottom: `2px solid ${price ? '#1e293b' : '#e2e8f0'}`, paddingBottom: '10px', transition: 'border-color 0.15s' }}>
+              <input
+                type="number" min={0} inputMode="numeric" value={price}
+                onChange={(e) => setPrice(e.target.value)} placeholder="희망가 입력"
+                style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: '1.6rem', fontWeight: 800, color: '#1e293b', background: 'transparent', padding: 0 }}
+              />
+              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: price ? '#1e293b' : '#cbd5e1', flexShrink: 0 }}>원</span>
+            </div>
+            {price && Number(price) > 0 && (
+              <div style={{ fontSize: '0.82rem', color: '#94a3b8', marginTop: '8px' }}>{won(Number(price))}</div>
+            )}
+
+            {/* 비용 안내 — 미니멀 라인 */}
+            <div style={{ marginTop: '20px', display: 'grid', gap: '12px' }}>
+              <div style={feeRow}><span>검수비</span><span>-</span></div>
+              <div style={feeRow}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>수수료 <HelpCircle size={13} color="#cbd5e1" /></span><span>-</span>
               </div>
+              <div style={feeRow}><span>배송비</span><span style={{ color: '#64748b' }}>선불 · 판매자 부담</span></div>
             </div>
-            <div style={feeRow}><span>검수비</span><span>-</span></div>
-            <div style={{ ...feeRow, borderTop: '1px solid #f8fafc' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>수수료 <HelpCircle size={13} color="#cbd5e1" /></span><span>-</span>
-            </div>
-            <div style={{ ...feeRow, borderTop: '1px solid #f8fafc' }}><span>배송비</span><span style={{ color: '#64748b' }}>선불 · 판매자 부담</span></div>
           </div>
-          {price && Number(price) > 0 && (
-            <div style={{ fontSize: '0.9rem', color: TEAL, fontWeight: 700, marginTop: '-14px' }}>{won(Number(price))}</div>
-          )}
 
           {/* 상품 사진 (선택) */}
           <div>
