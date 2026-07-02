@@ -1,0 +1,97 @@
+/* ===== 통합 인증(로그인·회원가입) — 심플/저채도, 모서리 약하게 ===== */
+.auth-wrap { max-width: 400px; margin: 40px auto 64px; padding: 0 20px; }
+.auth-title { font-size: 1.15rem; font-weight: 800; color: #111827; text-align: center; margin: 0 0 22px; }
+.auth-sub { text-align: center; color: #6b7280; font-size: 0.85rem; margin: -14px 0 22px; }
+
+/* 입력 */
+.auth-field { position: relative; }
+.auth-field + .auth-field { margin-top: 8px; }
+.auth-input {
+  width: 100%; box-sizing: border-box; height: 52px; padding: 0 44px 0 14px;
+  border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.95rem; color: #111827; background: #fff;
+}
+.auth-input:focus { outline: none; border-color: #111827; }
+.auth-input::placeholder { color: #9ca3af; }
+.auth-eye {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; padding: 6px; color: #9ca3af; cursor: pointer; display: inline-flex;
+}
+
+/* 자동 로그인 */
+.auth-remember { display: flex; align-items: center; gap: 7px; margin: 12px 2px; color: #4b5563; font-size: 0.86rem; cursor: pointer; user-select: none; }
+
+/* 버튼 공통 */
+.auth-btn {
+  width: 100%; height: 52px; border-radius: 6px; border: 1px solid transparent;
+  font-size: 0.95rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center;
+  justify-content: center; gap: 8px; transition: opacity .15s, background .15s;
+}
+.auth-btn:disabled { cursor: not-allowed; opacity: .45; }
+.auth-btn--primary { background: #111827; color: #fff; }
+.auth-btn--primary:not(:disabled):hover { background: #000; }
+.auth-btn--kakao { background: #FEE500; color: rgba(0,0,0,0.9); }
+.auth-btn--naver { background: #03C75A; color: #fff; }
+.auth-btn--apple { background: #111827; color: #fff; }
+.auth-btn--line { background: #fff; color: #111827; border-color: #d1d5db; }
+.auth-btn--toss { background: #0064FF; color: #fff; }
+
+/* 소셜 영역 — 아이콘은 좌측 고정, 라벨은 버튼 정중앙, 폰트 볼드 */
+.auth-promo { text-align: center; font-size: 0.85rem; font-weight: 700; color: #111827; margin: 26px 0 12px; }
+.auth-social { display: grid; gap: 9px; }
+.auth-social .auth-btn { position: relative; font-weight: 700; }
+.auth-social .auth-btn > svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
+.auth-social .auth-btn > span { font-weight: 700; }
+
+/* 하단 링크 */
+.auth-links { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 20px; color: #9ca3af; font-size: 0.83rem; }
+.auth-links a, .auth-links button { color: #6b7280; background: none; border: none; cursor: pointer; font-size: inherit; padding: 0; }
+.auth-links .sep { color: #d1d5db; }
+
+/* 뒤로가기 */
+.auth-back { display: inline-flex; align-items: center; gap: 5px; background: none; border: none; color: #6b7280; cursor: pointer; font-size: 0.85rem; margin-bottom: 14px; padding: 0; }
+
+/* ===== 약관 동의 ===== */
+.auth-terms-head { margin: 4px 0 20px; }
+.auth-terms-head h2 { font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0 0 6px; line-height: 1.45; }
+.auth-terms-head p { color: #6b7280; font-size: 0.85rem; margin: 0; line-height: 1.5; }
+.auth-agree-all {
+  display: flex; align-items: center; gap: 10px; padding: 15px 0; border-bottom: 1px solid #eef0f2;
+  font-weight: 700; color: #111827; font-size: 0.85rem; cursor: pointer;
+}
+.auth-agree-item {
+  display: flex; align-items: center; gap: 10px; padding: 12px 0; color: #374151; font-size: 0.8rem;
+}
+.auth-agree-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
+.auth-agree-item .detail { color: #c0c6cf; background: none; border: none; cursor: pointer; padding: 4px; display: inline-flex; align-items: center; justify-content: center; }
+.auth-agree-item .detail:hover { color: #6b7280; }
+
+/* 체크박스 (직사각형 · 모서리 살짝 둥글게) */
+.auth-check { width: 22px; height: 22px; border-radius: 3px; border: 1.5px solid #d1d5db; display: inline-flex; align-items: center; justify-content: center; flex: none; color: #fff; transition: background .12s, border-color .12s; }
+.auth-check.on { background: #111827; border-color: #111827; }
+
+/* 약관 하단 고정 버튼 */
+.auth-terms-cta { margin-top: 26px; }
+
+/* ===== 하단 시트(본인인증 수단) ===== */
+.auth-sheet-overlay {
+  position: fixed; inset: 0; background: rgba(17,24,39,0.5); z-index: 1200;
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .22s;
+}
+.auth-sheet-overlay.on { opacity: 1; pointer-events: auto; }
+.auth-sheet {
+  width: 100%; max-width: 520px; background: #fff; border-radius: 16px 16px 0 0;
+  padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
+  transform: translateY(100%); transition: transform .28s cubic-bezier(0.22,1,0.36,1);
+}
+.auth-sheet-overlay.on .auth-sheet { transform: translateY(0); }
+.auth-sheet__grip { width: 40px; height: 4px; border-radius: 2px; background: #e5e7eb; margin: 0 auto 18px; }
+.auth-sheet__title { font-size: 0.98rem; font-weight: 800; color: #111827; text-align: center; margin: 0 0 16px; }
+.auth-sheet__btns { display: grid; gap: 10px; }
+.auth-sheet__note { text-align: center; color: #9ca3af; font-size: 0.76rem; margin: 14px 0 0; line-height: 1.5; }
+
+/* test 인증 입력 */
+.auth-test-box { margin-top: 6px; display: grid; gap: 8px; }
+.auth-test-box .hint { font-size: 0.78rem; color: #ef4444; text-align: center; margin: 0 0 4px; }
+
+.auth-error { color: #ef4444; font-size: 0.82rem; margin: 10px 2px 0; text-align: center; }

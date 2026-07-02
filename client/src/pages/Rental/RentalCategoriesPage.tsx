@@ -70,6 +70,14 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
     return new Set<number>([sel.id]);
   }, [by, selectedId, cats]);
 
+  // 브랜드 모드 카테고리 필터: 상위(부모) 선택 시 하위 카테고리 상품까지 포함
+  const catFilterIds = useMemo(() => {
+    if (catFilter === 'all') return null;
+    const sel = cats.find((c) => c.id === catFilter);
+    if (sel && !sel.parent_id) return new Set<number>([catFilter, ...childrenOf(catFilter).map((c) => c.id)]);
+    return new Set<number>([catFilter]);
+  }, [catFilter, cats]);
+
   const selName = useMemo(() => {
     if (!selectedId) return by === 'brand' ? '전체 브랜드 상품' : '전체 렌탈 상품';
     if (by === 'brand') return brands.find((b) => b.id === selectedId)?.name || '브랜드';
@@ -84,7 +92,7 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
         if (brandFilter !== 'all' && p.brand_id !== brandFilter) return false;
       } else {
         if (selectedId && p.brand_id !== selectedId) return false;
-        if (catFilter !== 'all' && p.category_id !== catFilter) return false;
+        if (catFilterIds && !(p.category_id && catFilterIds.has(p.category_id))) return false;
       }
       if (q && !`${p.name} ${p.rental_brands?.name || ''}`.toLowerCase().includes(q)) return false;
       return true;
@@ -94,7 +102,7 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
     else if (sort === 'price_high') v = [...v].sort((a, b) => Number(b.daily_price) - Number(a.daily_price));
     else v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
     return v;
-  }, [by, products, selCatIds, selectedId, brandFilter, catFilter, search, sort, sales]);
+  }, [by, products, selCatIds, catFilterIds, selectedId, brandFilter, search, sort, sales]);
 
   // 상단 가로 스크롤: 기획전 우선, 없으면 인기(판매순)
   const featured = useMemo(() => {

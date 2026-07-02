@@ -26,7 +26,7 @@ const RentalProductListPage: React.FC = () => {
 
   const [products, setProducts] = useState<RentalProduct[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
-  const [cats, setCats] = useState<{ id: number; name: string; brand_id: number | null }[]>([]);
+  const [cats, setCats] = useState<{ id: number; name: string; brand_id: number | null; parent_id: number | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [brandFilter, setBrandFilter] = useState<number | 'all'>('all');
   const [catFilter, setCatFilter] = useState<number | 'all'>(initialCat);
@@ -44,7 +44,7 @@ const RentalProductListPage: React.FC = () => {
       const [{ data: p }, { data: b }, { data: c }, salesMap] = await Promise.all([productApi.listActive(), brandApi.listActive(), rentalCategoryApi.listActive(), orderApi.salesCountByProduct()]);
       setProducts((p || []).filter((x) => x.is_active));
       setBrands((b || []) as any);
-      setCats(((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id })));
+      setCats(((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id, parent_id: x.parent_id ?? null })));
       setSales(salesMap);
       setLoading(false);
     })();
@@ -52,13 +52,20 @@ const RentalProductListPage: React.FC = () => {
 
   const catsForFilter = useMemo(() => brandFilter === 'all' ? cats : cats.filter((c) => c.brand_id === brandFilter), [cats, brandFilter]);
 
+  // 선택 카테고리가 상위(부모)면 하위 카테고리 상품까지 포함해 조회
+  const catMatchIds = useMemo(() => {
+    if (catFilter === 'all') return null;
+    const kids = cats.filter((c) => c.parent_id === catFilter).map((c) => c.id);
+    return new Set<number>([catFilter, ...kids]);
+  }, [catFilter, cats]);
+
   const view = useMemo(() => {
     const q = search.trim().toLowerCase();
     let v = products.filter((p) => {
       if (key === 'exclusive' && !p.is_exclusive) return false;
       if (key === 'event' && !p.is_event) return false;
       if (brandFilter !== 'all' && p.brand_id !== brandFilter) return false;
-      if (catFilter !== 'all' && p.category_id !== catFilter) return false;
+      if (catMatchIds && !(p.category_id && catMatchIds.has(p.category_id))) return false;
       if (q && !`${p.name} ${p.rental_brands?.name || ''}`.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -67,7 +74,7 @@ const RentalProductListPage: React.FC = () => {
     else if (sort === 'price_high') v = [...v].sort((a, b) => Number(b.daily_price) - Number(a.daily_price));
     else v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
     return v;
-  }, [products, brandFilter, catFilter, sort, key, sales, search]);
+  }, [products, brandFilter, catMatchIds, sort, key, sales, search]);
 
   // 베스트 라벨: 판매수 상위 3개(판매 1건 이상)
   const bestIds = useMemo(() => new Set(

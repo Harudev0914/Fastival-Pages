@@ -53,10 +53,7 @@ import DjApplyPage from './pages/Dj/DjApplyPage';
 import DjArtistsPage from './pages/Dj/DjArtistsPage';
 import DjCalendarPage from './pages/Dj/DjCalendarPage';
 import DjReviewsPage from './pages/Dj/DjReviewsPage';
-import LoginPage from './pages/Auth/LoginPage';
-import EmailLoginPage from './pages/Auth/EmailLoginPage';
-import SignupPage from './pages/Auth/SignupPage';
-import GeneralSignupPage from './pages/Auth/GeneralSignupPage';
+import AuthPage from './pages/Auth/AuthPage';
 import CustomerCenterPage from './pages/CustomerCenter/CustomerCenterPage';
 import TermsViewPage from './pages/Terms/TermsViewPage';
 import Placeholder from './pages/common/Placeholder';
@@ -254,10 +251,10 @@ function App() {
           <Route path="/dj/artists" element={<DjArtistsPage />} />
           <Route path="/dj/calendar" element={<DjCalendarPage />} />
           <Route path="/dj/reviews" element={<DjReviewsPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/login/email" element={<EmailLoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/signup/general" element={<GeneralSignupPage />} />
+          <Route path="/login" element={<AuthPage initialMode="login" />} />
+          <Route path="/login/email" element={<Navigate to="/login" replace />} />
+          <Route path="/signup" element={<AuthPage initialMode="signup" />} />
+          <Route path="/signup/general" element={<Navigate to="/signup" replace />} />
           <Route path="/cs" element={<CustomerCenterPage />} />
           <Route path="/mypage" element={<MyPage />} />
 

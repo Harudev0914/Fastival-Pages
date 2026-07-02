@@ -343,3 +343,11 @@ CREATE INDEX IF NOT EXISTS idx_rental_brands_active     ON public.rental_brands 
 CREATE INDEX IF NOT EXISTS idx_rental_categories_active ON public.rental_categories (is_active, display_order);
 CREATE INDEX IF NOT EXISTS idx_con_companies_active ON public.construction_companies (is_active, display_order);
 CREATE INDEX IF NOT EXISTS idx_con_works_status_sched ON public.construction_works (status, scheduled_start);
+
+-- ==============================================================
+-- 20260701000032_enable_rls_legacy_tables.sql
+-- ==============================================================
+-- 보안: 레거시 미사용 테이블 RLS 활성화(정책 없음=전면 차단, service_role 만 접근)
+ALTER TABLE public.admin_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_logs  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.popups      ENABLE ROW LEVEL SECURITY;

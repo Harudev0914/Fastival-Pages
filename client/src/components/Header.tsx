@@ -98,10 +98,7 @@ const Header: React.FC = () => {
               <button onClick={logout} className="user-nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>로그아웃</button>
             </>
           ) : (
-            <>
-              <Link to="/login" className="user-nav-link">로그인</Link>
-              <Link to="/signup" className="user-nav-link">회원가입</Link>
-            </>
+            <Link to="/login" className="user-nav-link">로그인</Link>
           )}
           <Link to="/cs" className="user-nav-link">고객센터</Link>
         </div>
@@ -149,27 +146,41 @@ const Header: React.FC = () => {
                 </div>
               );
             })}
-          </nav>
 
-          <div className="mm-foot">
-            <div className="mm-search" onClick={() => go('/search')}>
-              <Search size={18} color="#64748b" /> <span>통합검색</span>
+            {/* 계정 · 고객센터 (메뉴 항목과 동일한 스타일) */}
+            {loggedIn ? (
+              <>
+                <div className="mm-group">
+                  <button className="mm-top" onClick={() => go('/mypage')}>
+                    <span>마이페이지</span><ChevronRight size={20} color="#cbd5e1" />
+                  </button>
+                </div>
+                <div className="mm-group">
+                  <button className="mm-top" onClick={logout}>
+                    <span>로그아웃</span><ChevronRight size={20} color="#cbd5e1" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mm-group">
+                  <button className="mm-top" onClick={() => go('/login')}>
+                    <span>로그인</span><ChevronRight size={20} color="#cbd5e1" />
+                  </button>
+                </div>
+                <div className="mm-group">
+                  <button className="mm-top" onClick={() => go('/signup')}>
+                    <span>회원가입</span><ChevronRight size={20} color="#cbd5e1" />
+                  </button>
+                </div>
+              </>
+            )}
+            <div className="mm-group">
+              <button className="mm-top" onClick={() => go('/cs')}>
+                <span>고객센터</span><ChevronRight size={20} color="#cbd5e1" />
+              </button>
             </div>
-            <div className="mm-users">
-              {loggedIn ? (
-                <>
-                  <button onClick={() => go('/mypage')}>마이페이지</button>
-                  <button onClick={logout}>로그아웃</button>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => go('/login')}>로그인</button>
-                  <button onClick={() => go('/signup')}>회원가입</button>
-                </>
-              )}
-              <button onClick={() => go('/cs')}>고객센터</button>
-            </div>
-          </div>
+          </nav>
         </div>
       )}
 
@@ -241,17 +252,6 @@ const Header: React.FC = () => {
           font-family: "Pretendard", sans-serif;
         }
         .mm-sub-item.active { color: #2563eb; font-weight: 700; }
-        .mm-foot { padding: 20px; border-top: 1px solid #e2e8f0; }
-        .mm-search {
-          display: flex; align-items: center; gap: 8px; background: #f1f5f9; border-radius: 50px;
-          padding: 13px 18px; color: #64748b; font-size: 15px; margin-bottom: 16px; cursor: pointer;
-        }
-        .mm-users { display: flex; gap: 8px; }
-        .mm-users button {
-          flex: 1; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 13px 4px;
-          font-size: 14px; font-weight: 600; color: #111; cursor: pointer; font-family: "Pretendard", sans-serif;
-        }
-        .mm-users button:hover { border-color: #2563eb; color: #2563eb; }
 
         @media (max-width: 1024px) {
           .header-padding { padding-left: 4vw; padding-right: 4vw; }
