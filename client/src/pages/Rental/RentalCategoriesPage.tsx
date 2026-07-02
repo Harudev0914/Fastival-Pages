@@ -93,20 +93,26 @@ const RentalCategoriesPage: React.FC = () => {
           <ul className="rcat-side__list">
             {topCats.map((c) => {
               const kids = childrenOf(c.id);
+              const hasKids = kids.length > 0;
               const open = expanded === c.id;
               const active = selectedCat === c.id || kids.some((k) => k.id === selectedCat);
               return (
                 <li key={c.id}>
-                  <div className={`rcat-side__row ${active ? 'on' : ''}`}>
-                    <button className="rcat-side__name" onClick={() => pickCat(c.id)}>{c.name}</button>
-                    {kids.length > 0 && (
-                      <button className="rcat-side__chev" onClick={() => setExpanded(open ? null : c.id)} aria-label="펼치기">
+                  {/* 행 전체 클릭: 하위 있으면 드롭다운 토글, 없으면 바로 선택 */}
+                  <div className={`rcat-side__row ${active ? 'on' : ''}`} role="button" tabIndex={0}
+                    onClick={() => (hasKids ? setExpanded(open ? null : c.id) : pickCat(c.id))}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (hasKids) setExpanded(open ? null : c.id); else pickCat(c.id); } }}>
+                    <span className="rcat-side__name">{c.name}</span>
+                    {hasKids && (
+                      <span className="rcat-side__chev" aria-hidden>
                         <ChevronDown size={16} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
-                      </button>
+                      </span>
                     )}
                   </div>
-                  {kids.length > 0 && open && (
+                  {hasKids && open && (
                     <ul className="rcat-side__sub">
+                      {/* 전체(해당 카테고리 전체) + 어드민 등록 하위 카테고리 */}
+                      <li><button className={`rcat-side__subitem ${selectedCat === c.id ? 'on' : ''}`} onClick={() => pickCat(c.id)}>전체</button></li>
                       {kids.map((k) => (
                         <li key={k.id}><button className={`rcat-side__subitem ${selectedCat === k.id ? 'on' : ''}`} onClick={() => pickCat(k.id)}>{k.name}</button></li>
                       ))}
@@ -208,14 +214,16 @@ const RentalCategoriesPage: React.FC = () => {
         .rcat-side__item{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 4px;font-size:0.95rem;font-weight:700;color:#334155;cursor:pointer;border-radius:6px;}
         .rcat-side__item.on{color:#2563eb;}
         .rcat-side__list{list-style:none;margin:6px 0 0;padding:0;}
-        .rcat-side__row{display:flex;align-items:center;justify-content:space-between;}
-        .rcat-side__name{flex:1;text-align:left;background:none;border:none;padding:9px 4px;font-size:0.92rem;color:#475569;cursor:pointer;}
+        .rcat-side__row{display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-radius:6px;transition:background .15s;}
+        .rcat-side__row:hover{background:#f8fafc;}
+        .rcat-side__name{flex:1;text-align:left;padding:9px 4px;font-size:0.92rem;color:#475569;}
         .rcat-side__row.on .rcat-side__name{color:#2563eb;font-weight:700;}
-        .rcat-side__chev{background:none;border:none;color:#94a3b8;cursor:pointer;padding:6px;display:flex;}
-        .rcat-side__sub{list-style:none;margin:0 0 6px;padding:0 0 0 10px;border-left:1px solid #eef2f6;}
-        .rcat-side__subitem{display:block;width:100%;text-align:left;background:none;border:none;padding:7px 8px;font-size:0.88rem;color:#64748b;cursor:pointer;}
+        .rcat-side__chev{color:#94a3b8;padding:6px;display:flex;}
+        .rcat-side__sub{list-style:none;margin:0 0 6px;padding:0 0 0 10px;}
+        .rcat-side__subitem{display:block;width:100%;text-align:left;background:none;border:none;border-radius:0;padding:7px 8px;font-size:0.88rem;color:#64748b;cursor:pointer;}
+        .rcat-side__subitem:hover{color:#2563eb;}
         .rcat-side__subitem.on{color:#2563eb;font-weight:700;}
-        .rcat-side__list li{border-bottom:1px solid #f5f7fa;}
+        .rcat-side__list > li{border-bottom:1px solid #f5f7fa;}
 
         .rcat-main{min-width:0;}
         .rcat-hero{margin-bottom:30px;}
