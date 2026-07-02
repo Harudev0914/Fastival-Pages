@@ -4,6 +4,7 @@ import { ChevronDown, Search } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct } from '../../api/rentalApi';
 import MainVisualCarousel from '../../components/MainVisualCarousel';
 import RentalBrandDetailPage from './RentalBrandDetailPage';
+import NewBadge from '../../components/NewBadge';
 import Seo from '../../components/Seo';
 import './RentalPage.css';
 
@@ -161,8 +162,8 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
           {/* 상단 메인 비주얼 (렌탈 홈과 동일한 히어로 슬라이더) */}
           <div className="rcat-hero"><MainVisualCarousel section="rental" /></div>
 
-          {/* 인기/기획전 가로 스크롤 */}
-          {featured.length > 0 && (
+          {/* 인기/기획전 가로 스크롤 (카테고리 페이지에서는 숨김) */}
+          {by !== 'category' && featured.length > 0 && (
             <section className="rcat-feat">
               <div className="rcat-feat__head"><h2 className="rcat-feat__title">{featuredTitle}</h2></div>
               <div className="rcat-feat__row">
@@ -171,7 +172,8 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
                   return (
                     <article className="rcat-fcard" key={p.id} onClick={() => navigate(`/rental/product/${p.id}`)}>
                       <div className="rcat-fcard__media">
-                        {bd && <span className="rcat-fcard__badge" style={{ background: bd.c }}>{bd.t}</span>}
+                        <NewBadge createdAt={p.created_at} />
+                        {bd && <span className="rcat-fcard__badge" style={{ background: bd.c, left: 'auto', right: '8px' }}>{bd.t}</span>}
                         <img src={img(p)} alt={p.name} loading="lazy" />
                       </div>
                       <p className="rcat-fcard__brand">{p.rental_brands?.name || ''}</p>
@@ -235,7 +237,8 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
                 return (
                   <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
                     <div className="rv-prod__media" style={{ position: 'relative' }}>
-                      {bd && <span className="rcat-fcard__badge" style={{ background: bd.c }}>{bd.t}</span>}
+                      <NewBadge createdAt={p.created_at} />
+                      {bd && <span className="rcat-fcard__badge" style={{ background: bd.c, left: 'auto', right: '8px' }}>{bd.t}</span>}
                       <img src={img(p)} alt={p.name} loading="lazy" />
                     </div>
                     <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>

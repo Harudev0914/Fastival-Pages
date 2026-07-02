@@ -139,7 +139,12 @@ const RentalProductDetailPublic: React.FC = () => {
         {/* 정보 + 예약 폼 */}
         <div style={{ flex: '1 1 380px', minWidth: '300px' }}>
           <p style={{ color: TEAL, fontWeight: 700, margin: 0 }}>{product.rental_brands?.name || ''}</p>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1e293b', margin: '6px 0 14px' }}>{product.name}</h1>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', margin: '6px 0 2px' }}>{product.name}</h1>
+
+          {/* 제품 설명 — 제목 바로 아래 */}
+          {product.description && (
+            <div style={{ color: '#475569', lineHeight: 1.5, fontSize: '0.9rem', margin: '0 0 16px' }} dangerouslySetInnerHTML={{ __html: product.description }} />
+          )}
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
             <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1e293b' }}>{won(product.daily_price)}</span>
@@ -210,14 +215,6 @@ const RentalProductDetailPublic: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* 상세 설명 */}
-      {product.description && (
-        <div style={{ marginTop: '48px', borderTop: '1px solid #e2e8f0', paddingTop: '32px' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e293b', marginBottom: '16px' }}>상품 상세</h3>
-          <div style={{ color: '#334155', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: product.description }} />
-        </div>
-      )}
     </div>
   );
 };

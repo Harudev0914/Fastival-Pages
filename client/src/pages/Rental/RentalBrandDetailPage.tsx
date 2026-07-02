@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronDown, Package, Check } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct, type RentalBrand } from '../../api/rentalApi';
+import NewBadge from '../../components/NewBadge';
 import Seo from '../../components/Seo';
 import './RentalPage.css';
 
@@ -148,7 +149,7 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
           <div className="rv-grid">
             {view.map((p) => (
               <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
-                <div className="rv-prod__media"><img src={img(p)} alt={p.name} loading="lazy" /></div>
+                <div className="rv-prod__media" style={{ position: 'relative' }}><NewBadge createdAt={p.created_at} /><img src={img(p)} alt={p.name} loading="lazy" /></div>
                 <p className="rv-prod__brand">{brand.name}</p>
                 <p className="rv-prod__name">{p.name}</p>
                 <div className="rv-prod__price"><span className="rv-prod__monthly">일 {won(p.daily_price)}</span></div>

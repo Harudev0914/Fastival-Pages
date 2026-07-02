@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct } from '../../api/rentalApi';
+import NewBadge from '../../components/NewBadge';
 import Seo from '../../components/Seo';
 import './RentalPage.css';
 
@@ -107,7 +108,8 @@ const RentalProductListPage: React.FC = () => {
           {view.map((p) => (
             <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
               <div className="rv-prod__media" style={{ position: 'relative' }}>
-                {key === 'best' && bestIds.has(p.id) && <span className="rv-best-badge">BEST</span>}
+                <NewBadge createdAt={p.created_at} />
+                {key === 'best' && bestIds.has(p.id) && <span className="rv-best-badge" style={{ left: 'auto', right: '8px' }}>BEST</span>}
                 <img src={p.thumbnail_url || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&q=80&auto=format&fit=crop'} alt={p.name} loading="lazy" />
               </div>
               <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, MoreHorizontal, ImageOff } from 'lucide-react';
 import MainVisualCarousel from '../../components/MainVisualCarousel';
+import NewBadge from '../../components/NewBadge';
 import Seo from '../../components/Seo';
 import { productApi, rentalCategoryApi, type RentalProduct } from '../../api/rentalApi';
 import './RentalPage.css';
@@ -66,7 +67,8 @@ const RentalPage: React.FC = () => {
           <div className="rv-grid">
             {products.map((p) => (
               <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
-                <div className="rv-prod__media">
+                <div className="rv-prod__media" style={{ position: 'relative' }}>
+                  <NewBadge createdAt={p.created_at} />
                   {p.thumbnail_url || (p.images && p.images[0])
                     ? <img src={p.thumbnail_url || p.images[0]} alt={p.name} loading="lazy" />
                     : <div className="rv-prod__noimg"><ImageOff size={24} color="#cbd5e1" /></div>}
