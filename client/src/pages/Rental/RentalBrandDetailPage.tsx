@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Package, Check, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Package, X } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, orderApi, brandFavoriteApi, type RentalProduct, type RentalBrand, type BrandFavoriter } from '../../api/rentalApi';
 import { supabase } from '../../supabaseClient';
 import NewBadge from '../../components/NewBadge';
 import Seo from '../../components/Seo';
+import { shareOrCopy } from '../../utils/share';
 import './RentalPage.css';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
@@ -34,9 +35,7 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
   const [loading, setLoading] = useState(true);
 
   const [tab, setTab] = useState<number | 'all'>('all');
-  const [catFilter, setCatFilter] = useState<number | 'all'>('all');
   const [priceKey, setPriceKey] = useState('all');
-  const [excludeSold, setExcludeSold] = useState(false);
   const [sort, setSort] = useState('recommend');
   const [favs, setFavs] = useState<BrandFavoriter[]>([]);   // 관심 저장한 회원(실DB)
   const [myId, setMyId] = useState<string | null>(null);    // 현재 로그인 회원 id
@@ -76,10 +75,8 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
     const pr = PRICE_RANGES.find((r) => r.k === priceKey) || PRICE_RANGES[0];
     let v = products.filter((p) => {
       if (tab !== 'all' && p.category_id !== tab) return false;
-      if (catFilter !== 'all' && p.category_id !== catFilter) return false;
       const price = Number(p.daily_price) || 0;
       if (price < pr.min || price >= pr.max) return false;
-      if (excludeSold && !(p.stock > 0)) return false;
       return true;
     });
     if (sort === 'recommend') v = [...v].sort((a, b) => (sales[b.id] || 0) - (sales[a.id] || 0) || (b.created_at || '').localeCompare(a.created_at || ''));
@@ -87,7 +84,7 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
     else if (sort === 'price_high') v = [...v].sort((a, b) => Number(b.daily_price) - Number(a.daily_price));
     else v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
     return v;
-  }, [products, tab, catFilter, priceKey, excludeSold, sort, sales]);
+  }, [products, tab, priceKey, sort, sales]);
 
   const img = (p: RentalProduct) => p.thumbnail_url || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&q=80&auto=format&fit=crop';
 
@@ -110,10 +107,8 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
     if (data === null) { if (confirm('로그인 후 이용할 수 있습니다. 로그인하시겠어요?')) navigate('/login'); return; }
     await loadFavs();
   };
-  const share = async () => {
-    const url = window.location.href;
-    try { if (navigator.share) await navigator.share({ title: brand?.name || '브랜드', url }); else { await navigator.clipboard.writeText(url); alert('링크가 복사되었습니다.'); } } catch { /* noop */ }
-  };
+  // PC: 클립보드 복사 / 모바일·태블릿: 시스템 공유 시트
+  const share = () => shareOrCopy({ title: brand?.name || '브랜드' });
 
   if (loading) return <div className={outer}><div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>불러오는 중...</div></div>;
   if (!brand) return <div className={outer}><div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>브랜드를 찾을 수 없습니다.</div></div>;
@@ -129,7 +124,6 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
           <div className="bd-info">
             <h1 className="bd-name">{brand.name}</h1>
             {brand.description && <p className="bd-sub">{brand.description}</p>}
-            <p className="bd-count">상품 <b>{products.length}</b>개</p>
             {/* 관심 저장한 사람 (겹친 아바타 + 카운트) → 클릭 시 모달 */}
             <button type="button" className="bd-fav" onClick={() => setFavOpen(true)}>
               <span className="bd-fav__avatars">
@@ -159,9 +153,11 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
         <div className="bd-filters">
           <div className="bd-chips">
             <div className="rcat-drop">
-              <select value={catFilter} onChange={(e) => setCatFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
-                <option value="all">카테고리</option>
-                {brandCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="recommend">인기순</option>
+                <option value="recent">최신순</option>
+                <option value="price_low">가격 낮은순</option>
+                <option value="price_high">가격 높은순</option>
               </select>
               <ChevronDown size={15} className="rcat-drop__chev" />
             </div>
@@ -171,19 +167,8 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
               </select>
               <ChevronDown size={15} className="rcat-drop__chev" />
             </div>
-            <button className={`bd-check ${excludeSold ? 'on' : ''}`} onClick={() => setExcludeSold((v) => !v)}>
-              <span className="bd-check__box">{excludeSold && <Check size={12} strokeWidth={3} />}</span> 품절제외
-            </button>
           </div>
-          <div className="rcat-drop">
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="recommend">인기순</option>
-              <option value="recent">최신순</option>
-              <option value="price_low">가격 낮은순</option>
-              <option value="price_high">가격 높은순</option>
-            </select>
-            <ChevronDown size={15} className="rcat-drop__chev" />
-          </div>
+          <p className="bd-count">상품 <b>{view.length}</b>개</p>
         </div>
 
         {/* 상품 그리드 */}
@@ -233,7 +218,7 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
         .bd-logo img{width:100%;height:100%;object-fit:contain;}
         .bd-name{margin:0;font-size:1.3rem;font-weight:800;color:#1e293b;}
         .bd-sub{margin:4px 0 0;color:#94a3b8;font-size:0.8rem;}
-        .bd-count{margin:8px 0 0;font-size:0.86rem;color:#64748b;}.bd-count b{color:#1e293b;}
+        .bd-count{margin:0;font-size:0.9rem;color:#64748b;font-weight:600;white-space:nowrap;}.bd-count b{color:#1e293b;}
         .bd-fav{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:none;border:none;padding:3px 0;cursor:pointer;font-family:inherit;}
         .bd-fav__avatars{display:flex;}
         .bd-fav__ava{width:22px;height:22px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.66rem;font-weight:800;margin-left:-8px;flex-shrink:0;}
@@ -241,7 +226,7 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
         .bd-fav__label{font-size:0.8rem;color:#1e293b;font-weight:700;}.bd-fav__label b{font-weight:800;}
         .bd-fav__chev{color:#94a3b8;width:14px;height:14px;}
         .bd-actions{display:flex;gap:10px;margin-top:14px;}
-        .bd-btn{flex:1;padding:11px 24px;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;}
+        .bd-btn{flex:1;padding:6px 20px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;}
         .bd-btn--save{background:#1e293b;color:#fff;border:1px solid #1e293b;}
         .bd-btn--save.on{background:#2563eb;border-color:#2563eb;}
         .bd-btn--share{background:#fff;color:#334155;border:1px solid #cbd5e1;}
@@ -251,10 +236,6 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
         .bd-tab.on{color:#1e293b;border-bottom-color:#1e293b;}
         .bd-filters{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px;}
         .bd-chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-        .bd-check{display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:0.88rem;color:#64748b;font-family:inherit;font-weight:600;}
-        .bd-check__box{width:18px;height:18px;border-radius:50%;border:1.5px solid #cbd5e1;display:flex;align-items:center;justify-content:center;color:#fff;}
-        .bd-check.on .bd-check__box{background:#2563eb;border-color:#2563eb;}
-        .bd-check.on{color:#1e293b;}
         /* 관심 저장한 사람 모달 */
         .bd-modal__dim{position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:bdFade .18s ease;}
         .bd-modal{background:#fff;width:100%;max-width:380px;max-height:70vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;animation:bdPop .2s ease;}
@@ -273,7 +254,7 @@ const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> 
           .bd-head{gap:16px;padding-bottom:18px;}
           .bd-logo{width:88px;height:88px;}
           .bd-name{font-size:1.15rem;}
-          .bd-btn{padding:10px 16px;font-size:0.85rem;}
+          .bd-btn{padding:6px 14px;font-size:0.8rem;}
         }
       `}</style>
     </div>

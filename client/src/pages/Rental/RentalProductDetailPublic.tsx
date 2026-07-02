@@ -4,6 +4,7 @@ import { ShieldCheck, Truck, ChevronRight, Share2, Bookmark } from 'lucide-react
 import { productApi, orderApi, type RentalProduct } from '../../api/rentalApi';
 import { mainVisualApi, type MainVisual } from '../../api/mainVisualApi';
 import { requestTossPayment, genOrderId } from '../../lib/toss';
+import { shareOrCopy } from '../../utils/share';
 import './RentalPage.css';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
@@ -215,13 +216,8 @@ const RentalProductDetailPublic: React.FC = () => {
     { key: 'recommend' as const, label: '추천', show: recommends.length > 0 },
   ]).filter((t) => t.show);
 
-  const shareProduct = async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) await navigator.share({ title: product.name, url });
-      else { await navigator.clipboard.writeText(url); alert('링크가 복사되었습니다.'); }
-    } catch { /* 공유 취소 등 무시 */ }
-  };
+  // PC: 클립보드 복사 / 모바일·태블릿: 시스템 공유 시트
+  const shareProduct = () => shareOrCopy({ title: product.name });
 
   return (
     <div className="rental-page">
