@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ShieldCheck, Truck, Info, ChevronRight } from 'lucide-react';
+import { ShieldCheck, Truck, ChevronRight, Share2, Bookmark } from 'lucide-react';
 import { productApi, orderApi, type RentalProduct } from '../../api/rentalApi';
 import { mainVisualApi, type MainVisual } from '../../api/mainVisualApi';
 import { requestTossPayment, genOrderId } from '../../lib/toss';
@@ -12,6 +12,8 @@ const SHOW_BOOKING = false;
 
 const label: React.CSSProperties = { display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' };
 const input: React.CSSProperties = { width: '100%', padding: '11px 12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.92rem', boxSizing: 'border-box' };
+// 아이콘 액션 버튼(북마크·공유)
+const iconBtn = (active: boolean): React.CSSProperties => ({ width: '58px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', padding: '9px 0', border: `1px solid ${active ? TEAL : '#e2e8f0'}`, borderRadius: '12px', background: active ? TEAL : '#fff', color: active ? '#fff' : '#475569', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 });
 
 const phoneOk = (v: string) => /^01[016789]-?\d{3,4}-?\d{4}$/.test(v.replace(/\s/g, ''));
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -35,6 +37,7 @@ const RentalProductDetailPublic: React.FC = () => {
   const [email, setEmail] = useState('');
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -129,6 +132,14 @@ const RentalProductDetailPublic: React.FC = () => {
     }
   };
 
+  const shareProduct = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: product.name, url });
+      else { await navigator.clipboard.writeText(url); alert('링크가 복사되었습니다.'); }
+    } catch { /* 공유 취소 등 무시 */ }
+  };
+
   return (
     <div className="rental-page">
       <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginBottom: '16px', fontSize: '0.9rem' }}>← 뒤로</button>
@@ -196,14 +207,13 @@ const RentalProductDetailPublic: React.FC = () => {
             보증금 {won(product.deposit)}{Number(product.delivery_fee) > 0 ? ` · 배송/설치비 ${won(product.delivery_fee)}` : ''} · 재고 {product.stock}개
           </div>
 
-          {/* 정보 안내 행 (정품보증 · 배송 · 상품정보) */}
-          <div style={{ border: '1px solid #eef2f6', borderRadius: '12px', overflow: 'hidden', marginBottom: '18px' }}>
+          {/* 정보 안내 행 (정품보증 · 배송) — 정품보증만 좌우 밝은 회색→가운데 흰색 그라데이션 카드, 배송은 흰색 */}
+          <div style={{ border: '1px solid #eef2f6', borderRadius: '12px', overflow: 'hidden', marginBottom: '18px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' }}>
             {[
-              { icon: <ShieldCheck size={16} color="#2563eb" />, text: <><b style={{ color: '#1e293b' }}>100% 정품 보증</b> · 전문가 책임 검수 · 가품 3배 보상</> },
-              { icon: <Truck size={16} color="#64748b" />, text: <>일반배송 {Number(product.delivery_fee) > 0 ? won(product.delivery_fee) : '무료'} · 5~7일 내 도착 예정</> },
-              { icon: <Info size={16} color="#64748b" />, text: <>모델 {product.name} · 재고 {product.stock}개</> },
+              { icon: <ShieldCheck size={16} color="#2563eb" />, text: <><b style={{ color: '#1e293b' }}>100% 정품 보증</b> · 전문가 책임 검수 · 가품 3배 보상</>, bg: 'linear-gradient(90deg, #eef2f6 0%, #ffffff 50%, #eef2f6 100%)' },
+              { icon: <Truck size={16} color="#64748b" />, text: <>일반배송 {Number(product.delivery_fee) > 0 ? won(product.delivery_fee) : '무료'} · 5~7일 내 도착 예정</>, bg: '#fff' },
             ].map((r, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px', borderTop: i ? '1px solid #f1f5f9' : 'none', fontSize: '0.86rem', color: '#475569' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '13px 16px', borderTop: i ? '1px solid #f1f5f9' : 'none', fontSize: '0.86rem', color: '#475569', background: r.bg }}>
                 {r.icon}
                 <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.text}</span>
                 <ChevronRight size={16} color="#cbd5e1" />
@@ -227,6 +237,23 @@ const RentalProductDetailPublic: React.FC = () => {
               <span style={{ position: 'absolute', top: '8px', right: '10px', fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700 }}>AD</span>
             </div>
           )}
+
+          {/* 액션 바 — 북마크 · 공유 아이콘 + 구매하기(파란색) */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            <button onClick={() => setBookmarked((v) => !v)} title="북마크" style={iconBtn(bookmarked)}>
+              <Bookmark size={20} fill={bookmarked ? '#fff' : 'none'} /> 북마크
+            </button>
+            <button onClick={shareProduct} title="공유" style={iconBtn(false)}>
+              <Share2 size={20} /> 공유
+            </button>
+            <button
+              onClick={() => { if (SHOW_BOOKING) submit(); else alert('렌탈 신청은 준비 중입니다. 고객센터로 문의해 주세요.'); }}
+              disabled={submitting}
+              style={{ flex: 1, background: TEAL, color: '#fff', border: 'none', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 800, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}
+            >
+              구매하기
+            </button>
+          </div>
 
           {SHOW_BOOKING && (<>
           {/* 예약 옵션 */}
