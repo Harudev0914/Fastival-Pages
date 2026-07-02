@@ -69,7 +69,7 @@
 .rv-prod__brand { margin: 12px 0 4px; font-size: 0.8rem; color: #94a3b8; }
 .rv-prod__name {
   margin: 0 0 8px; font-size: 0.92rem; color: #1e293b; line-height: 1.4;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rv-prod__price { display: flex; align-items: baseline; gap: 6px; }
 .rv-prod__disc { color: #ef4444; font-weight: 800; font-size: 1rem; }

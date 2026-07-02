@@ -30,7 +30,7 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
   const [sort, setSort] = useState('recommend');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [sheet, setSheet] = useState(false);                              // 모바일 상세검색 바텀시트
-  const [sheetTab, setSheetTab] = useState<'price' | 'brand' | 'cat'>('price'); // 바텀시트 1Depth
+  const [openGrp, setOpenGrp] = useState({ price: true, brand: true, cat: true }); // 바텀시트 아코디언(드롭다운) 열림 상태
 
   useEffect(() => {
     (async () => {
@@ -121,6 +121,14 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
   // 활성화된 필터 여부 (버튼 강조 · 초기화 노출)
   const filterActive = sort !== 'recommend' || !isCatAll || !isBrandAll;
   const resetFilters = () => { setSort('recommend'); setBrandFilter('all'); setCatFilter('all'); pickSel(null, false); };
+
+  // 바텀시트 아코디언(드롭다운) — 그룹 열고닫기 + 헤더에 현재 선택값 요약
+  const toggleGrp = (k: 'price' | 'brand' | 'cat') => setOpenGrp((g) => ({ ...g, [k]: !g[k] }));
+  const curSort = sortOpts.find((o) => o.v === sort)?.t || '추천순';
+  const curBrandId = by === 'brand' ? selectedId : (brandFilter === 'all' ? null : brandFilter);
+  const curCatId = by === 'category' ? selectedId : (catFilter === 'all' ? null : catFilter);
+  const curBrandName = curBrandId ? (brands.find((b) => b.id === curBrandId)?.name || '전체 제조사') : '전체 제조사';
+  const curCatName = curCatId ? (cats.find((c) => c.id === curCatId)?.name || '전체 카테고리') : '전체 카테고리';
 
   return (
     <div className="rental-page">
@@ -267,6 +275,8 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
             <div className="rv-grid">
               {view.map((p) => {
                 const bd = badge(p);
+                const lp = Number(p.list_price) || 0;
+                const disc = lp > Number(p.daily_price) ? Math.round(((lp - Number(p.daily_price)) / lp) * 100) : 0;
                 return (
                   <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
                     <div className="rv-prod__media" style={{ position: 'relative' }}>
@@ -274,9 +284,12 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
                       {bd && <span className="rcat-fcard__badge" style={{ background: bd.c, left: 'auto', right: '8px' }}>{bd.t}</span>}
                       <img src={img(p)} alt={p.name} loading="lazy" />
                     </div>
-                    <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>
+                    <p className="rv-prod__brand">{p.rental_brands?.name || p.rental_categories?.name || ''}</p>
                     <p className="rv-prod__name">{p.name}</p>
-                    <div className="rv-prod__price"><span className="rv-prod__monthly">일 {won(p.daily_price)}</span></div>
+                    <div className="rv-prod__price">
+                      {disc > 0 && <span className="rv-prod__disc">{disc}%</span>}
+                      <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
+                    </div>
                   </article>
                 );
               })}
@@ -293,42 +306,64 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
             <div className="rcat-sheet__bar" />
             <div className="rcat-sheet__title">상세검색</div>
             <div className="rcat-sheet__body">
-              {/* 1Depth — 필터 그룹 */}
-              <div className="rcat-sheet__tabs">
-                <button type="button" className={`rcat-sheet__tab ${sheetTab === 'price' ? 'on' : ''}`} onClick={() => setSheetTab('price')}>가격대</button>
-                <button type="button" className={`rcat-sheet__tab ${sheetTab === 'brand' ? 'on' : ''}`} onClick={() => setSheetTab('brand')}>제조사</button>
-                <button type="button" className={`rcat-sheet__tab ${sheetTab === 'cat' ? 'on' : ''}`} onClick={() => setSheetTab('cat')}>카테고리</button>
+              {/* 가격대(정렬) — 드롭다운 */}
+              <div className="rcat-acc">
+                <button type="button" className="rcat-acc__head" onClick={() => toggleGrp('price')}>
+                  <span className="rcat-acc__label">가격대</span>
+                  <span className="rcat-acc__val">{curSort}</span>
+                  <ChevronDown size={18} className="rcat-acc__chev" style={{ transform: openGrp.price ? 'rotate(180deg)' : 'none' }} />
+                </button>
+                {openGrp.price && (
+                  <div className="rcat-acc__panel">
+                    {sortOpts.map((o) => (
+                      <button key={o.v} type="button" className={`rcat-sheet__opt ${sort === o.v ? 'on' : ''}`} onClick={() => setSort(o.v)}>
+                        <span>{o.t}</span>{sort === o.v && <Check size={17} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* 2Depth — 선택된 그룹의 내역 */}
-              <div className="rcat-sheet__panel">
-                {sheetTab === 'price' && sortOpts.map((o) => (
-                  <button key={o.v} type="button" className={`rcat-sheet__opt ${sort === o.v ? 'on' : ''}`} onClick={() => setSort(o.v)}>
-                    <span>{o.t}</span>{sort === o.v && <Check size={17} />}
-                  </button>
-                ))}
-
-                {sheetTab === 'brand' && (<>
-                  <button type="button" className={`rcat-sheet__opt ${isBrandAll ? 'on' : ''}`} onClick={() => pickBrand(null)}>
-                    <span>전체 제조사</span>{isBrandAll && <Check size={17} />}
-                  </button>
-                  {brands.map((b) => (
-                    <button key={b.id} type="button" className={`rcat-sheet__opt ${isBrandChosen(b.id) ? 'on' : ''}`} onClick={() => pickBrand(b.id)}>
-                      <span>{b.name}</span>{isBrandChosen(b.id) && <Check size={17} />}
+              {/* 제조사 — 드롭다운 */}
+              <div className="rcat-acc">
+                <button type="button" className="rcat-acc__head" onClick={() => toggleGrp('brand')}>
+                  <span className="rcat-acc__label">제조사</span>
+                  <span className="rcat-acc__val">{curBrandName}</span>
+                  <ChevronDown size={18} className="rcat-acc__chev" style={{ transform: openGrp.brand ? 'rotate(180deg)' : 'none' }} />
+                </button>
+                {openGrp.brand && (
+                  <div className="rcat-acc__panel">
+                    <button type="button" className={`rcat-sheet__opt ${isBrandAll ? 'on' : ''}`} onClick={() => pickBrand(null)}>
+                      <span>전체 제조사</span>{isBrandAll && <Check size={17} />}
                     </button>
-                  ))}
-                </>)}
+                    {brands.map((b) => (
+                      <button key={b.id} type="button" className={`rcat-sheet__opt ${isBrandChosen(b.id) ? 'on' : ''}`} onClick={() => pickBrand(b.id)}>
+                        <span>{b.name}</span>{isBrandChosen(b.id) && <Check size={17} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                {sheetTab === 'cat' && (<>
-                  <button type="button" className={`rcat-sheet__opt ${isCatAll ? 'on' : ''}`} onClick={() => pickCat(null)}>
-                    <span>전체 카테고리</span>{isCatAll && <Check size={17} />}
-                  </button>
-                  {catSheetList.map((c) => (
-                    <button key={c.id} type="button" className={`rcat-sheet__opt ${c.child ? 'child' : ''} ${isCatChosen(c.id) ? 'on' : ''}`} onClick={() => pickCat(c.id)}>
-                      <span>{c.name}</span>{isCatChosen(c.id) && <Check size={17} />}
+              {/* 카테고리 — 드롭다운 */}
+              <div className="rcat-acc">
+                <button type="button" className="rcat-acc__head" onClick={() => toggleGrp('cat')}>
+                  <span className="rcat-acc__label">카테고리</span>
+                  <span className="rcat-acc__val">{curCatName}</span>
+                  <ChevronDown size={18} className="rcat-acc__chev" style={{ transform: openGrp.cat ? 'rotate(180deg)' : 'none' }} />
+                </button>
+                {openGrp.cat && (
+                  <div className="rcat-acc__panel">
+                    <button type="button" className={`rcat-sheet__opt ${isCatAll ? 'on' : ''}`} onClick={() => pickCat(null)}>
+                      <span>전체 카테고리</span>{isCatAll && <Check size={17} />}
                     </button>
-                  ))}
-                </>)}
+                    {catSheetList.map((c) => (
+                      <button key={c.id} type="button" className={`rcat-sheet__opt ${c.child ? 'child' : ''} ${isCatChosen(c.id) ? 'on' : ''}`} onClick={() => pickCat(c.id)}>
+                        <span>{c.name}</span>{isCatChosen(c.id) && <Check size={17} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -343,7 +378,7 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
 
       <style>{`
         .rcat-wrap{display:grid;grid-template-columns:210px 1fr;gap:30px;align-items:start;}
-        .rcat-side{position:sticky;top:110px;max-height:calc(100vh - 130px);overflow-y:auto;scrollbar-width:none;}
+        .rcat-side{position:sticky;top:124px;max-height:calc(100vh - 144px);overflow-y:auto;scrollbar-width:none;}
         .rcat-side::-webkit-scrollbar{display:none;}
         .rcat-side__title{font-size:1.15rem;font-weight:800;color:#1e293b;margin:0 0 14px;padding-bottom:12px;border-bottom:2px solid #1e293b;}
         .rcat-side__item{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 4px;font-size:0.95rem;font-weight:700;color:#334155;cursor:pointer;border-radius:6px;}
@@ -399,14 +434,15 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
         .rcat-sheet{display:flex;flex-direction:column;background:#fff;width:100%;border-radius:18px 18px 0 0;padding:10px 0 0;max-height:80vh;animation:rcatUp .25s ease;}
         .rcat-sheet__bar{width:40px;height:4px;border-radius:999px;background:#e2e8f0;margin:6px auto 12px;flex:none;}
         .rcat-sheet__title{font-size:1.02rem;font-weight:800;color:#1e293b;margin:0 0 12px;padding:0 16px;flex:none;}
-        .rcat-sheet__body{display:flex;min-height:0;flex:1;border-top:1px solid #eef2f6;}
-        /* 1Depth 좌측 그룹 */
-        .rcat-sheet__tabs{flex:none;width:118px;display:flex;flex-direction:column;background:#f8fafc;border-right:1px solid #eef2f6;overflow-y:auto;}
-        .rcat-sheet__tab{text-align:left;background:none;border:none;padding:15px 14px;font-size:0.92rem;font-weight:700;color:#64748b;cursor:pointer;font-family:inherit;border-left:3px solid transparent;}
-        .rcat-sheet__tab.on{background:#fff;color:#1e293b;border-left-color:#2563eb;}
-        /* 2Depth 우측 내역 */
-        .rcat-sheet__panel{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:12px 16px;}
-        .rcat-sheet__opt{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:none;border:none;border-radius:10px;padding:12px 12px;font-size:0.92rem;font-weight:600;color:#334155;cursor:pointer;font-family:inherit;}
+        .rcat-sheet__body{min-height:0;flex:1;overflow-y:auto;border-top:1px solid #eef2f6;}
+        /* 아코디언(드롭다운) 그룹 — 세로로 쭉 나열 */
+        .rcat-acc{border-bottom:1px solid #f1f5f9;}
+        .rcat-acc__head{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;padding:15px 16px;font-family:inherit;cursor:pointer;}
+        .rcat-acc__label{font-size:0.95rem;font-weight:800;color:#1e293b;}
+        .rcat-acc__val{margin-left:auto;font-size:0.86rem;font-weight:600;color:#2563eb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
+        .rcat-acc__chev{color:#94a3b8;flex:none;transition:transform .2s;}
+        .rcat-acc__panel{display:flex;flex-direction:column;gap:4px;padding:0 16px 12px;}
+        .rcat-sheet__opt{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:none;border:none;border-radius:10px;padding:11px 12px;font-size:0.92rem;font-weight:600;color:#334155;cursor:pointer;font-family:inherit;}
         .rcat-sheet__opt.on{background:#eff6ff;color:#2563eb;font-weight:800;}
         .rcat-sheet__opt.child{padding-left:24px;font-size:0.88rem;color:#64748b;}
         .rcat-sheet__opt.child.on{color:#2563eb;}
