@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronDown, Search } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct } from '../../api/rentalApi';
 import MainVisualCarousel from '../../components/MainVisualCarousel';
+import RentalBrandDetailPage from './RentalBrandDetailPage';
 import Seo from '../../components/Seo';
 import './RentalPage.css';
 
@@ -112,9 +113,9 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
             {by === 'brand'
               ? brands.map((b) => (
                 <li key={b.id}>
-                  <div className="rcat-side__row" role="button" tabIndex={0}
-                    onClick={() => navigate(`/rental/brand/${b.id}`)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/rental/brand/${b.id}`); } }}>
+                  <div className={`rcat-side__row ${selectedId === b.id ? 'on' : ''}`} role="button" tabIndex={0}
+                    onClick={() => pickSel(b.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickSel(b.id); } }}>
                     <span className="rcat-side__name">{b.name}</span>
                   </div>
                 </li>
@@ -152,7 +153,10 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
           </ul>
         </aside>
 
-        {/* 메인 */}
+        {/* 메인 — 브랜드 선택 시 해당 브랜드 스토어로 교체(사이드바 유지) */}
+        {by === 'brand' && selectedId ? (
+          <main className="rcat-main"><RentalBrandDetailPage brandId={selectedId} embedded /></main>
+        ) : (
         <main className="rcat-main">
           {/* 상단 메인 비주얼 (렌탈 홈과 동일한 히어로 슬라이더) */}
           <div className="rcat-hero"><MainVisualCarousel section="rental" /></div>
@@ -243,6 +247,7 @@ const RentalCategoriesPage: React.FC<{ by?: 'category' | 'brand' }> = ({ by = 'c
             </div>
           )}
         </main>
+        )}
       </div>
 
       <style>{`

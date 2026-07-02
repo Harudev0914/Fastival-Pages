@@ -14,10 +14,12 @@ const PRICE_RANGES = [
   { k: 'd', label: '30만원 이상', min: 300000, max: Infinity },
 ];
 
-const RentalBrandDetailPage: React.FC = () => {
+// brandId prop 제공 시 임베드 모드(사이드바 유지한 채 메인만 교체). 미제공 시 URL(:id) 사용
+const RentalBrandDetailPage: React.FC<{ brandId?: number; embedded?: boolean }> = ({ brandId: brandIdProp, embedded }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const brandId = Number(id);
+  const brandId = brandIdProp ?? Number(id);
+  const outer = embedded ? '' : 'rental-page';
 
   const [brand, setBrand] = useState<RentalBrand | null>(null);
   const [products, setProducts] = useState<RentalProduct[]>([]);
@@ -78,11 +80,11 @@ const RentalBrandDetailPage: React.FC = () => {
     try { if (navigator.share) await navigator.share({ title: brand?.name || '브랜드', url }); else { await navigator.clipboard.writeText(url); alert('링크가 복사되었습니다.'); } } catch { /* noop */ }
   };
 
-  if (loading) return <div className="rental-page"><div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>불러오는 중...</div></div>;
-  if (!brand) return <div className="rental-page"><div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>브랜드를 찾을 수 없습니다.</div></div>;
+  if (loading) return <div className={outer}><div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>불러오는 중...</div></div>;
+  if (!brand) return <div className={outer}><div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>브랜드를 찾을 수 없습니다.</div></div>;
 
   return (
-    <div className="rental-page">
+    <div className={outer}>
       <Seo title={`${brand.name} 렌탈`} description={`${brand.name} 렌탈 상품 — 클립스에서 ${brand.name} 음향·장비를 대여하세요.`} keywords={`${brand.name},렌탈,${brand.name} 렌탈`} />
 
       <div className="bd">
