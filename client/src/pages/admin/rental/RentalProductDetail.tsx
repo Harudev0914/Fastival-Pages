@@ -25,6 +25,7 @@ const RentalProductDetail: React.FC = () => {
   const [categoryId, setCategoryId] = useState<number | ''>('');    // 2차(없으면 1차로 저장)
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [detailHtml, setDetailHtml] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [dailyPrice, setDailyPrice] = useState('0');
   const [listPrice, setListPrice] = useState('');
@@ -45,7 +46,7 @@ const RentalProductDetail: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [{ data: b }, { data: c }] = [await brandApi.listActive(), await rentalCategoryApi.list()];
+      const [{ data: b }, { data: c }] = await Promise.all([brandApi.listActive(), rentalCategoryApi.list()]);
       const blist = (b || []) as { id: number; name: string }[];
       setBrands(blist);
       const catList = ((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id, parent_id: x.parent_id ?? null }));
@@ -59,6 +60,7 @@ const RentalProductDetail: React.FC = () => {
           if (cat?.parent_id) { setParentCatId(cat.parent_id); setCategoryId(cat.id); }
           else { setParentCatId(data.category_id ?? ''); setCategoryId(''); }
           setName(data.name); setDescription(data.description || '');
+          setDetailHtml(data.detail_html || '');
           setImages(Array.isArray(data.images) ? data.images : []);
           setDailyPrice(String(data.daily_price ?? 0)); setDeposit(String(data.deposit ?? 0));
           setListPrice(data.list_price == null ? '' : String(data.list_price));
@@ -91,7 +93,7 @@ const RentalProductDetail: React.FC = () => {
     const input = {
       brand_id: brandId === '' ? null : Number(brandId),
       category_id: finalCat,
-      name, description, images, thumbnail_url: images[0],
+      name, description, detail_html: detailHtml, images, thumbnail_url: images[0],
       daily_price: Number(dailyPrice), list_price: listPrice === '' ? null : Number(listPrice), coupon_price: couponPrice === '' ? null : Number(couponPrice),
       deposit: Number(deposit), delivery_fee: Number(deliveryFee),
       stock: Number(stock), min_days: Number(minDays), max_days: maxDays === '' ? null : Number(maxDays),
@@ -146,9 +148,15 @@ const RentalProductDetail: React.FC = () => {
           <ImageUploader value={images} onChange={setImages} folder="rental-product" multiple max={8} />
         </Field>
         <div style={{ marginTop: '14px' }}>
-          <label style={labelStyle}>상품 설명</label>
-          <RichTextEditor value={description} onChange={setDescription} placeholder="상품 상세 설명" />
+          <label style={labelStyle}>상품 설명 (상품명 아래 짧은 소개)</label>
+          <RichTextEditor value={description} onChange={setDescription} placeholder="예: 영문 부제·한 줄 소개" />
         </div>
+      </FormSection>
+
+      <FormSection title="상품 상세" desc="상세페이지 '상세' 탭에 표시되는 본문 — 이미지 버튼으로 상세 이미지를 직접 업로드해 넣을 수 있습니다. (비우면 상세 탭 숨김)">
+        <Field label="상세 내용" minWidth="100%">
+          <RichTextEditor value={detailHtml} onChange={setDetailHtml} uploadFolder="rental-product-detail" placeholder="상품 상세 내용을 작성하세요 (이미지·텍스트)" />
+        </Field>
       </FormSection>
 
       <FormSection title="가격 · 렌탈 정보" desc="가격 = 일일 단가 × 대여일수 · 정가/쿠폰가는 상세페이지 할인 표시용(비우면 미표시)">

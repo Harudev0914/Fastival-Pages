@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import CompanyCard from '../../components/ReviewDetail/CompanySidebar';
 import { FilterDropdown } from '../../components/ReviewDetail/FilterChipsRow';
 import { categoryApi, portfolioApi, type ConstructionPortfolio } from '../../api/constructionApi';
@@ -28,9 +29,11 @@ const catImage = (name: string, seed: number) =>
 interface CategoryTab { id: number; name: string; image_url?: string | null; }
 
 const PortfolioPage: React.FC = () => {
+  const [params] = useSearchParams();
+  const initialCat = params.get('category') ? Number(params.get('category')) : 'all';
   const [categories, setCategories] = useState<CategoryTab[]>([]);
   const [items, setItems] = useState<ConstructionPortfolio[]>([]);
-  const [activeCat, setActiveCat] = useState<number | 'all'>('all');
+  const [activeCat, setActiveCat] = useState<number | 'all'>(initialCat);
   const [loading, setLoading] = useState(true);
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +49,12 @@ const PortfolioPage: React.FC = () => {
       setLoading(false);
     })();
   }, []);
+
+  // 검색 등에서 ?category=ID 로 진입 시 해당 카테고리 탭 활성화
+  useEffect(() => {
+    const c = params.get('category');
+    setActiveCat(c ? Number(c) : 'all');
+  }, [params]);
 
   const visible = activeCat === 'all' ? items : items.filter((p) => p.category_id === activeCat);
 

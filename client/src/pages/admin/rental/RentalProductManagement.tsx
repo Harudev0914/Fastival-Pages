@@ -49,7 +49,7 @@ const RentalProductManagement: React.FC<{ mode?: Mode }> = ({ mode = 'all' }) =>
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [{ data: b }, { data: c }] = [await brandApi.listActive(), await rentalCategoryApi.list()];
+      const [{ data: b }, { data: c }] = await Promise.all([brandApi.listActive(), rentalCategoryApi.list()]);
       setBrands((b || []) as any);
       setCats(((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id })));
       await fetchItems();

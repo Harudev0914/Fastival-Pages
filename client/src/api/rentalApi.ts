@@ -1,6 +1,6 @@
 // 렌탈 관리 API: 브랜드 / 카테고리 / 상품
 import { supabase } from '../supabaseClient';
-import { run, mapError, currentAdminName, type Result } from './core';
+import { run, mapError, ok, fail, currentAdminName, type Result } from './core';
 
 export interface RentalBrand {
   id: number;
@@ -39,6 +39,7 @@ export interface RentalProduct {
   category_id: number | null;
   name: string;
   description: string | null;
+  detail_html: string | null;   // 상품 상세 본문(HTML 에디터, 이미지 포함). 갤러리 이미지와 별개
   thumbnail_url: string | null;
   images: string[];
   daily_price: number;
@@ -106,7 +107,12 @@ function removeFn(table: string) {
 // ---------------- 브랜드 ----------------
 export const brandApi = {
   list: () => run<RentalBrand[]>(() => supabase.from('rental_brands').select('*').order('display_order', { ascending: true }) as any),
-  listActive: () => run<RentalBrand[]>(() => supabase.from('rental_brands').select('id, name').eq('is_active', true).order('display_order', { ascending: true }) as any),
+  // 공개 목록: 이름 A-Z(가나다) 정렬 (대소문자·한/영 무관)
+  listActive: () => run<RentalBrand[]>(async () => {
+    const res: any = await supabase.from('rental_brands').select('id, name').eq('is_active', true);
+    if (res.data) res.data.sort((a: any, b: any) => String(a.name).localeCompare(String(b.name), 'ko'));
+    return res;
+  }),
   get: (id: number | string) => run<RentalBrand>(() => supabase.from('rental_brands').select('*').eq('id', id).single() as any),
 
   async create(input: { name: string; logo_url?: string; description?: string; is_active?: boolean }): Promise<Result<RentalBrand>> {
@@ -136,9 +142,17 @@ export const brandApi = {
 // ---------------- 카테고리 ----------------
 export const rentalCategoryApi = {
   list: () => run<RentalCategory[]>(() => supabase.from('rental_categories').select('*, rental_brands(name)').order('display_order', { ascending: true }) as any),
-  // 공개 페이지용: 활성 카테고리만
-  listActive: () => run<RentalCategory[]>(() => supabase.from('rental_categories').select('*').eq('is_active', true).order('display_order', { ascending: true }) as any),
-  listByBrand: (brandId: number) => run<RentalCategory[]>(() => supabase.from('rental_categories').select('id, name, brand_id').eq('brand_id', brandId).eq('is_active', true).order('display_order', { ascending: true }) as any),
+  // 공개 페이지용: 활성 카테고리만 · 이름 가나다/A-Z 정렬 (상위·하위 각각 이름순)
+  listActive: () => run<RentalCategory[]>(async () => {
+    const res: any = await supabase.from('rental_categories').select('*').eq('is_active', true);
+    if (res.data) res.data.sort((a: any, b: any) => String(a.name).localeCompare(String(b.name), 'ko'));
+    return res;
+  }),
+  listByBrand: (brandId: number) => run<RentalCategory[]>(async () => {
+    const res: any = await supabase.from('rental_categories').select('id, name, brand_id').eq('brand_id', brandId).eq('is_active', true);
+    if (res.data) res.data.sort((a: any, b: any) => String(a.name).localeCompare(String(b.name), 'ko'));
+    return res;
+  }),
   get: (id: number | string) => run<RentalCategory>(() => supabase.from('rental_categories').select('*').eq('id', id).single() as any),
 
   async create(input: { brand_id: number | null; parent_id?: number | null; name: string; description?: string; image_url?: string; is_active?: boolean }): Promise<Result<RentalCategory>> {
@@ -173,6 +187,7 @@ export interface ProductInput {
   category_id: number | null;
   name: string;
   description?: string;
+  detail_html?: string | null;
   thumbnail_url?: string;
   images?: string[];
   daily_price?: number;
@@ -197,6 +212,7 @@ function productPayload(input: ProductInput, by: string) {
     category_id: input.category_id,
     name: input.name.trim(),
     description: input.description?.trim() || null,
+    detail_html: input.detail_html?.trim() || null,
     thumbnail_url: input.thumbnail_url?.trim() || imgs[0] || null,
     images: imgs,
     daily_price: Number(input.daily_price) || 0,
@@ -214,10 +230,13 @@ function productPayload(input: ProductInput, by: string) {
   };
 }
 
+// 목록/그리드용 컬럼 — 대용량 TEXT(detail_html)은 상세 조회(get)에서만 가져와 목록 payload 절감
+const PRODUCT_LIST_COLS = 'id, brand_id, category_id, name, description, thumbnail_url, images, daily_price, list_price, coupon_price, deposit, delivery_fee, stock, min_days, max_days, options, display_order, is_active, is_exclusive, is_event, created_at, updated_at, created_by, updated_by, rental_brands(name), rental_categories(name)';
+
 export const productApi = {
-  list: () => run<RentalProduct[]>(() => supabase.from('rental_products').select('*, rental_brands(name), rental_categories(name)').order('display_order', { ascending: true }) as any),
+  list: () => run<RentalProduct[]>(() => supabase.from('rental_products').select(PRODUCT_LIST_COLS).order('display_order', { ascending: true }) as any),
   // 공개 페이지용: 활성 상품만 (서버 필터로 payload 절감)
-  listActive: () => run<RentalProduct[]>(() => supabase.from('rental_products').select('*, rental_brands(name), rental_categories(name)').eq('is_active', true).order('display_order', { ascending: true }) as any),
+  listActive: () => run<RentalProduct[]>(() => supabase.from('rental_products').select(PRODUCT_LIST_COLS).eq('is_active', true).order('display_order', { ascending: true }) as any),
   get: (id: number | string) => run<RentalProduct>(() => supabase.from('rental_products').select('*, rental_brands(name), rental_categories(name)').eq('id', id).single() as any),
 
   async create(input: ProductInput): Promise<Result<RentalProduct>> {
@@ -284,11 +303,12 @@ export const orderApi = {
   list: () => run<RentalOrder[]>(() => supabase.from('rental_orders').select('*').order('created_at', { ascending: false }) as any),
 
   // 상품별 판매 수량(결제완료 기준) → { [productId]: count }
+  // rental_orders 는 PII 때문에 anon SELECT 불가 → 집계만 반환하는 RPC(rental_sales_count) 사용
   async salesCountByProduct(): Promise<Record<number, number>> {
     try {
-      const { data } = await supabase.from('rental_orders').select('product_id, quantity').eq('payment_status', 'paid');
+      const { data } = await supabase.rpc('rental_sales_count');
       const m: Record<number, number> = {};
-      (data || []).forEach((r: any) => { if (r.product_id) m[r.product_id] = (m[r.product_id] || 0) + (Number(r.quantity) || 1); });
+      (data || []).forEach((r: any) => { if (r.product_id) m[r.product_id] = Number(r.qty) || 0; });
       return m;
     } catch { return {}; }
   },
@@ -422,4 +442,32 @@ export const shipmentApi = {
     const { error } = await supabase.from('rental_shipments').delete().in('id', ids);
     return { data: error ? null : (true as const), error };
   }),
+};
+
+// ── 브랜드 관심 저장 (회원별) ──────────────────────────────────────────────
+export interface BrandFavoriter { user_id: string; user_name: string | null; created_at: string; }
+
+export const brandFavoriteApi = {
+  // 해당 브랜드를 관심 저장한 회원 목록 (최신순) — 누구나 조회
+  listByBrand: (brandId: number) => run<BrandFavoriter[]>(() =>
+    supabase.from('rental_brand_favorites').select('user_id, user_name, created_at').eq('brand_id', brandId).order('created_at', { ascending: false }) as any),
+
+  // 저장/해제 토글 → 저장 후 상태(true=저장됨). 비로그인 시 data=null (호출부에서 로그인 유도)
+  async toggle(brandId: number): Promise<Result<boolean | null>> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return ok(null);
+      const { data: existing } = await supabase.from('rental_brand_favorites')
+        .select('id').eq('brand_id', brandId).eq('user_id', user.id).maybeSingle();
+      if (existing) {
+        const { error } = await supabase.from('rental_brand_favorites').delete().eq('id', existing.id);
+        return error ? fail(mapError(error)) : ok(false);
+      }
+      const user_name = user.user_metadata?.name || (user.email ? user.email.split('@')[0] : '회원');
+      const { error } = await supabase.from('rental_brand_favorites').insert({ brand_id: brandId, user_id: user.id, user_name });
+      return error ? fail(mapError(error)) : ok(true);
+    } catch (e) {
+      return fail(mapError(e));
+    }
+  },
 };

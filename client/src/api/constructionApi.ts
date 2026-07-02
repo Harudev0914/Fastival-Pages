@@ -234,9 +234,12 @@ export const reviewApi = {
 // =============================================================
 // 포트폴리오
 // =============================================================
+// 목록/그리드용 컬럼 — 대용량 TEXT(content_html)은 상세 조회(get)에서만 가져와 목록 payload 절감
+const PORTFOLIO_LIST_COLS = 'id, category_id, title, thumbnail_url, link_url, display_order, is_active, created_at, updated_at, created_by, updated_by, construction_categories(name)';
+
 export const portfolioApi = {
-  list: () => run<ConstructionPortfolio[]>(() => supabase.from(T.portfolio).select('*, construction_categories(name)').order('display_order', { ascending: true }) as any),
-  listActive: () => run<ConstructionPortfolio[]>(() => supabase.from(T.portfolio).select('*, construction_categories(name)').eq('is_active', true).order('display_order', { ascending: true }) as any),
+  list: () => run<ConstructionPortfolio[]>(() => supabase.from(T.portfolio).select(PORTFOLIO_LIST_COLS).order('display_order', { ascending: true }) as any),
+  listActive: () => run<ConstructionPortfolio[]>(() => supabase.from(T.portfolio).select(PORTFOLIO_LIST_COLS).eq('is_active', true).order('display_order', { ascending: true }) as any),
   get: (id: number | string) => run<ConstructionPortfolio>(() => supabase.from(T.portfolio).select('*').eq('id', id).single() as any),
 
   async create(input: PortfolioInput): Promise<Result<ConstructionPortfolio>> {

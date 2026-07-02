@@ -99,7 +99,7 @@ const SearchPage: React.FC = () => {
 };
 
 const wrap: React.CSSProperties = { position: 'fixed', inset: 0, background: '#fff', zIndex: 3000, overflowY: 'auto' };
-const inner: React.CSSProperties = { maxWidth: '1060px', margin: '0 auto', padding: '48px 24px 80px' };
+const inner: React.CSSProperties = { maxWidth: '1060px', margin: '0 auto', padding: '84px 24px 80px' };
 const topRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '12px' };
 const inputStyle: React.CSSProperties = { flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: 'clamp(1.05rem, 4.6vw, 1.8rem)', fontWeight: 700, color: '#111', background: 'transparent', padding: '4px 0' };
 const clearBtn: React.CSSProperties = { width: '28px', height: '28px', borderRadius: '50%', background: '#f1f5f9', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 };
@@ -108,6 +108,6 @@ const row: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '
 const icBase: React.CSSProperties = { width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 };
 const icIcon: React.CSSProperties = { ...icBase, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 const hint: React.CSSProperties = { color: '#94a3b8', fontSize: '0.9rem', padding: '16px 4px', textAlign: 'center' };
-const closeBtn: React.CSSProperties = { position: 'fixed', top: '24px', right: '32px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' };
+const closeBtn: React.CSSProperties = { position: 'fixed', top: '24px', right: '32px', zIndex: 3001, background: 'none', border: 'none', cursor: 'pointer', padding: '4px' };
 
 export default SearchPage;

@@ -16,7 +16,7 @@ const DjStats: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [{ data: a, error: e1 }, { data: ev, error: e2 }] = [await djApi.list(), await djEventApi.list()];
+      const [{ data: a, error: e1 }, { data: ev, error: e2 }] = await Promise.all([djApi.list(), djEventApi.list()]);
       if (e1 || e2) alert('불러오기 오류', e1 || e2 || '');
       setArtists(a || []); setAllEvents(ev || []);
       setLoading(false);

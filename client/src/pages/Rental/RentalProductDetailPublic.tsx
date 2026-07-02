@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ShieldCheck, Truck, ChevronRight, Share2, Bookmark } from 'lucide-react';
 import { productApi, orderApi, type RentalProduct } from '../../api/rentalApi';
 import { mainVisualApi, type MainVisual } from '../../api/mainVisualApi';
 import { requestTossPayment, genOrderId } from '../../lib/toss';
+import './RentalPage.css';
 
 const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const TEAL = '#2563eb';
@@ -40,16 +41,30 @@ const RentalProductDetailPublic: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
 
+  // 상세페이지 하단 탭(리뷰/상세/추천) — 스크롤 시 헤더 아래 고정 + 스크롤스파이
+  const TABBAR_H = 52;
+  const reviewRef = useRef<HTMLDivElement>(null);
+  const detailRef = useRef<HTMLDivElement>(null);
+  const recommendRef = useRef<HTMLDivElement>(null);
+  const [headerH, setHeaderH] = useState(110);
+  const [activeTab, setActiveTab] = useState<'review' | 'detail' | 'recommend'>('review');
+
+  // 하단 고정 구매바 — 상단 액션바가 화면 밖으로 올라가면 노출, 푸터 보이면 숨김
+  const actionRef = useRef<HTMLDivElement>(null);
+  const [showBuyBar, setShowBuyBar] = useState(false);
+
   useEffect(() => {
     (async () => {
       setLoading(true); setActiveImg(0);
-      const { data } = await productApi.get(id!);
+      // 상품·AD배너·추천목록은 서로 독립 → 병렬 조회(직렬 대비 지연 1/3)
+      const [{ data }, { data: mv }, { data: all }] = await Promise.all([
+        productApi.get(id!),
+        mainVisualApi.listBySection('rental'),   // 렌탈 AD 배너(메인비주얼 관리 · 렌탈 섹션 AD)
+        productApi.listActive(),                 // 추천 상품 풀
+      ]);
       if (data) { setProduct(data); setDays(data.min_days || 1); }
-      // 렌탈 AD 배너(메인비주얼 관리 · 렌탈 섹션 AD) 노출
-      const { data: mv } = await mainVisualApi.listBySection('rental');
       setAd((mv || []).find((b) => b.is_ad) || null);
       // 추천 상품 — 같은 브랜드 우선, 나머지 활성 상품으로 채움(현재 상품 제외)
-      const { data: all } = await productApi.listActive();
       if (data && all) {
         const others = all.filter((p) => p.id !== data.id);
         const sameBrand = others.filter((p) => p.brand_id && p.brand_id === data.brand_id);
@@ -74,6 +89,48 @@ const RentalProductDetailPublic: React.FC = () => {
     const perUnit = Number(product.daily_price) * days + optionAdd;
     return perUnit * qty + Number(product.delivery_fee);
   }, [product, days, optionAdd, qty]);
+
+  // 고정 헤더 높이 측정 (탭바 sticky top · 스크롤 오프셋 기준)
+  useEffect(() => {
+    const measure = () => {
+      const h = document.querySelector('.site-header')?.getBoundingClientRect().height;
+      if (h) setHeaderH(Math.round(h));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  // 스크롤스파이 — 현재 보이는 섹션에 맞춰 탭 활성화
+  useEffect(() => {
+    const onScroll = () => {
+      const threshold = headerH + TABBAR_H + 12;
+      const secs: [typeof activeTab, HTMLDivElement | null][] = [
+        ['review', reviewRef.current], ['detail', detailRef.current], ['recommend', recommendRef.current],
+      ];
+      let active: typeof activeTab = 'review';
+      for (const [key, el] of secs) if (el && el.getBoundingClientRect().top <= threshold) active = key;
+      setActiveTab(active);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [headerH]);
+
+  // 하단 고정 구매바 노출 제어 — 상단 액션바가 위로 사라지면 보이고, 푸터가 화면에 들어오면 숨김
+  useEffect(() => {
+    const onScroll = () => {
+      const anchor = actionRef.current;
+      const footer = document.querySelector('.site-footer');
+      let show = anchor ? anchor.getBoundingClientRect().bottom < 80 : false;
+      if (footer && footer.getBoundingClientRect().top < window.innerHeight) show = false;
+      setShowBuyBar(show);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    onScroll();
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+  }, [product]);
 
   if (loading) return <div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>불러오는 중...</div>;
   if (!product) return <div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>상품을 찾을 수 없습니다.</div>;
@@ -142,6 +199,22 @@ const RentalProductDetailPublic: React.FC = () => {
     }
   };
 
+  // 탭 클릭 → 해당 섹션으로 (고정 헤더+탭바 높이만큼 오프셋)
+  const scrollToSec = (ref: React.RefObject<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - headerH - TABBAR_H + 1;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  };
+
+  // 하단 탭 구성 — 내용 없는 섹션(상세/추천)은 숨김, 리뷰는 항상 노출(빈 상태 안내)
+  const hasDetail = !!(product.detail_html && product.detail_html.trim());
+  const tabs = ([
+    { key: 'review' as const, label: '리뷰 0', ref: reviewRef, show: true },
+    { key: 'detail' as const, label: '상세', ref: detailRef, show: hasDetail },
+    { key: 'recommend' as const, label: '추천', ref: recommendRef, show: recommends.length > 0 },
+  ]).filter((t) => t.show);
+
   const shareProduct = async () => {
     const url = window.location.href;
     try {
@@ -152,19 +225,17 @@ const RentalProductDetailPublic: React.FC = () => {
 
   return (
     <div className="rental-page">
-      <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginBottom: '16px', fontSize: '0.9rem' }}>← 뒤로</button>
-
-      <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
+      <div className="rpd-cols">
         {/* 갤러리 */}
-        <div style={{ flex: '1 1 360px', minWidth: '300px' }}>
+        <div className="rpd-gallery">
           <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: '16px', overflow: 'hidden', background: '#f1f5f9' }}>
             {gallery[activeImg] ? <img src={gallery[activeImg]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
           </div>
           {gallery.length > 1 && (
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+            <div className="rv-thumbs">
               {gallery.map((g, i) => (
-                <button key={i} onClick={() => setActiveImg(i)} style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', border: i === activeImg ? `2px solid ${TEAL}` : '1px solid #e2e8f0', padding: 0, cursor: 'pointer' }}>
-                  <img src={g} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <button key={i} onClick={() => setActiveImg(i)} style={{ flex: '0 0 64px', width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', border: i === activeImg ? `2px solid ${TEAL}` : '1px solid #e2e8f0', padding: 0, cursor: 'pointer', background: '#f1f5f9' }}>
+                  <img src={g} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </button>
               ))}
             </div>
@@ -172,22 +243,29 @@ const RentalProductDetailPublic: React.FC = () => {
         </div>
 
         {/* 정보 + 예약 폼 */}
-        <div style={{ flex: '1 1 340px', minWidth: '300px' }}>
-          {/* 가격 — 정가(취소선) → 할인율 + 판매가 → 쿠폰 적용가 */}
-          {hasDiscount && (
-            <div style={{ fontSize: '0.95rem', color: '#94a3b8', textDecoration: 'line-through', marginBottom: '2px' }}>{won(listPrice)}</div>
-          )}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap', marginBottom: couponPrice > 0 ? '4px' : '10px' }}>
-            {hasDiscount && <span style={{ fontSize: '1.7rem', fontWeight: 800, color: '#ef4444' }}>{discountPct}%</span>}
-            <span style={{ fontSize: '1.7rem', fontWeight: 800, color: '#1e293b' }}>{won(product.daily_price)}</span>
-            <span style={{ color: '#94a3b8', fontSize: '0.95rem' }}>/ 일</span>
-          </div>
-          {couponPrice > 0 && (
-            <div style={{ fontSize: '0.9rem', color: TEAL, fontWeight: 700, marginBottom: '10px' }}>쿠폰 적용가 {won(couponPrice)} / 일</div>
+        <div className="rpd-info">
+          {/* 가격 — 금액 없으면 "- / 재고 없음", 있으면 정가(취소선) → 할인율 + 판매가 → 쿠폰 적용가 */}
+          {Number(product.daily_price) > 0 ? (<>
+            {hasDiscount && (
+              <div style={{ fontSize: '0.95rem', color: '#94a3b8', textDecoration: 'line-through', marginBottom: '2px' }}>{won(listPrice)}</div>
+            )}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap', marginBottom: couponPrice > 0 ? '4px' : '10px' }}>
+              {hasDiscount && <span style={{ fontSize: '1.7rem', fontWeight: 800, color: '#ef4444' }}>{discountPct}%</span>}
+              <span style={{ fontSize: '1.7rem', fontWeight: 800, color: '#1e293b' }}>{won(product.daily_price)}</span>
+              <span style={{ color: '#94a3b8', fontSize: '0.95rem' }}>/ 일</span>
+            </div>
+            {couponPrice > 0 && (
+              <div style={{ fontSize: '0.9rem', color: TEAL, fontWeight: 700, marginBottom: '10px' }}>쿠폰 적용가 {won(couponPrice)} / 일</div>
+            )}
+          </>) : (
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+              <span style={{ fontSize: '1.7rem', fontWeight: 800, color: '#94a3b8' }}>-</span>
+              <span style={{ color: '#94a3b8', fontSize: '0.95rem' }}>/ 재고 없음</span>
+            </div>
           )}
 
-          {/* 상품명 */}
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', margin: '2px 0 4px', lineHeight: 1.3 }}>{product.name}</h1>
+          {/* 상품명 — 모바일에서 작게(clamp) */}
+          <h1 style={{ fontSize: 'clamp(1.05rem, 4.5vw, 1.4rem)', fontWeight: 800, color: '#1e293b', margin: '2px 0 4px', lineHeight: 1.3 }}>{product.name}</h1>
 
           {/* 영문 부제 등 설명 — 상품명 바로 아래 */}
           {product.description && (
@@ -212,10 +290,6 @@ const RentalProductDetailPublic: React.FC = () => {
               {product.rental_categories?.name}
             </div>
           )}
-
-          <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '16px' }}>
-            보증금 {won(product.deposit)}{Number(product.delivery_fee) > 0 ? ` · 배송/설치비 ${won(product.delivery_fee)}` : ''} · 재고 {product.stock}개
-          </div>
 
           {/* 정보 안내 행 (정품보증 · 배송) — 정품보증만 좌우 밝은 회색→가운데 흰색 그라데이션 카드, 배송은 흰색 */}
           <div style={{ border: '1px solid #eef2f6', borderRadius: '12px', overflow: 'hidden', marginBottom: '18px', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' }}>
@@ -249,7 +323,7 @@ const RentalProductDetailPublic: React.FC = () => {
           )}
 
           {/* 액션 바 — 북마크 · 공유 아이콘 + 구매하기(파란색) */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+          <div ref={actionRef} style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
             <button onClick={() => setBookmarked((v) => !v)} title="북마크" style={iconBtn(bookmarked)}>
               <Bookmark size={20} fill={bookmarked ? '#fff' : 'none'} /> 북마크
             </button>
@@ -257,13 +331,13 @@ const RentalProductDetailPublic: React.FC = () => {
               <Share2 size={20} /> 공유
             </button>
             <button
-              onClick={() => navigate(`/rental/inquiry?product=${product.id}`)}
+              onClick={() => navigate('/signup')}
               style={{ padding: '0 16px', background: '#fff', color: TEAL, border: `1px solid ${TEAL}`, borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               판매하기
             </button>
             <button
-              onClick={() => { if (SHOW_BOOKING) submit(); else alert('렌탈 신청은 준비 중입니다. 고객센터로 문의해 주세요.'); }}
+              onClick={() => navigate('/signup')}
               disabled={submitting}
               style={{ flex: 1, background: TEAL, color: '#fff', border: 'none', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 800, cursor: 'pointer', opacity: submitting ? 0.6 : 1 }}
             >
@@ -335,10 +409,38 @@ const RentalProductDetailPublic: React.FC = () => {
         </div>
       </div>
 
+      {/* 하단 탭 (리뷰 · 상세 · 추천) — 스크롤 시 헤더 아래 고정 */}
+      <nav className="rpd-tabs" style={{ top: headerH }}>
+        {tabs.map((t) => (
+          <button key={t.key} type="button" className={`rpd-tab ${activeTab === t.key ? 'on' : ''}`} onClick={() => scrollToSec(t.ref)}>
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* 리뷰 — 등록된 리뷰가 없으면 빈 상태 안내 */}
+      <div className="rpd-sec" ref={reviewRef}>
+        <div className="rpd-sec__head">
+          <div>
+            <span className="rpd-sec__title">리뷰</span>
+            <span className="rpd-sec__muted">등록된 리뷰 없음</span>
+          </div>
+          <button type="button" className="rpd-sec__action" onClick={() => navigate('/signup')}>+ 리뷰 올리기</button>
+        </div>
+      </div>
+
+      {/* 상세 — 어드민 HTML 에디터로 작성한 상품 상세 본문 (없으면 탭·섹션 숨김) */}
+      {hasDetail && (
+        <div className="rpd-sec" ref={detailRef}>
+          <div className="rpd-sec__head"><span className="rpd-sec__title">상세</span></div>
+          <div className="rpd-detail" dangerouslySetInnerHTML={{ __html: product.detail_html || '' }} />
+        </div>
+      )}
+
       {/* 함께 보면 좋은 상품 (크림·무신사 스타일 추천 그리드) */}
       {recommends.length > 0 && (
-        <section style={{ marginTop: '48px' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginBottom: '16px' }}>함께 보면 좋은 상품</h2>
+        <div className="rpd-sec" ref={recommendRef}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginBottom: '16px' }}>추천 상품</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '18px 14px' }}>
             {recommends.map((p) => {
               const lp = Number(p.list_price) || 0;
@@ -351,16 +453,42 @@ const RentalProductDetailPublic: React.FC = () => {
                   {p.rental_brands?.name && <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#1e293b', marginBottom: '2px' }}>{p.rental_brands.name}</div>}
                   <div style={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.35, marginBottom: '6px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.name}</div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', flexWrap: 'wrap' }}>
-                    {disc > 0 && <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444' }}>{disc}%</span>}
-                    <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1e293b' }}>{won(p.daily_price)}</span>
-                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>/ 일</span>
+                    {Number(p.daily_price) > 0 ? (<>
+                      {disc > 0 && <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444' }}>{disc}%</span>}
+                      <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#1e293b' }}>{won(p.daily_price)}</span>
+                      <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>/ 일</span>
+                    </>) : (
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3b8' }}>재고 없음</span>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
-        </section>
+        </div>
       )}
+
+      {/* 하단 고정 구매바 (PC·태블릿·모바일) — 상단 액션바가 사라지면 노출, 푸터 전까지 유지 */}
+      <div className={`rpd-buybar ${showBuyBar ? 'on' : ''}`}>
+        {gallery[0] && <img className="rpd-buybar__thumb" src={gallery[0]} alt="" />}
+        <div className="rpd-buybar__info">
+          <div className="rpd-buybar__name">{product.name}</div>
+          <div className="rpd-buybar__price">
+            {Number(product.daily_price) > 0 ? (<>
+              {hasDiscount && <span className="pct">{discountPct}%</span>}
+              {won(product.daily_price)}<span className="per"> / 일</span>
+            </>) : (
+              <span className="soldout">재고 없음</span>
+            )}
+          </div>
+        </div>
+        <div className="rpd-buybar__actions">
+          <button className="rpd-buybar__mark" onClick={() => setBookmarked((v) => !v)} title="북마크" aria-label="북마크">
+            <Bookmark size={20} fill={bookmarked ? TEAL : 'none'} color={bookmarked ? TEAL : '#475569'} />
+          </button>
+          <button className="rpd-buybar__buy" onClick={() => navigate('/signup')}>구매하기</button>
+        </div>
+      </div>
     </div>
   );
 };

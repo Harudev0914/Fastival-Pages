@@ -17,7 +17,7 @@ const RentalPage: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [{ data: pd }, { data: cd }] = [await productApi.listActive(), await rentalCategoryApi.listActive()];
+      const [{ data: pd }, { data: cd }] = await Promise.all([productApi.listActive(), rentalCategoryApi.listActive()]);
       setProducts((pd || []).filter((p) => p.is_active));
       // 활성 1차 카테고리(parent_id 없음)만 노출
       const map = new Map<string, { id: number; name: string; image_url: string | null }>();
@@ -76,7 +76,9 @@ const RentalPage: React.FC = () => {
                 <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>
                 <p className="rv-prod__name">{p.name}</p>
                 <div className="rv-prod__price">
-                  <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
+                  {Number(p.daily_price) > 0
+                    ? <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
+                    : <span className="rv-prod__monthly rv-prod__soldout">재고 없음</span>}
                 </div>
               </article>
             ))}

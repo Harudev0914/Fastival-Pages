@@ -16,7 +16,7 @@ const AdminUserManagement: React.FC = () => {
   const { element: modal, alert, confirm } = useAdminModal();
 
   const fetchAll = useCallback(async () => {
-    const [{ data: a, error }, { data: d }] = [await adminUserApi.list(), await departmentApi.list()];
+    const [{ data: a, error }, { data: d }] = await Promise.all([adminUserApi.list(), departmentApi.list()]);
     if (error) alert('불러오기 오류', error);
     // 최상위 관리자 계정/부서는 목록에서 숨김
     setItems((a || []).filter((u) => u.email !== SUPER_ADMIN_EMAIL));

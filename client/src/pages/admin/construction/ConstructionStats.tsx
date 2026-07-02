@@ -20,7 +20,7 @@ const ConstructionStats: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const [{ data: i, error: e1 }, { data: w, error: e2 }] = [await inquiryApi.list(), await constructionWorkApi.list()];
+      const [{ data: i, error: e1 }, { data: w, error: e2 }] = await Promise.all([inquiryApi.list(), constructionWorkApi.list()]);
       if (e1 || e2) alert('불러오기 오류', e1 || e2 || '');
       setAllInquiries(i || []); setAllWorks(w || []);
       setLoading(false);

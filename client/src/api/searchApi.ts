@@ -33,12 +33,12 @@ export async function searchAll(q: string): Promise<SearchHit[]> {
 
   (brands.data || []).forEach((b: any) => hits.push({
     kind: 'brand', channel: 'rental', id: b.id, title: b.name,
-    meta: '렌탈 브랜드', image: b.logo_url, to: '/rental', typeLabel: '브랜드',
+    meta: '렌탈 브랜드', image: b.logo_url, to: `/rental/brands?brand=${b.id}`, typeLabel: '브랜드',
   }));
 
   (products.data || []).forEach((p: any) => hits.push({
     kind: 'product', channel: 'rental', id: p.id, title: p.name,
-    meta: `${p.rental_brands?.name ? p.rental_brands.name + ' · ' : ''}일 ${won(p.daily_price)}`,
+    meta: `${p.rental_brands?.name ? p.rental_brands.name + ' · ' : ''}${Number(p.daily_price) > 0 ? `일 ${won(p.daily_price)}` : '재고 없음'}`,
     image: p.thumbnail_url, to: `/rental/product/${p.id}`, typeLabel: '렌탈 상품',
   }));
 
@@ -50,12 +50,12 @@ export async function searchAll(q: string): Promise<SearchHit[]> {
 
   (conCats.data || []).forEach((c: any) => hits.push({
     kind: 'category', channel: 'construction', id: c.id, title: c.name,
-    meta: '시공 카테고리', to: '/portfolio', typeLabel: '카테고리',
+    meta: '시공 카테고리', to: `/portfolio?category=${c.id}`, typeLabel: '카테고리',
   }));
 
   (rentalCats.data || []).forEach((c: any) => hits.push({
     kind: 'category', channel: 'rental', id: c.id, title: c.name,
-    meta: '렌탈 카테고리', to: '/rental/best', typeLabel: '카테고리',
+    meta: '렌탈 카테고리', to: `/rental/categories?category=${c.id}`, typeLabel: '카테고리',
   }));
 
   return hits;

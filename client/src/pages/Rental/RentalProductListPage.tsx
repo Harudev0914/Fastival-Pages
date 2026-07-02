@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronDown, SlidersHorizontal, Check } from 'lucide-react';
 import { productApi, brandApi, rentalCategoryApi, orderApi, type RentalProduct } from '../../api/rentalApi';
 import NewBadge from '../../components/NewBadge';
 import Seo from '../../components/Seo';
 import './RentalPage.css';
 
-const won = (n: number) => `₩${Number(n || 0).toLocaleString()}`;
 const TEAL = '#2563eb';
 
 const TITLES: Record<string, { title: string; desc: string }> = {
@@ -15,8 +15,6 @@ const TITLES: Record<string, { title: string; desc: string }> = {
   all: { title: '전체 렌탈 상품', desc: '' },
 };
 
-const sel: React.CSSProperties = { padding: '9px 12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.88rem', background: '#fff', cursor: 'pointer' };
-
 const RentalProductListPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,6 +22,7 @@ const RentalProductListPage: React.FC = () => {
   const key = location.pathname.split('/')[2] || 'all';
   const meta = TITLES[key] || TITLES.all;
   const initialCat = params.get('category') ? Number(params.get('category')) : 'all';
+  const defaultSort = key === 'best' ? 'best' : 'recent';
 
   const [products, setProducts] = useState<RentalProduct[]>([]);
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
@@ -31,13 +30,18 @@ const RentalProductListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [brandFilter, setBrandFilter] = useState<number | 'all'>('all');
   const [catFilter, setCatFilter] = useState<number | 'all'>(initialCat);
-  const [sort, setSort] = useState(key === 'best' ? 'best' : 'recent');
+  const [sort, setSort] = useState(defaultSort);
+  const [search] = useState('');
   const [sales, setSales] = useState<Record<number, number>>({});
+  // 모바일 상세검색 바텀시트
+  const [sheet, setSheet] = useState(false);
+  const [activeGrp, setActiveGrp] = useState<'price' | 'brand' | 'cat'>('price');
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [{ data: p }, { data: b }, { data: c }, salesMap] = [await productApi.listActive(), await brandApi.listActive(), await rentalCategoryApi.listActive(), await orderApi.salesCountByProduct()];
+      // 독립 조회 4건 병렬 실행 (직렬 await 대비 초기 로딩 단축)
+      const [{ data: p }, { data: b }, { data: c }, salesMap] = await Promise.all([productApi.listActive(), brandApi.listActive(), rentalCategoryApi.listActive(), orderApi.salesCountByProduct()]);
       setProducts((p || []).filter((x) => x.is_active));
       setBrands((b || []) as any);
       setCats(((c || []) as any[]).map((x) => ({ id: x.id, name: x.name, brand_id: x.brand_id })));
@@ -49,11 +53,13 @@ const RentalProductListPage: React.FC = () => {
   const catsForFilter = useMemo(() => brandFilter === 'all' ? cats : cats.filter((c) => c.brand_id === brandFilter), [cats, brandFilter]);
 
   const view = useMemo(() => {
+    const q = search.trim().toLowerCase();
     let v = products.filter((p) => {
       if (key === 'exclusive' && !p.is_exclusive) return false;
       if (key === 'event' && !p.is_event) return false;
       if (brandFilter !== 'all' && p.brand_id !== brandFilter) return false;
       if (catFilter !== 'all' && p.category_id !== catFilter) return false;
+      if (q && !`${p.name} ${p.rental_brands?.name || ''}`.toLowerCase().includes(q)) return false;
       return true;
     });
     if (sort === 'best') v = [...v].sort((a, b) => (sales[b.id] || 0) - (sales[a.id] || 0) || (b.created_at || '').localeCompare(a.created_at || ''));
@@ -61,12 +67,32 @@ const RentalProductListPage: React.FC = () => {
     else if (sort === 'price_high') v = [...v].sort((a, b) => Number(b.daily_price) - Number(a.daily_price));
     else v = [...v].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
     return v;
-  }, [products, brandFilter, catFilter, sort, key, sales]);
+  }, [products, brandFilter, catFilter, sort, key, sales, search]);
 
   // 베스트 라벨: 판매수 상위 3개(판매 1건 이상)
   const bestIds = useMemo(() => new Set(
     Object.entries(sales).filter(([, n]) => (n as number) > 0).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 3).map(([id]) => Number(id))
   ), [sales]);
+
+  const img = (p: RentalProduct) => p.thumbnail_url || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&q=80&auto=format&fit=crop';
+
+  // ── 상세검색 바텀시트 (모바일) ──
+  const sortOpts = [
+    { v: 'best', t: '인기순(많이 팔린)' },
+    { v: 'recent', t: '최신순' },
+    { v: 'price_low', t: '가격 낮은순' },
+    { v: 'price_high', t: '가격 높은순' },
+  ];
+  const isBrandAll = brandFilter === 'all';
+  const isBrandChosen = (id: number) => brandFilter === id;
+  const pickBrand = (id: number | null) => { setBrandFilter(id == null ? 'all' : id); setCatFilter('all'); };
+  const isCatAll = catFilter === 'all';
+  const isCatChosen = (id: number) => catFilter === id;
+  const pickCat = (id: number | null) => setCatFilter(id == null ? 'all' : id);
+
+  const filterActive = brandFilter !== 'all' || catFilter !== 'all' || sort !== defaultSort || search.trim() !== '';
+  const resetFilters = () => { setBrandFilter('all'); setCatFilter('all'); setSort(defaultSort); };
+  const grpChanged = { price: sort !== defaultSort, brand: !isBrandAll, cat: !isCatAll };
 
   return (
     <div className="rental-page">
@@ -76,26 +102,28 @@ const RentalProductListPage: React.FC = () => {
         {meta.desc && <p style={{ color: '#64748b', marginTop: '6px' }}>{meta.desc}</p>}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '24px' }}>
-        <select style={sel} value={brandFilter} onChange={(e) => { setBrandFilter(e.target.value === 'all' ? 'all' : Number(e.target.value)); setCatFilter('all'); }}>
-          <option value="all">전체 브랜드</option>
-          {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-        <select style={sel} value={catFilter} onChange={(e) => setCatFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
-          <option value="all">전체 카테고리</option>
-          {catsForFilter.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <select style={sel} value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="best">인기순(많이 팔린)</option>
-          <option value="recent">최신순</option>
-          <option value="price_low">가격 낮은순</option>
-          <option value="price_high">가격 높은순</option>
-        </select>
-        <span style={{ marginLeft: 'auto', fontSize: '0.85rem', color: '#94a3b8' }}>{view.length}개 상품</span>
+      {/* 툴바: 개수 + 정렬 드롭다운 · 모바일 상세검색 버튼 */}
+      <div className="rcat-toolbar">
+        <span className="rcat-count">전체 <b>{view.length.toLocaleString()}</b>개</span>
+        <div className="rcat-drops">
+          <div className="rcat-drop">
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              {sortOpts.map((o) => <option key={o.v} value={o.v}>{o.t}</option>)}
+            </select>
+            <ChevronDown size={15} className="rcat-drop__chev" />
+          </div>
+        </div>
+
+        {/* 모바일: 상세검색 버튼 → 바텀시트 */}
+        <div className="rcat-optbtns">
+          <button type="button" className={`rcat-optbtn ${filterActive ? 'on' : ''}`} onClick={() => setSheet(true)}>
+            <SlidersHorizontal size={15} /> <span>상세검색</span> <ChevronDown size={14} color="#94a3b8" />
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>불러오는 중...</div>
+        <div className="rcat-empty">불러오는 중...</div>
       ) : view.length === 0 ? (
         <div style={{ padding: '80px 0', textAlign: 'center', color: '#94a3b8' }}>
           등록된 상품이 없습니다.
@@ -105,20 +133,94 @@ const RentalProductListPage: React.FC = () => {
         </div>
       ) : (
         <div className="rv-grid">
-          {view.map((p) => (
-            <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
-              <div className="rv-prod__media" style={{ position: 'relative' }}>
-                <NewBadge createdAt={p.created_at} />
-                {key === 'best' && bestIds.has(p.id) && <span className="rv-best-badge" style={{ left: 'auto', right: '8px' }}>BEST</span>}
-                <img src={p.thumbnail_url || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&q=80&auto=format&fit=crop'} alt={p.name} loading="lazy" />
+          {view.map((p) => {
+            const lp = Number(p.list_price) || 0;
+            const disc = lp > Number(p.daily_price) ? Math.round(((lp - Number(p.daily_price)) / lp) * 100) : 0;
+            return (
+              <article className="rv-prod" key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/rental/product/${p.id}`)}>
+                <div className="rv-prod__media" style={{ position: 'relative' }}>
+                  <NewBadge createdAt={p.created_at} />
+                  {key === 'best' && bestIds.has(p.id) && <span className="rv-best-badge" style={{ left: 'auto', right: '8px' }}>BEST</span>}
+                  <img src={img(p)} alt={p.name} loading="lazy" />
+                </div>
+                <p className="rv-prod__brand">{p.rental_brands?.name || p.rental_categories?.name || ''}</p>
+                <p className="rv-prod__name">{p.name}</p>
+                <div className="rv-prod__price">
+                  {Number(p.daily_price) > 0 ? (<>
+                    {disc > 0 && <span className="rv-prod__disc">{disc}%</span>}
+                    <span className="rv-prod__monthly">월 {Number(p.daily_price).toLocaleString()}원</span>
+                  </>) : (
+                    <span className="rv-prod__monthly rv-prod__soldout">재고 없음</span>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 상세검색 바텀시트 (모바일) — 가격대·제조사·카테고리 */}
+      {sheet && (
+        <div className="rcat-sheet__dim" onClick={() => setSheet(false)}>
+          <div className="rcat-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="rcat-sheet__bar" />
+            <div className="rcat-sheet__title">상세검색</div>
+            <div className="rcat-sheet__split">
+              {/* 왼쪽 — 필터 그룹 */}
+              <div className="rcat-sheet__menu">
+                <button type="button" className={`rcat-sheet__menuitem ${activeGrp === 'price' ? 'on' : ''}`} onClick={() => setActiveGrp('price')}>
+                  가격대{grpChanged.price && <span className="rcat-sheet__dot" />}
+                </button>
+                <button type="button" className={`rcat-sheet__menuitem ${activeGrp === 'brand' ? 'on' : ''}`} onClick={() => setActiveGrp('brand')}>
+                  제조사{grpChanged.brand && <span className="rcat-sheet__dot" />}
+                </button>
+                <button type="button" className={`rcat-sheet__menuitem ${activeGrp === 'cat' ? 'on' : ''}`} onClick={() => setActiveGrp('cat')}>
+                  카테고리{grpChanged.cat && <span className="rcat-sheet__dot" />}
+                </button>
               </div>
-              <p className="rv-prod__brand">{p.rental_brands?.name || ''}</p>
-              <p className="rv-prod__name">{p.name}</p>
-              <div className="rv-prod__price">
-                <span className="rv-prod__monthly">일 {won(p.daily_price)}</span>
+
+              {/* 오른쪽 — 세부 옵션 */}
+              <div className="rcat-sheet__panel">
+                {activeGrp === 'price' && sortOpts.map((o) => (
+                  <button key={o.v} type="button" className={`rcat-sheet__opt ${sort === o.v ? 'on' : ''}`} onClick={() => setSort(o.v)}>
+                    <span>{o.t}</span>{sort === o.v && <Check size={17} />}
+                  </button>
+                ))}
+
+                {activeGrp === 'brand' && (
+                  <>
+                    <button type="button" className={`rcat-sheet__opt ${isBrandAll ? 'on' : ''}`} onClick={() => pickBrand(null)}>
+                      <span>전체 제조사</span>{isBrandAll && <Check size={17} />}
+                    </button>
+                    {brands.map((b) => (
+                      <button key={b.id} type="button" className={`rcat-sheet__opt ${isBrandChosen(b.id) ? 'on' : ''}`} onClick={() => pickBrand(b.id)}>
+                        <span>{b.name}</span>{isBrandChosen(b.id) && <Check size={17} />}
+                      </button>
+                    ))}
+                  </>
+                )}
+
+                {activeGrp === 'cat' && (
+                  <>
+                    <button type="button" className={`rcat-sheet__opt ${isCatAll ? 'on' : ''}`} onClick={() => pickCat(null)}>
+                      <span>전체 카테고리</span>{isCatAll && <Check size={17} />}
+                    </button>
+                    {catsForFilter.map((c) => (
+                      <button key={c.id} type="button" className={`rcat-sheet__opt ${isCatChosen(c.id) ? 'on' : ''}`} onClick={() => pickCat(c.id)}>
+                        <span>{c.name}</span>{isCatChosen(c.id) && <Check size={17} />}
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
-            </article>
-          ))}
+            </div>
+
+            {/* 하단 — 초기화 · 적용 */}
+            <div className="rcat-sheet__foot">
+              <button type="button" className="rcat-sheet__reset" onClick={resetFilters} disabled={!filterActive}>초기화</button>
+              <button type="button" className="rcat-sheet__apply" onClick={() => setSheet(false)}>적용</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
