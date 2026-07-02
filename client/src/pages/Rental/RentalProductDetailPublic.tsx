@@ -200,8 +200,8 @@ const RentalProductDetailPublic: React.FC = () => {
   };
 
   // 탭 클릭 → 해당 섹션으로 (고정 헤더+탭바 높이만큼 오프셋)
-  const scrollToSec = (ref: React.RefObject<HTMLDivElement>) => {
-    const el = ref.current;
+  const scrollToSec = (key: 'review' | 'detail' | 'recommend') => {
+    const el = { review: reviewRef, detail: detailRef, recommend: recommendRef }[key].current;
     if (!el) return;
     const y = el.getBoundingClientRect().top + window.scrollY - headerH - TABBAR_H + 1;
     window.scrollTo({ top: y, behavior: 'smooth' });
@@ -210,9 +210,9 @@ const RentalProductDetailPublic: React.FC = () => {
   // 하단 탭 구성 — 내용 없는 섹션(상세/추천)은 숨김, 리뷰는 항상 노출(빈 상태 안내)
   const hasDetail = !!(product.detail_html && product.detail_html.trim());
   const tabs = ([
-    { key: 'review' as const, label: '리뷰 0', ref: reviewRef, show: true },
-    { key: 'detail' as const, label: '상세', ref: detailRef, show: hasDetail },
-    { key: 'recommend' as const, label: '추천', ref: recommendRef, show: recommends.length > 0 },
+    { key: 'review' as const, label: '리뷰 0', show: true },
+    { key: 'detail' as const, label: '상세', show: hasDetail },
+    { key: 'recommend' as const, label: '추천', show: recommends.length > 0 },
   ]).filter((t) => t.show);
 
   const shareProduct = async () => {
@@ -412,7 +412,7 @@ const RentalProductDetailPublic: React.FC = () => {
       {/* 하단 탭 (리뷰 · 상세 · 추천) — 스크롤 시 헤더 아래 고정 */}
       <nav className="rpd-tabs" style={{ top: headerH }}>
         {tabs.map((t) => (
-          <button key={t.key} type="button" className={`rpd-tab ${activeTab === t.key ? 'on' : ''}`} onClick={() => scrollToSec(t.ref)}>
+          <button key={t.key} type="button" className={`rpd-tab ${activeTab === t.key ? 'on' : ''}`} onClick={() => scrollToSec(t.key)}>
             {t.label}
           </button>
         ))}
